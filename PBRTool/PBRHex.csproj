@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PBRTool</RootNamespace>
+    <AssemblyName>PBRTool</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Crc32.NET, Version=1.0.0.0, Culture=neutral, PublicKeyToken=dc0b95cf99bf4e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\Crc32.NET.1.2.0\lib\net20\Crc32.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CodeEditor\CodeEditorWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CodeEditor\CodeEditorWindow.Designer.cs">
+      <DependentUpon>CodeEditorWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Command.cs" />
+    <Compile Include="DexEditor\Commands\RedoCommand.cs" />
+    <Compile Include="DexEditor\Commands\SaveCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetFaceSpriteCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetModelCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetNameCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetStatCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetTypeCommand.cs" />
+    <Compile Include="DexEditor\Commands\UndoCommand.cs" />
+    <Compile Include="DexEditor\DexEditorWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DexEditor\DexEditorWindow.Designer.cs">
+      <DependentUpon>DexEditorWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DexEditor\Commands\SetBodySpriteCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetBoneSlotCommand.cs" />
+    <Compile Include="DexEditor\Commands\SetAnimSlotCommand.cs" />
+    <Compile Include="Dialogs\HexInputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\HexInputDialog.Designer.cs">
+      <DependentUpon>HexInputDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Enums.cs" />
+    <Compile Include="Files\GTX.cs" />
+    <Compile Include="Tables\DexTable.cs" />
+    <Compile Include="Tables\FSYSTable.cs" />
+    <Compile Include="Tables\ModelTable.cs" />
+    <Compile Include="Tables\SpriteTable.cs" />
+    <Compile Include="Tables\StringTable.cs" />
+    <Compile Include="HexEditor\Commands\AddFileCommand.cs" />
+    <Compile Include="HexEditor\Commands\AddLabelCommand.cs" />
+    <Compile Include="HexEditor\Commands\CreateFileCommand.cs" />
+    <Compile Include="HexEditor\Commands\DeleteRangeCommand.cs" />
+    <Compile Include="HexEditor\Commands\FillRangeCommand.cs" />
+    <Compile Include="HexEditor\Commands\InsertRangeCommand.cs" />
+    <Compile Include="HexEditor\Commands\PasteCommand.cs" />
+    <Compile Include="HexEditor\Commands\RedoCommand.cs" />
+    <Compile Include="HexEditor\Commands\RemoveFileCommand.cs" />
+    <Compile Include="HexEditor\Commands\RemoveLabelCommand.cs" />
+    <Compile Include="HexEditor\Commands\RenameLabelCommand.cs" />
+    <Compile Include="HexEditor\Commands\SaveCommand.cs" />
+    <Compile Include="HexEditor\Commands\SetRangeCommand.cs" />
+    <Compile Include="HexEditor\Commands\UndoCommand.cs" />
+    <Compile Include="StringEditor\Commands\GoToCommand.cs" />
+    <Compile Include="Tape.cs" />
+    <Compile Include="Dialogs\AlertDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AlertDialog.Designer.cs">
+      <DependentUpon>AlertDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ConfirmDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ConfirmDialog.Designer.cs">
+      <DependentUpon>ConfirmDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\InputDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\InputDialog.Designer.cs">
+      <DependentUpon>InputDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Files\DOL.cs" />
+    <Compile Include="Files\FileBuffer.cs" />
+    <Compile Include="HexEditor\Commands\GoToCommand.cs" />
+    <Compile Include="HexEditor\Events\CellEditEventArgs.cs" />
+    <Compile Include="HexEditor\Controls\AsciiViewer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="HexEditor\Controls\AsciiViewer.Designer.cs">
+      <DependentUpon>AsciiViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HexEditor\Controls\FileSelectDropdown.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="HexEditor\Controls\FileSelectDropdown.Designer.cs">
+      <DependentUpon>FileSelectDropdown.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Files\FSYS.cs" />
+    <Compile Include="HexEditor\HexEditorWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HexEditor\HexEditorWindow.Designer.cs">
+      <DependentUpon>HexEditorWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HexEditor\HexLabel.cs" />
+    <Compile Include="HexEditor\Controls\HexGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="HexEditor\Controls\HexGridView.Designer.cs">
+      <DependentUpon>HexGridView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HexEditor\Controls\LabelsListBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="HexEditor\Controls\LabelsListBox.Designer.cs">
+      <DependentUpon>LabelsListBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HexEditor\LabelDict.cs" />
+    <Compile Include="StringEditor\StringEditorWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="StringEditor\StringEditorWindow.Designer.cs">
+      <DependentUpon>StringEditorWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\AssemblyUtils.cs" />
+    <Compile Include="Utils\FileUtils.cs" />
+    <Compile Include="Utils\HexUtils.cs" />
+    <Compile Include="MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\CommandUtils.cs" />
+    <Compile Include="Utils\ImageUtils.cs" />
+    <EmbeddedResource Include="CodeEditor\CodeEditorWindow.resx">
+      <DependentUpon>CodeEditorWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DexEditor\DexEditorWindow.resx">
+      <DependentUpon>DexEditorWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\AlertDialog.resx">
+      <DependentUpon>AlertDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ConfirmDialog.resx">
+      <DependentUpon>ConfirmDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\HexInputDialog.resx">
+      <DependentUpon>HexInputDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\InputDialog.resx">
+      <DependentUpon>InputDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HexEditor\Controls\AsciiViewer.resx">
+      <DependentUpon>AsciiViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HexEditor\Controls\FileSelectDropdown.resx">
+      <DependentUpon>FileSelectDropdown.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HexEditor\Controls\HexGridView.resx">
+      <DependentUpon>HexGridView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HexEditor\Controls\LabelsListBox.resx">
+      <DependentUpon>LabelsListBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HexEditor\HexEditorWindow.resx">
+      <DependentUpon>HexEditorWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="StringEditor\StringEditorWindow.resx">
+      <DependentUpon>StringEditorWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenFile_Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unknown_face.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unknown_body.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
