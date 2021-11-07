@@ -176,12 +176,12 @@ namespace PBRHex
                 CloseForms();
                 try {
                     Program.Log("Unpacking ISO...");
-                    pleaseWaitLabel.Visible = true;
                     FileUtils.DeleteDirectory(Program.TempDir);
                     FileUtils.CreateDirectory(Program.BackupsDir, true);
                     FileTree.Nodes.Clear();
                     FileTree.Refresh();
-                    pleaseWaitLabel.Refresh();
+                    messageLabel.Text = "Please wait. This will take some time.";
+                    messageLabel.Refresh();
                     CommandUtils.UnpackISO(openISODialog.FileName);
                     FSYSTable.Initialize();
                     FSYSTable.RenameFile("pkx_600", "pkx_egg");
@@ -193,7 +193,13 @@ namespace PBRHex
                     DOL.Write();
                     BuildFileTree();
                     FlashTaskbar();
-                    pleaseWaitLabel.Visible = false;
+                    messageLabel.Visible = false;
+                    // enable all menu items; assumes no sub-menus
+                    foreach(ToolStripMenuItem tab in headerMenuStrip.Items) {
+                        foreach(ToolStripMenuItem item in tab.DropDownItems) {
+                            item.Enabled = true;
+                        }
+                    }
                 }
                 catch(SecurityException ex) {
                     MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +

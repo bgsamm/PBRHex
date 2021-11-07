@@ -38,19 +38,19 @@ namespace PBRHex
             this.decompressFSYSMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restoreMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveISODialog = new System.Windows.Forms.SaveFileDialog();
-            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.headerMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.unpackISOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.rebuildISOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rebuildISOMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.stringEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.assemblyEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dexEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stringEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.assemblyEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dexEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.pleaseWaitLabel = new System.Windows.Forms.Label();
+            this.messageLabel = new System.Windows.Forms.Label();
             this.fileTreeContextMenu.SuspendLayout();
-            this.menuStrip1.SuspendLayout();
+            this.headerMenuStrip.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -140,24 +140,24 @@ namespace PBRHex
             // 
             // menuStrip1
             // 
-            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.headerMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.headerMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editorsToolStripMenuItem,
             this.playToolStripMenuItem});
-            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
-            this.menuStrip1.ShowItemToolTips = true;
-            this.menuStrip1.Size = new System.Drawing.Size(595, 28);
-            this.menuStrip1.TabIndex = 4;
-            this.menuStrip1.Text = "menuStrip1";
+            this.headerMenuStrip.Location = new System.Drawing.Point(0, 0);
+            this.headerMenuStrip.Name = "menuStrip1";
+            this.headerMenuStrip.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
+            this.headerMenuStrip.ShowItemToolTips = true;
+            this.headerMenuStrip.Size = new System.Drawing.Size(595, 28);
+            this.headerMenuStrip.TabIndex = 4;
+            this.headerMenuStrip.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.unpackISOToolStripMenuItem,
-            this.rebuildISOToolStripMenuItem});
+            this.rebuildISOMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
@@ -165,55 +165,59 @@ namespace PBRHex
             // unpackISOToolStripMenuItem
             // 
             this.unpackISOToolStripMenuItem.Name = "unpackISOToolStripMenuItem";
-            this.unpackISOToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.unpackISOToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.unpackISOToolStripMenuItem.Text = "Unpack ISO";
             this.unpackISOToolStripMenuItem.Click += new System.EventHandler(this.UnpackISOButton_Click);
             // 
             // rebuildISOToolStripMenuItem
             // 
-            this.rebuildISOToolStripMenuItem.Name = "rebuildISOToolStripMenuItem";
-            this.rebuildISOToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
-            this.rebuildISOToolStripMenuItem.Text = "Rebuild ISO";
-            this.rebuildISOToolStripMenuItem.Click += new System.EventHandler(this.RebuildISOButton_Click);
+            this.rebuildISOMenuItem.Enabled = false;
+            this.rebuildISOMenuItem.Name = "rebuildISOToolStripMenuItem";
+            this.rebuildISOMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.rebuildISOMenuItem.Text = "Rebuild ISO";
+            this.rebuildISOMenuItem.Click += new System.EventHandler(this.RebuildISOButton_Click);
             // 
             // editorsToolStripMenuItem
             // 
             this.editorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.stringEditorToolStripMenuItem,
-            this.assemblyEditorToolStripMenuItem,
-            this.dexEditorToolStripMenuItem});
+            this.stringEditorMenuItem,
+            this.assemblyEditorMenuItem,
+            this.dexEditorMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
             this.editorsToolStripMenuItem.Size = new System.Drawing.Size(69, 24);
             this.editorsToolStripMenuItem.Text = "Editors";
             // 
-            // stringEditorToolStripMenuItem
+            // stringEditorMenuItem
             // 
-            this.stringEditorToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("stringEditorToolStripMenuItem.Image")));
-            this.stringEditorToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.stringEditorToolStripMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.stringEditorToolStripMenuItem.Name = "stringEditorToolStripMenuItem";
-            this.stringEditorToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
-            this.stringEditorToolStripMenuItem.Text = "String Editor";
-            this.stringEditorToolStripMenuItem.Click += new System.EventHandler(this.EditStringsMenuItem_Click);
+            this.stringEditorMenuItem.Enabled = false;
+            this.stringEditorMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("stringEditorMenuItem.Image")));
+            this.stringEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.stringEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.stringEditorMenuItem.Name = "stringEditorMenuItem";
+            this.stringEditorMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.stringEditorMenuItem.Text = "String Editor";
+            this.stringEditorMenuItem.Click += new System.EventHandler(this.EditStringsMenuItem_Click);
             // 
-            // assemblyEditorToolStripMenuItem
+            // assemblyEditorMenuItem
             // 
-            this.assemblyEditorToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("assemblyEditorToolStripMenuItem.Image")));
-            this.assemblyEditorToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.assemblyEditorToolStripMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.assemblyEditorToolStripMenuItem.Name = "assemblyEditorToolStripMenuItem";
-            this.assemblyEditorToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
-            this.assemblyEditorToolStripMenuItem.Text = "Code Editor";
+            this.assemblyEditorMenuItem.Enabled = false;
+            this.assemblyEditorMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("assemblyEditorMenuItem.Image")));
+            this.assemblyEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.assemblyEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.assemblyEditorMenuItem.Name = "assemblyEditorMenuItem";
+            this.assemblyEditorMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.assemblyEditorMenuItem.Text = "Code Editor";
             // 
-            // dexEditorToolStripMenuItem
+            // dexEditorMenuItem
             // 
-            this.dexEditorToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("dexEditorToolStripMenuItem.Image")));
-            this.dexEditorToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.dexEditorToolStripMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
-            this.dexEditorToolStripMenuItem.Name = "dexEditorToolStripMenuItem";
-            this.dexEditorToolStripMenuItem.Size = new System.Drawing.Size(175, 26);
-            this.dexEditorToolStripMenuItem.Text = "Dex Editor";
-            this.dexEditorToolStripMenuItem.Click += new System.EventHandler(this.DexEditorMenuItem_Click);
+            this.dexEditorMenuItem.Enabled = false;
+            this.dexEditorMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("dexEditorMenuItem.Image")));
+            this.dexEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.dexEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.dexEditorMenuItem.Name = "dexEditorMenuItem";
+            this.dexEditorMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.dexEditorMenuItem.Text = "Dex Editor";
+            this.dexEditorMenuItem.Click += new System.EventHandler(this.DexEditorMenuItem_Click);
             // 
             // playToolStripMenuItem
             // 
@@ -224,13 +228,14 @@ namespace PBRHex
             this.playToolStripMenuItem.Name = "playToolStripMenuItem";
             this.playToolStripMenuItem.Size = new System.Drawing.Size(28, 24);
             this.playToolStripMenuItem.ToolTipText = "Play";
+            this.playToolStripMenuItem.Visible = false;
             this.playToolStripMenuItem.Click += new System.EventHandler(this.DolphinButton_Click);
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel1.Controls.Add(this.pleaseWaitLabel);
+            this.panel1.Controls.Add(this.messageLabel);
             this.panel1.Controls.Add(this.fileTreeView);
             this.panel1.Location = new System.Drawing.Point(23, 46);
             this.panel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -238,16 +243,15 @@ namespace PBRHex
             this.panel1.Size = new System.Drawing.Size(549, 380);
             this.panel1.TabIndex = 5;
             // 
-            // pleaseWaitLabel
+            // messageLabel
             // 
-            this.pleaseWaitLabel.AutoSize = true;
-            this.pleaseWaitLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.pleaseWaitLabel.Location = new System.Drawing.Point(136, 166);
-            this.pleaseWaitLabel.Name = "pleaseWaitLabel";
-            this.pleaseWaitLabel.Size = new System.Drawing.Size(253, 18);
-            this.pleaseWaitLabel.TabIndex = 2;
-            this.pleaseWaitLabel.Text = "Please wait. This will take some time.";
-            this.pleaseWaitLabel.Visible = false;
+            this.messageLabel.AutoSize = true;
+            this.messageLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.messageLabel.Location = new System.Drawing.Point(135, 166);
+            this.messageLabel.Name = "messageLabel";
+            this.messageLabel.Size = new System.Drawing.Size(270, 18);
+            this.messageLabel.TabIndex = 2;
+            this.messageLabel.Text = "Go to \"File > Unpack ISO\" to get started";
             // 
             // MainWindow
             // 
@@ -256,17 +260,17 @@ namespace PBRHex
             this.BackColor = System.Drawing.Color.RoyalBlue;
             this.ClientSize = new System.Drawing.Size(595, 444);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.headerMenuStrip);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MainMenuStrip = this.menuStrip1;
+            this.MainMenuStrip = this.headerMenuStrip;
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
             this.Name = "MainWindow";
             this.Text = "PBRHex";
             this.fileTreeContextMenu.ResumeLayout(false);
-            this.menuStrip1.ResumeLayout(false);
-            this.menuStrip1.PerformLayout();
+            this.headerMenuStrip.ResumeLayout(false);
+            this.headerMenuStrip.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);
@@ -286,17 +290,17 @@ namespace PBRHex
         private System.Windows.Forms.ImageList fileTreeImageList;
         private System.Windows.Forms.SaveFileDialog saveISODialog;
         private System.Windows.Forms.ToolStripMenuItem restoreMenuItem;
-        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.MenuStrip headerMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem editorsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem stringEditorToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem dexEditorToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem assemblyEditorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stringEditorMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dexEditorMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem assemblyEditorMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem unpackISOToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem rebuildISOToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rebuildISOMenuItem;
         private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem;
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.Label pleaseWaitLabel;
+        private System.Windows.Forms.Label messageLabel;
     }
 }
 

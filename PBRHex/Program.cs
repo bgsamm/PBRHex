@@ -64,7 +64,7 @@ namespace PBRHex
         }
 
         public static void Log(string msg) {
-            using(var w = File.AppendText($@"{UserDir}\log.txt")) {
+            using(var w = File.AppendText($@"{DataDir}\log.txt")) {
                 w.WriteLine(msg);
             }
         }

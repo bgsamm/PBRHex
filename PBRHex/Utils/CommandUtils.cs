@@ -7,9 +7,14 @@ namespace PBRHex.Utils
 {
     public static class CommandUtils
     {
+#if DEBUG
         private const string witDir = @"C:\Program Files\Wiimm\WIT";
         private const string quickbmsDir = @"C:\Program Files\quickbms";
-        private const string dolphinDir = @"C:\Program Files\Dolphin\Dolphin-x64";
+#else
+        private static readonly string witDir = $@"{AppContext.BaseDirectory}\WIT";
+        private static readonly string quickbmsDir = $@"{AppContext.BaseDirectory}\quickbms";
+#endif
+        //private const string dolphinDir = @"C:\Program Files\Dolphin\Dolphin-x64";
 
         public static void RunPythonScript(string path) {
             RunProcess("python", path);
@@ -42,8 +47,9 @@ namespace PBRHex.Utils
         }
 
         public static void PlayTest() {
-            RunProcess($"{dolphinDir}\\Dolphin.exe", 
-                $@"-e ""{Program.ISODir}\DATA\sys\main.dol""", false);
+            //RunProcess($"{dolphinDir}\\Dolphin.exe", 
+            //    $@"-e ""{Program.ISODir}\DATA\sys\main.dol""", false);
+            throw new NotImplementedException();
         }
 
         private static void RunProcess(string path, string args, bool wait = true) {

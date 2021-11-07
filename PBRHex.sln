@@ -5,21 +5,37 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PBRHex", "PBRHex\PBRHex.csproj", "{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PBRHex Setup", "PBRHex Setup\PBRHex Setup.vdproj", "{0687A5A1-FD59-4D8E-8D7D-F281A71E4BBD}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PBRHex Setup", "PBRHex Setup\PBRHex Setup.vdproj", "{0803B1FC-C213-4ABA-8AA9-86C56989C01C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Debug|x64.ActiveCfg = Debug|x64
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Debug|x64.Build.0 = Debug|x64
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Debug|x86.Build.0 = Debug|Any CPU
 		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0687A5A1-FD59-4D8E-8D7D-F281A71E4BBD}.Debug|Any CPU.ActiveCfg = Debug
-		{0687A5A1-FD59-4D8E-8D7D-F281A71E4BBD}.Release|Any CPU.ActiveCfg = Release
-		{0687A5A1-FD59-4D8E-8D7D-F281A71E4BBD}.Release|Any CPU.Build.0 = Release
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Release|x64.ActiveCfg = Release|x64
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Release|x64.Build.0 = Release|x64
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Release|x86.ActiveCfg = Release|Any CPU
+		{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}.Release|x86.Build.0 = Release|Any CPU
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Debug|Any CPU.ActiveCfg = Debug
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Debug|x64.ActiveCfg = Debug
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Debug|x86.ActiveCfg = Debug
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Release|Any CPU.ActiveCfg = Release
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Release|Any CPU.Build.0 = Release
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Release|x64.ActiveCfg = Release
+		{0803B1FC-C213-4ABA-8AA9-86C56989C01C}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
