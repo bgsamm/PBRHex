@@ -6,10 +6,12 @@ namespace PBRHex.Dialogs
 {
     public partial class ConfirmDialog : Form
     {
-        public string Message { get; set; }
+        public readonly string Message;
 
-        public ConfirmDialog() {
+        public ConfirmDialog(string msg) {
             InitializeComponent();
+
+            Message = msg;
         }
 
         protected override void OnLoad(EventArgs e) {

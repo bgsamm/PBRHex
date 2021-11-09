@@ -5,10 +5,11 @@ namespace PBRHex.Dialogs
 {
     public partial class AlertDialog : Form
     {
-        public string Message { get; set; }
+        public readonly string Message;
 
-        public AlertDialog() {
+        public AlertDialog(string msg) {
             InitializeComponent();
+            Message = msg;
         }
 
         protected override void OnLoad(EventArgs e) {

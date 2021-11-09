@@ -6,12 +6,13 @@ namespace PBRHex.Dialogs
 {
     public partial class InputDialog : Form
     {
-        public string Prompt { get; set; }
+        public readonly string Prompt;
         public string Default { get; set; }
         public string Response { get { return textBox1.Text; } }
 
-        public InputDialog() {
+        public InputDialog(string prompt) {
             InitializeComponent();
+            Prompt = prompt;
         }
 
         protected override void OnLoad(EventArgs e) {

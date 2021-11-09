@@ -49,7 +49,7 @@ namespace PBRHex.Dialogs
             this.promptLabel.AutoSize = true;
             this.promptLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.promptLabel.Location = new System.Drawing.Point(100, 22);
-            this.promptLabel.Name = "promptLabel";
+            this.promptLabel.Name = "promptLabel1";
             this.promptLabel.Size = new System.Drawing.Size(73, 18);
             this.promptLabel.TabIndex = 1;
             this.promptLabel.Text = "[Prompt]";

@@ -26,6 +26,7 @@ using PBRHex.Utils;
  * -Track modification of individual files WITHIN an fsys
  * -Handle failed file I/O without crashing the program
  * -Handle files that exceed Int32.MaxValue in size
+ * -Add Model or SDR class
  * -Resizable windows (?)
  * -Document
  */
@@ -59,9 +60,11 @@ namespace PBRHex
             base.OnLoad(e);
 
             if(Directory.Exists(Program.ISODir)) {
+                messageLabel.Visible = false;
                 FSYSTable.Initialize();
                 DOL.Initialize();
                 BuildFileTree();
+                EnableMenuItems();
             }
         }
 
@@ -138,11 +141,10 @@ namespace PBRHex
             }
             else {
                 if(file.Extension == ".fsys") {
-                    var confirm = new ConfirmDialog()
-                    {
-                        Message = "Modifying .fsys files directly is not recommended.\n" +
+                    var confirm = new ConfirmDialog(
+                        "Modifying .fsys files directly is not recommended.\n" +
                         "Are you sure you wish to continue?"
-                    };
+                    );
                     var result = confirm.ShowDialog();
                     if(result != DialogResult.Yes) 
                         return;
@@ -171,6 +173,15 @@ namespace PBRHex
             }
         }
 
+        private void EnableMenuItems() {
+            // enable all menu items; assumes no sub-menus
+            foreach(ToolStripMenuItem tab in headerMenuStrip.Items) {
+                foreach(ToolStripMenuItem item in tab.DropDownItems) {
+                    item.Enabled = true;
+                }
+            }
+        }
+
         private void UnpackISOButton_Click(object sender, EventArgs e) {
             if(openISODialog.ShowDialog() == DialogResult.OK) {
                 CloseForms();
@@ -194,12 +205,7 @@ namespace PBRHex
                     BuildFileTree();
                     FlashTaskbar();
                     messageLabel.Visible = false;
-                    // enable all menu items; assumes no sub-menus
-                    foreach(ToolStripMenuItem tab in headerMenuStrip.Items) {
-                        foreach(ToolStripMenuItem item in tab.DropDownItems) {
-                            item.Enabled = true;
-                        }
-                    }
+                    EnableMenuItems();
                 }
                 catch(SecurityException ex) {
                     MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +

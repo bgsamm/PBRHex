@@ -148,7 +148,7 @@ namespace PBRHex.Utils
             fsys.WriteString(lzssDataAddr, "LZSS");
             fsys.WriteInt(lzssDataAddr + 4, file.Size);
             fsys.WriteInt(lzssDataAddr + 8, lzssData.Length + 0x10);
-            uint crc32 = Crc32Algorithm.Compute(file.GetData());
+            uint crc32 = Crc32Algorithm.Compute(file.GetBufferCopy());
             fsys.WriteInt(lzssDataAddr + 0xc, crc32);
             fsys.SetRange(lzssDataAddr + 0x10, lzssData);
             // update existing pointers
@@ -246,7 +246,7 @@ namespace PBRHex.Utils
             fsys.WriteString(dataAddr, "LZSS");
             fsys.WriteInt(dataAddr + 4, file.Size);
             fsys.WriteInt(dataAddr + 8, lzss.Length);
-            uint crc32 = Crc32Algorithm.Compute(file.GetData());
+            uint crc32 = Crc32Algorithm.Compute(file.GetBufferCopy());
             fsys.WriteInt(dataAddr + 0xc, crc32);
             fsys.SetRange(dataAddr + 0x10, lzss);
             // update count
@@ -417,7 +417,7 @@ namespace PBRHex.Utils
                 // packed size
                 outfile.Write(HexUtils.IntToBytes(lzssData[i].Length + 0x10), 0, 4);
                 // CRC-32 checksum
-                uint crc32 = Crc32Algorithm.Compute(file.GetData());
+                uint crc32 = Crc32Algorithm.Compute(file.GetBufferCopy());
                 outfile.Write(HexUtils.IntToBytes(crc32), 0, 4);
                 // data
                 outfile.Write(lzssData[i], 0, lzssData[i].Length);

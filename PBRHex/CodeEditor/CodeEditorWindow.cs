@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
 using System.Reflection;
-using System.Security;
 using System.Windows.Forms;
 using PBRHex.Dialogs;
 using PBRHex.Files;
@@ -36,23 +34,38 @@ namespace PBRHex.CodeEditor
             sectionSelectDropdown.SelectedIndex = 0;
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e) {
+            base.OnFormClosing(e);
+            Save();
+        }
+
+        private void Save() {
+            DOL.Write();
+        }
+
+        private void GoTo(int address) {
+            codeView.FirstDisplayedScrollingRowIndex = (int)(address - CurrentSectionAddress) / 4;
+            codeView.Invalidate();
+        }
+
+        private bool IsAddressInbounds(int address) {
+            return address > CurrentSectionAddress + CurrentSectionSize;
+        }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             switch(keyData) {
                 case Keys.Control | Keys.G:
-                    var input = new InputDialog() { Prompt = "Enter address:" };
-                    if(input.ShowDialog() == DialogResult.OK)
-                        GoTo(input.Response);
+                    var input = new HexInputDialog("Enter address:");
+                    if(input.ShowDialog() == DialogResult.OK) {
+                        if(!IsAddressInbounds(input.Response))
+                            new AlertDialog("Address out of bounds.").ShowDialog();
+                        else
+                            GoTo(input.Response);
+                    }
                     return true;
                 case Keys.Control | Keys.S:
-                    DOL.Write();
+                    Save();
                     return true;
-                //case Keys.Control | Keys.Z:
-                //    CurrentFile.Undo();
-                //    return true;
-                //case Keys.Control | Keys.Y:
-                //case Keys.Control | Keys.Shift | Keys.Z:
-                //    CurrentFile.Redo();
-                //    return true;
                 case Keys.Shift | Keys.Space:
                     return true;
                 default:
@@ -62,44 +75,6 @@ namespace PBRHex.CodeEditor
 
         private uint RowToAddress(int row) {
             return CurrentSectionAddress + (uint)(4 * row);
-        }
-
-        private void GoTo(string hex) {
-            try {
-                uint address = HexUtils.HexToUInt(hex);
-                codeView.FirstDisplayedScrollingRowIndex = (int)(address - CurrentSectionAddress) / 4;
-                codeView.Invalidate();
-            }
-            catch(FormatException) {
-                var alert = new AlertDialog()
-                {
-                    Message = "Invalid address."
-                };
-                alert.ShowDialog();
-            }
-            catch(ArgumentOutOfRangeException) {
-                var alert = new AlertDialog()
-                {
-                    Message = "Address out of bounds."
-                };
-                alert.ShowDialog();
-            }
-        }
-
-        protected override void OnFormClosing(FormClosingEventArgs e) {
-            base.OnFormClosing(e);
-
-            var confirm = new ConfirmDialog()
-            {
-                Message = "You have unsaved changes.\n" +
-                "Would you like to save before closing?"
-            };
-            var result = confirm.ShowDialog();
-            if(result == DialogResult.Yes)
-                DOL.Write();
-            else if(result != DialogResult.No)
-                e.Cancel = true;
-            return;
         }
 
         private void SectionSelectDropdown_SelectedIndexChanged(object sender, EventArgs e) {
@@ -121,10 +96,7 @@ namespace PBRHex.CodeEditor
         }
 
         private void NewSectionButton_Click(object sender, EventArgs e) {
-            var input = new InputDialog()
-            {
-                Prompt = "Memory address:"
-            };
+            var input = new InputDialog( "Memory address:" );
             if(input.ShowDialog() == DialogResult.OK) {
                 try {
                     uint address = HexUtils.HexToUInt(input.Response);
@@ -133,10 +105,7 @@ namespace PBRHex.CodeEditor
                     sectionSelectDropdown.SelectedIndex = i;
                 }
                 catch(FormatException) {
-                    var alert = new AlertDialog()
-                    {
-                        Message = "Invalid address."
-                    };
+                    var alert = new AlertDialog( "Invalid address." );
                     alert.ShowDialog();
                 }
             }
@@ -162,7 +131,7 @@ namespace PBRHex.CodeEditor
                 DOL.WriteInstruction(address, instruction);
             }
             catch {
-                new AlertDialog() { Message = "Invalid instruction." }.ShowDialog();
+                new AlertDialog( "Invalid instruction." ).ShowDialog();
             }
         }
 
@@ -219,7 +188,7 @@ namespace PBRHex.CodeEditor
         }
 
         private void LoadButton_Click(object sender, EventArgs e) {
-            new AlertDialog() { Message = "This functionality is not currently implemented." }.ShowDialog();
+            new AlertDialog( "This functionality is not currently implemented." ).ShowDialog();
             //if(openFileDialog.ShowDialog() == DialogResult.OK) {
             //    try {
             //        Program.NotifyWaiting();

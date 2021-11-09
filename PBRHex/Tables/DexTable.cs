@@ -22,9 +22,9 @@ namespace PBRHex.Tables
 
         // I'd really like to do everything in dex #s, but b/c of how the
         // game handles things, I'll have to wait until I can patch the DOL
-        public static int GetIndex(int dex, int form) {
+        public static int GetIndex(Pokemon mon) {
             for(int i = 0; i < Count; i++) {
-                if(GetDexNum(i) == dex && GetFormIndex(i) == form)
+                if(GetDexNum(i) == mon.DexNo && GetFormIndex(i) == mon.FormID)
                     return i;
             }
             throw new ArgumentOutOfRangeException();
@@ -39,27 +39,27 @@ namespace PBRHex.Tables
             return Common8.ReadShort(GetTableOffset(dex, 0) + 0x18);
         }
 
-        public static string GetFormName(int dex, int form) {
-            int nameID = GetFormNameID(dex, form);
+        public static string GetFormName(Pokemon mon) {
+            int nameID = GetFormNameID(mon);
             if(nameID == 0)
                 return StringTable.GetString(0xa).Text; // "-----"
             return StringTable.GetString(nameID).Text;
         }
 
-        private static int GetFormNameID(int dex, int form) {
-            return Common8.ReadShort(GetTableOffset(dex, form) + 0x1a);
+        private static int GetFormNameID(Pokemon mon) {
+            return Common8.ReadShort(GetTableOffset(mon.DexNo, mon.FormID) + 0x1a);
         }
 
-        public static int GetTyping(int dex, int form, int slot) {
+        public static int GetTyping(Pokemon mon, int slot) {
             if(slot > 1)
                 throw new ArgumentOutOfRangeException();
-            return Common8.ReadByte(GetTableOffset(dex, form) + 0x24 + slot);
+            return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x24 + slot);
         }
 
-        public static int GetStat(int dex, int form, int stat) {
+        public static int GetStat(Pokemon mon, int stat) {
             if(stat > 5)
                 throw new ArgumentOutOfRangeException();
-            return Common8.ReadByte(GetTableOffset(dex, form) + 0x1e + stat);
+            return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x1e + stat);
         }
 
         public static int GetFormCount(int dex) {
@@ -73,7 +73,7 @@ namespace PBRHex.Tables
             return count;
         }
 
-        public static void SetName(int dex, string name) {
+        public static void SetSpeciesName(int dex, string name) {
             StringTable.SetStringProperty(GetNameID(dex), "Text", name);
         }
 
@@ -84,16 +84,16 @@ namespace PBRHex.Tables
             }
         }
 
-        public static void SetTyping(int dex, int form, int slot, int type) {
+        public static void SetTyping(Pokemon mon, int slot, int type) {
             if(slot > 1)
                 throw new ArgumentOutOfRangeException();
-            Common8.WriteByte(GetTableOffset(dex, form) + 0x24 + slot, (byte)type);
+            Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x24 + slot, (byte)type);
         }
 
-        public static void SetStat(int dex, int form, int stat, int value) {
+        public static void SetStat(Pokemon mon, int stat, int value) {
             if(stat > 5)
                 throw new ArgumentOutOfRangeException();
-            Common8.WriteByte(GetTableOffset(dex, form) + 0x1e + stat, (byte)value);
+            Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x1e + stat, (byte)value);
         }
 
         private static int GetDexNum(int index) {
@@ -110,7 +110,7 @@ namespace PBRHex.Tables
 
         private static int GetTableOffset(int dex, int form) {
             for(int i = 0; i < Count; i++) {
-                if(dex == GetDexNum(i) && form == GetFormIndex(i))
+                if(GetDexNum(i) == dex && GetFormIndex(i) == form)
                     return GetTableOffset(i);
             }
             throw new ArgumentOutOfRangeException();
@@ -141,7 +141,7 @@ namespace PBRHex.Tables
             // sprites
             SpriteTable.AddSpriteSlots(dex);
             // model
-            ModelTable.AddModelSlot(dex);
+            ModelTable.AddModelSlot(new Pokemon(dex, 0));
             // ai
             AddSlotToCommonD();
             return dex;

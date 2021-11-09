@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using PBRHex.Commands.FileCommands;
+using PBRHex.Commands.FsysCommands;
 using PBRHex.Dialogs;
 using PBRHex.Events;
-using PBRHex.Utils;
 using PBRHex.Files;
 using PBRHex.HexLabels;
-using PBRHex.HexEditor.Commands;
+using PBRHex.Utils;
 
 /*
  * TODO:
@@ -20,16 +22,15 @@ using PBRHex.HexEditor.Commands;
  * -Select entire labels in data view (double click? click on number?)
  * -Visually convey whether a file has unsaved changes
  * -Implement 'Add row'
- * -Implement byte search as command?
- * -Have files track their own location and edit histories?
  * -Make ASCII view linked to Hex Grid, instead of sending it a new array of bytes everytime something changes
  */
 
 namespace PBRHex.HexEditor
 {
-    public partial class HexEditorWindow : Form {
+    public partial class HexEditorWindow : Form, IFileEditor, IFsysEditor
+    {
         public Tape<int> LocationHistory => CurrentFile.LocationHistory;
-        public Tape<Command<HexEditorWindow>> EditHistory => CurrentFile.EditHistory;
+        public Tape<Command> EditHistory => CurrentFile.EditHistory;
 
         /// <summary>
         /// An array containing the files open in the editor.
@@ -65,18 +66,52 @@ namespace PBRHex.HexEditor
 
             foreach(var file in Files) {
                 if(file.SaveHead != file.EditHistory.Position) {
-                    var confirm = new ConfirmDialog()
-                    {
-                        Message = "You have unsaved changes.\n" +
+                    var confirm = new ConfirmDialog(
+                        "You have unsaved changes.\n" +
                         "Would you like to save before closing?"
-                    };
+                    );
                     var result = confirm.ShowDialog();
                     if(result == DialogResult.Yes)
-                        ExecuteCommand(new SaveCommand(this));
+                        Save();
                     else if(result != DialogResult.No)
                         e.Cancel = true;
                     return;
                 }
+            }
+        }
+
+        public void ExecuteCommand(Command command) {
+            if(command.Execute()) {
+                EditHistory.Insert(command);
+                RefreshUndoRedoButtons();
+            }
+        }
+
+        private void Save() {
+            foreach(var file in Files) {
+                file.Save();
+            }
+            if(ContainingArchive != null) {
+                string path = FileUtils.CompressFSYS(ContainingArchive);
+                FileUtils.MoveFile(path, ContainingArchive.Path);
+            } else {
+                FileUtils.WriteToISO(CurrentFile);
+            }
+            Console.WriteLine("Changes saved");
+        }
+
+        private void Undo() {
+            if(EditHistory.HasPast()) {
+                EditHistory.GetCurrent().Undo();
+                EditHistory.MoveBackward();
+                RefreshUndoRedoButtons();
+            }
+        }
+
+        private void Redo() {
+            if(EditHistory.HasFuture()) {
+                EditHistory.MoveForward().Redo();
+                RefreshUndoRedoButtons();
             }
         }
 
@@ -102,23 +137,11 @@ namespace PBRHex.HexEditor
             RefreshUndoRedoButtons();
         }
 
-        public void Write() {
-            foreach(var file in Files) {
-                file.Save();
-            }
-
-            if(ContainingArchive != null) {
-                string path = FileUtils.CompressFSYS(ContainingArchive);
-                FileUtils.MoveFile(path, ContainingArchive.Path);
-            } else {
-                FileUtils.WriteToISO(CurrentFile);
-            }
-
-            Console.WriteLine("Changes saved");
-        }
-
-        public void GoToAddress(int address) {
-            hexGrid.GoTo(address);
+        public void GoTo(int address) {
+            if(!IsAddressInbounds(address))
+                new AlertDialog("Address out of bounds.").ShowDialog();
+            else
+                hexGrid.GoTo(address);
         }
 
         public bool SearchHex(string hex, out int address, int start = 0, bool reverse = false) {
@@ -128,65 +151,91 @@ namespace PBRHex.HexEditor
             return result;
         }
 
-        public FileBuffer AddFile(string path) {
-            var file = ContainingArchive.AddFile(path);
+        // is this the best implementation? I don't know. But it works :) (mostly; see catch)
+        public void Paste() {
+            try {
+                string data = Clipboard.GetText();
+                var rows = data.Split(new char[] { '\n' });
+                int address = GetSelectionRange().X;
+                // copying pads to fit a rectangle, so need to figure out
+                // where data actually starts and ends
+                int first;
+                var firstRow = rows[0].Split(new char[] { '\t' });
+                for(first = 0; first < firstRow.Length; first++) {
+                    if(firstRow[first].Length > 0)
+                        break;
+                }
+                int last = 0;
+                var lastRow = rows.Last().Split(new char[] { '\t' });
+                for(int i = 0; i < lastRow.Length; i++) {
+                    if(lastRow[i].Length > 0)
+                        last = i;
+                }
+
+                var temp = new List<byte>();
+                for(int r = 0; r < rows.Length; r++) {
+                    int offset = address + r * 16 - first;
+                    var vals = rows[r].Split(new char[] { '\t' });
+                    for(int c = 0; c < vals.Length; c++) {
+                        if((r == 0 && c < first) || (r == rows.Length - 1 && c > last))
+                            continue;
+                        if(vals[c].Trim().Length > 0)
+                            temp.Add(Convert.ToByte(vals[c].Trim(), 16));
+                        else
+                            temp.Add(GetRange(offset + c, 1)[0]);
+                        // fill in gaps with pre-existing values
+                        if(vals[c].EndsWith("\r"))
+                            temp.AddRange(GetRange(offset + c + 1, 15 - c));
+                    }
+                }
+                ExecuteCommand(new SetRangeCommand(this, CurrentFile, address, temp.ToArray()));
+            } catch {
+                // main points of failure are a) trying to paste invalid hex,
+                // or b) trying to paste past the end of the file
+            }
+        }
+
+        public void AddFile(FileBuffer file) {
             Files.Add(file);
             fileSelectDropdown.Items.Add(file);
             fileSelectDropdown.SelectedIndex = fileSelectDropdown.Items.Count - 1;
-            return file;
         }
 
         public void RemoveFile(FileBuffer file) {
-            ContainingArchive.DeleteFile(file);
-            int i = fileSelectDropdown.SelectedIndex;
+            int i = fileSelectDropdown.Items.IndexOf(file);
             Files.RemoveAt(i);
             fileSelectDropdown.Items.RemoveAt(i);
             fileSelectDropdown.SelectedIndex = i < fileSelectDropdown.Items.Count ? i : i - 1;
         }
 
-        public FileBuffer CreateFile() {
-            var file = ContainingArchive.AddFile();
-            Files.Add(file);
-            fileSelectDropdown.Items.Add(file);
-            fileSelectDropdown.SelectedIndex = fileSelectDropdown.Items.Count - 1;
-            return file;
-        }
-
-        public HexLabel AddLabel(int address, int size, LabelType type, string name) {
-            var label = CurrentFile.AddLabel(address, size, type, name);
+        public void AddLabel(HexLabel label) {
             labelsListBox.AddItem(label);
-            return label;
+            hexGrid.Invalidate();
         }
 
-        public HexLabel RemoveLabel(int address) {
-            var label = CurrentFile.DeleteLabel(address);
+        public void RemoveLabel(HexLabel label) {
             labelsListBox.RemoveItem(label);
-            return label;
+            hexGrid.Invalidate();
         }
 
         public void RenameLabel(HexLabel label, string name) {
-            CurrentFile.RenameLabel(label.Address, name);
             labelsListBox.Invalidate();
         }
 
         public void InsertRange(int address, byte[] bytes) {
-            CurrentFile.InsertRange(address, bytes);
             UpdateHexGrid();
-            GoToAddress(address);
+            GoTo(address);
         }
 
-        public byte[] DeleteRange(int address, int size) {
-            var bytes = CurrentFile.DeleteRange(address, size);
+        public void DeleteRange(int address, int size) {
             UpdateHexGrid();
             // handle deleting at EOF
             if(address / 16 == hexGrid.RowCount)
                 address -= 16;
-            GoToAddress(address);
-            return bytes;
+            GoTo(address);
         }
 
         public void SetRange(int address, byte[] bytes) {
-            CurrentFile.SetRange(address, bytes);
             hexGrid.Invalidate();
             asciiView.UpdateView(hexGrid.GetDisplayedBytes());
         }
@@ -196,8 +245,8 @@ namespace PBRHex.HexEditor
         }
 
         public void RefreshHistoryButtons() {
-            backArrow.Enabled = LocationHistory.HasPast();
-            forwardArrow.Enabled = LocationHistory.HasFuture();
+            backArrowMenuItem.Enabled = LocationHistory.HasPast();
+            forwardArrowMenuItem.Enabled = LocationHistory.HasFuture();
         }
 
         public void RefreshUndoRedoButtons() {
@@ -238,11 +287,68 @@ namespace PBRHex.HexEditor
             return hexGrid.IsSelectionContiguous();
         }
 
-        public void ExecuteCommand(Command<HexEditorWindow> command) {
-            if(command.Execute()) {
-                EditHistory.Insert(command);
-                RefreshUndoRedoButtons();
+        private bool PromptAddLabel(LabelType type, out string name) {
+            name = "";
+            if(!IsSelectionContiguous()) {
+                new AlertDialog( "Invalid selection." ).ShowDialog();
+                return false;
             }
+            int address = GetSelectionRange().X;
+            if(IsAddressLabeled(address)) {
+                new AlertDialog( "A label already exists at this address." ).ShowDialog();
+                return false;
+            }
+            var input = new InputDialog( "Label name:" );
+
+            if(type == LabelType.Float)
+                input.Default = HexUtils.BytesToFloat(GetSelection()).ToString();
+            else
+                input.Default = $"0x{address:X8}";
+
+            if(input.ShowDialog() == DialogResult.OK) {
+                name = input.Response;
+                return true;
+            }
+            return false;
+        }
+
+        private bool PromptRenameLabel(HexLabel label, out string name) {
+            name = "";
+            var input = new InputDialog( "Enter label name" )
+            {
+                Default = label.Name
+            };
+            if(input.ShowDialog() == DialogResult.OK) {
+                name = input.Response;
+                return true;
+            }
+            return false;
+        }
+
+        private bool PromptFillRange(out byte[] bytes) {
+            bytes = new byte[0];
+            var input = new InputDialog("Fill value:" )
+            {
+                Default = "00"
+            };
+            if(input.ShowDialog() == DialogResult.OK) {
+                Program.NotifyWaiting();
+                var selectionRange = GetSelectionRange();
+                int size = selectionRange.Y - selectionRange.X + 1,
+                    address = GetSelectionRange().X;
+                byte value = Convert.ToByte(input.Response, 16);
+                var range = GetRange(address, size);
+                bytes = new byte[size];
+                for(int i = 0; i < size; i++) {
+                    if(IsCellSelected(address + i))
+                        bytes[i] = value;
+                    else
+                        bytes[i] = range[i];
+                }
+                Program.NotifyDone();
+                return true;
+            }
+            return false;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
@@ -251,52 +357,58 @@ namespace PBRHex.HexEditor
                     searchTextBox.Focus();
                     return true;
                 case Keys.Control | Keys.G:
-                    var input = new HexInputDialog() { Prompt = "Enter address:" };
+                    var input = new HexInputDialog( "Enter address:" );
                     if(input.ShowDialog() == DialogResult.OK)
-                        try {
-                            ExecuteCommand(new GoToCommand(this, input.Response));
-                        } catch {
-                            new AlertDialog() { Message = "Invalid input." }.Show();
-                        }
+                        GoTo(input.Response);
                     return true;
                 case Keys.Control | Keys.S:
-                    ExecuteCommand(new SaveCommand(this));
+                    Save();
                     return true;
                 case Keys.Control | Keys.V:
                     if(hexGrid.Focused) {
-                        ExecuteCommand(new PasteCommand(this));
+                        Paste();
                         return true;
                     }
                     return base.ProcessCmdKey(ref msg, keyData);
                 case Keys.Control | Keys.Z:
                     if(hexGrid.Focused) {
-                        ExecuteCommand(new UndoCommand(this));
+                        Undo();
                         return true;
                     }
                     return base.ProcessCmdKey(ref msg, keyData);
                 case Keys.Control | Keys.Y:
                 case Keys.Control | Keys.Shift | Keys.Z:
-                    ExecuteCommand(new RedoCommand(this));
-                    return true;
+                    if(hexGrid.Focused) {
+                        Redo();
+                        return true;
+                    }
+                    return base.ProcessCmdKey(ref msg, keyData);
 
                 // labels
                 case Keys.Control | Keys.Alt | Keys.E:
-                    ExecuteCommand(new AddLabelCommand(this, LabelType.Empty));
-                    return true;
                 case Keys.Control | Keys.Alt | Keys.P:
-                    ExecuteCommand(new AddLabelCommand(this, LabelType.Pointer));
-                    return true;
                 case Keys.Control | Keys.Alt | Keys.I:
-                    ExecuteCommand(new AddLabelCommand(this, LabelType.Int));
-                    return true;
                 case Keys.Control | Keys.Alt | Keys.F:
-                    ExecuteCommand(new AddLabelCommand(this, LabelType.Float));
-                    return true;
                 case Keys.Control | Keys.Alt | Keys.S:
-                    ExecuteCommand(new AddLabelCommand(this, LabelType.String));
-                    return true;
                 case Keys.Control | Keys.Alt | Keys.C:
-                    ExecuteCommand(new AddLabelCommand(this, LabelType.Color));
+                    LabelType type = LabelType.None;
+                    if(keyData.HasFlag(Keys.E))
+                        type = LabelType.Empty;
+                    else if(keyData.HasFlag(Keys.P))
+                        type = LabelType.Pointer;
+                    else if(keyData.HasFlag(Keys.I))
+                        type = LabelType.Int;
+                    else if(keyData.HasFlag(Keys.F))
+                        type = LabelType.Float;
+                    else if(keyData.HasFlag(Keys.S))
+                        type = LabelType.String;
+                    else if(keyData.HasFlag(Keys.C))
+                        type = LabelType.Color;
+                    if(PromptAddLabel(type, out string name)) {
+                        int address = GetSelectionRange().X,
+                            size = GetSelection().Length;
+                        ExecuteCommand(new AddLabelCommand(this, CurrentFile, type, address, size, name));
+                    }
                     return true;
 
                 default:
@@ -305,7 +417,7 @@ namespace PBRHex.HexEditor
         }
 
         private void SaveToFileButton_Click(object sender, EventArgs e) {
-            ExecuteCommand(new SaveCommand(this));
+            Save();
         }
 
         private void FileSelectDropdown_SelectedIndexChanged(object sender, EventArgs e) {
@@ -317,54 +429,56 @@ namespace PBRHex.HexEditor
         }
 
         private void BackArrowMenuItem_Click(object sender, EventArgs e) {
-            GoToAddress(LocationHistory.MoveBackward());
+            GoTo(LocationHistory.MoveBackward());
             RefreshHistoryButtons();
         }
 
         private void ForwardArrowMenuItem_Click(object sender, EventArgs e) {
-            GoToAddress(LocationHistory.MoveForward());
+            GoTo(LocationHistory.MoveForward());
             RefreshHistoryButtons();
         }
 
         private void UndoMenuItem_Click(object sender, EventArgs e) {
-            ExecuteCommand(new UndoCommand(this));
+            Undo();
         }
 
         private void RedoMenuItem_Click(object sender, EventArgs e) {
-            ExecuteCommand(new RedoCommand(this));
+            Redo();
         }
 
         private void PreviousMatchButton_Click(object sender, EventArgs e) {
             int start = GetSelectionRange().X - 1;
             if(SearchHex(searchTextBox.Text, out int address, start, true))
-                GoToAddress(address);
+                GoTo(address);
         }
 
         private void NextMatchButton_Click(object sender, EventArgs e) {
             int start = GetSelectionRange().X + 1;
             if(SearchHex(searchTextBox.Text, out int address, start))
-                GoToAddress(address);
+                GoTo(address);
         }
 
         private void AddFileMenuItem_Click(object sender, EventArgs e) {
-            if(openFileDialog.ShowDialog() == DialogResult.OK)
-                ExecuteCommand(new AddFileCommand(this, openFileDialog.FileName));
+            if(openFileDialog.ShowDialog() == DialogResult.OK) {
+                var file = new FileBuffer(openFileDialog.FileName);
+                ExecuteCommand(new AddFileCommand(this, ContainingArchive, file));
+            }
         }
 
         private void NewFileMenuItem_Click(object sender, EventArgs e) {
-            var confirm = new ConfirmDialog() { Message = "Add a new file to the archive?" };
+            var confirm = new ConfirmDialog( "Add a new file to the archive?" );
             if(confirm.ShowDialog() == DialogResult.Yes)
-                ExecuteCommand(new CreateFileCommand(this));
+                ExecuteCommand(new CreateFileCommand(this, ContainingArchive));
         }
 
         private void DeleteFileMenuItem_Click(object sender, EventArgs e) {
             if(ContainingArchive.Files.Count == 1) {
-                new AlertDialog() { Message = "Cannot delete only file in the archive." }.ShowDialog();
+                new AlertDialog( "Cannot delete only file in the archive." ).ShowDialog();
                 return;
             }
-            var confirm = new ConfirmDialog() { Message = "Delete the current file from the archive?" };
+            var confirm = new ConfirmDialog( "Delete the current file from the archive?" );
             if(confirm.ShowDialog() == DialogResult.Yes)
-                ExecuteCommand(new RemoveFileCommand(this, CurrentFile));
+                ExecuteCommand(new RemoveFileCommand(this, ContainingArchive, CurrentFile));
         }
 
         private void NotesBox_TextChanged(object sender, EventArgs e) {
@@ -379,12 +493,11 @@ namespace PBRHex.HexEditor
 
             if(searchTextBox.Text.Length > 0 && SearchHex(searchTextBox.Text, out int address)) {
                 searchTextBox.ForeColor = Color.Black;
-                GoToAddress(address);
+                GoTo(address);
                 //ExecuteCommand(new GoToCommand(this, address));
                 previousMatchButton.Enabled = true;
                 nextMatchButton.Enabled = true;
-            }
-            else {
+            } else {
                 searchTextBox.ForeColor = Color.Red;
                 previousMatchButton.Enabled = false;
                 nextMatchButton.Enabled = false;
@@ -394,24 +507,18 @@ namespace PBRHex.HexEditor
             searchTextBox.SelectionStart = searchTextBox.Text.Length;
         }
 
-        //private void HexGridView_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e) {
+        //private void HexGridView_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e) {
         //    if(e.ColumnIndex >= 0 && e.RowIndex >= 0 && !hexGrid[e.ColumnIndex, e.RowIndex].Selected)
-        //        hexGrid.SelectCell(e.ColumnIndex, e.RowIndex);
-        //    if(e.Button == MouseButtons.Right)
-        //        hexGridContextMenu.Show(MousePosition);
+        //        hexGrid.SelectCell(e.RowIndex, e.ColumnIndex);
         //}
 
-        // Right clicking does not fire MouseClick, so use MouseUp
-        //private void LabelsListBox_MouseUp(object sender, MouseEventArgs e) {
-        //    int index = labelsListBox.IndexFromPoint(e.Location);
-        //    if(e.Button == MouseButtons.Right && index >= 0) {
-        //        // right-clicks do not select so need to do it manually
-        //        labelsListBox.SelectedIndex = index;
-        //        var label = (HexLabel)labelsListBox.Items[index];
-        //        goToAddressMenuItem.Visible = label.Type == LabelType.Pointer;
-        //        labelsListContextMenu.Show(MousePosition);
-        //    }
-        //}
+        // Right-clicks do not select so need to do it manually
+        // Right-clicking does not fire MouseClick, so use MouseUp
+        private void LabelsListBox_MouseUp(object sender, MouseEventArgs e) {
+            int index = labelsListBox.IndexFromPoint(e.Location);
+            if(e.Button == MouseButtons.Right && index >= 0)
+                labelsListBox.SelectedIndex = index;
+        }
 
         private void LabelsListBox_MouseMove(object sender, MouseEventArgs e) {
             int i = labelsListBox.IndexFromPoint(e.Location);
@@ -419,13 +526,12 @@ namespace PBRHex.HexEditor
             if(i >= 0 && labelsListBox.MeasureLabel(i).Width + 20 > labelsListBox.Width) {
                 toolTip.SetToolTip(labelsListBox, labelsListBox.Items[i].ToString());
                 toolTip.Active = true;
-            }
-            else
+            } else
                 toolTip.Active = false;
         }
 
         private void GoToAddressMenuItem_Click(object sender, EventArgs e) {
-            var alert = new AlertDialog() { Message = "Invalid selection." };
+            var alert = new AlertDialog( "Invalid selection." );
             if(!hexGrid.IsSelectionContiguous()) {
                 alert.Show();
                 return;
@@ -437,64 +543,77 @@ namespace PBRHex.HexEditor
                 alert.Show();
                 return;
             }
-            ExecuteCommand(new GoToCommand(this, address));
+            GoTo(address);
         }
 
         private void AddLabelMenuItem_Click(object sender, EventArgs e) {
             var type = (LabelType)Enum.Parse(typeof(LabelType), sender.ToString());
-            ExecuteCommand(new AddLabelCommand(this, type));
+            int address = GetSelectionRange().X,
+                size = GetSelection().Length;
+            if(PromptAddLabel(type, out string name))
+                ExecuteCommand(new AddLabelCommand(this, CurrentFile, type, address, size, name));
         }
 
-        private void DeleteLabelMenuItem_Click(object sender, EventArgs e) {
+        private void RemoveLabelMenuItem_Click(object sender, EventArgs e) {
             int address = ((HexLabel)labelsListBox.SelectedItem).Address;
-            ExecuteCommand(new RemoveLabelCommand(this, address));
+            ExecuteCommand(new RemoveLabelCommand(this, CurrentFile, address));
         }
 
         private void InsertRangeMenuItem_Click(object sender, EventArgs e) {
             if(!IsSelectionContiguous()) {
-                new AlertDialog() { Message = "Invalid selection." }.ShowDialog();
+                new AlertDialog( "Invalid selection." ).ShowDialog();
                 return;
             }
             int address = GetSelectionRange().X,
                 size = GetSelection().Length;
-            ExecuteCommand(new InsertRangeCommand(this, address, size));
+            ExecuteCommand(new InsertRangeCommand(this, CurrentFile, address, size));
         }
 
         private void DeleteRangeMenuItem_Click(object sender, EventArgs e) {
-            ExecuteCommand(new DeleteRangeCommand(this));
+            if(!IsSelectionContiguous()) {
+                new AlertDialog( "Invalid selection." ).ShowDialog();
+                return;
+            }
+            int address = GetSelectionRange().X,
+                size = GetSelection().Length;
+            ExecuteCommand(new DeleteRangeCommand(this, CurrentFile, address, size));
         }
 
         private void FillRangeMenuItem_Click(object sender, EventArgs e) {
-            ExecuteCommand(new FillRangeCommand(this));
+            if(PromptFillRange(out byte[] bytes)) {
+                int address = GetSelectionRange().X;
+                ExecuteCommand(new SetRangeCommand(this, CurrentFile, address, bytes));
+            }
         }
 
         private void HexGrid_CellEdited(object sender, CellEditEventArgs e) {
             if(e.Address > CurrentFile.Size - 1) {
                 int size = e.Address - CurrentFile.Size + 1;
-                ExecuteCommand(new InsertRangeCommand(this, CurrentFile.Size, size));
+                ExecuteCommand(new InsertRangeCommand(this, CurrentFile, CurrentFile.Size, size));
             }
-            ExecuteCommand(new SetRangeCommand(this, e.Address, new byte[] { e.Value }));
+            ExecuteCommand(new SetRangeCommand(this, CurrentFile, e.Address, new byte[] { e.Value }));
         }
 
         private void GoToLabelMenuItem_Click(object sender, EventArgs e) {
             var label = (HexLabel)labelsListBox.SelectedItem;
-            ExecuteCommand(new GoToCommand(this, label.Address));
+            GoTo(label.Address);
         }
 
         private void LabelsListBox_MouseDoubleClick(object sender, MouseEventArgs e) {
             if(e.Button == MouseButtons.Left)
-                ExecuteCommand(new GoToCommand(this, ((HexLabel)labelsListBox.SelectedItem).Address));
+                GoTo(((HexLabel)labelsListBox.SelectedItem).Address);
         }
 
         private void GoToAddressMenuItem1_Click(object sender, EventArgs e) {
             var label = (HexLabel)labelsListBox.SelectedItem;
             int address = HexUtils.BytesToInt(CurrentFile.GetRange(label.Address, label.Size));
-            ExecuteCommand(new GoToCommand(this, address));
+            GoTo(address);
         }
 
         private void RenameLabelMenuItem_Click(object sender, EventArgs e) {
             var label = (HexLabel)labelsListBox.SelectedItem;
-            ExecuteCommand(new RenameLabelCommand(this, label));
+            if(PromptRenameLabel(label, out string name))
+                ExecuteCommand(new RenameLabelCommand(this, CurrentFile, label, name));
         }
     }
 }

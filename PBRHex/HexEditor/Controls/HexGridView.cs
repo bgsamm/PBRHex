@@ -35,6 +35,7 @@ namespace PBRHex.HexEditor.Controls
         private bool editing, parsing;
 
         public HexGridView() {
+            AutoGenerateColumns = false;
             InitializeComponent();
 
             // double buffer

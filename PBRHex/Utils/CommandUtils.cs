@@ -8,13 +8,13 @@ namespace PBRHex.Utils
     public static class CommandUtils
     {
 #if DEBUG
-        private const string witDir = @"C:\Program Files\Wiimm\WIT";
-        private const string quickbmsDir = @"C:\Program Files\quickbms";
+        private static readonly string witDir = @"C:\Program Files\Wiimm\WIT";
+        private static readonly string quickbmsDir = @"C:\Program Files\quickbms";
 #else
         private static readonly string witDir = $@"{AppContext.BaseDirectory}\WIT";
         private static readonly string quickbmsDir = $@"{AppContext.BaseDirectory}\quickbms";
 #endif
-        //private const string dolphinDir = @"C:\Program Files\Dolphin\Dolphin-x64";
+        //private static readonly string dolphinDir = @"C:\Program Files\Dolphin\Dolphin-x64";
 
         public static void RunPythonScript(string path) {
             RunProcess("python", path);

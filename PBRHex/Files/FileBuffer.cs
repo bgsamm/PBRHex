@@ -17,7 +17,7 @@ namespace PBRHex.Files
         public LabelType[] LabelMap => MakeLabelMap();
         public ReadOnlyLabelDict Labels => new ReadOnlyLabelDict(LabelDict);
 
-        public readonly Tape<Command<HexEditorWindow>> EditHistory;
+        public readonly Tape<Command> EditHistory;
         public readonly Tape<int> LocationHistory;
         public int SaveHead;
 
@@ -69,7 +69,7 @@ namespace PBRHex.Files
 
             LocationHistory = new Tape<int>();
             LocationHistory.Insert(0);
-            EditHistory = new Tape<Command<HexEditorWindow>>();
+            EditHistory = new Tape<Command>();
             EditHistory.Insert(null); // null used to represent starting state
             SaveHead = 0;
 
@@ -117,7 +117,7 @@ namespace PBRHex.Files
             LabelDict[address].Name = name;
         }
 
-        public HexLabel DeleteLabel(int address) {
+        public HexLabel RemoveLabel(int address) {
             var label = LabelDict[address];
             LabelDict.Remove(address);
             return label;
@@ -274,7 +274,7 @@ namespace PBRHex.Files
             SaveMetadata();
         }
 
-        public byte[] GetData() {
+        public byte[] GetBufferCopy() {
             return (byte[])Buffer.Clone();
         }
 

@@ -21,33 +21,35 @@ namespace PBRHex.Tables
         private static FileBuffer Common16 => Common.Files[0x16];
 
         /// <param name="gender">male/unknown: 0, female: 1</param>
-        public static Image GetBodySprite(int dex, int form, int gender) {
-            int id = GetBodySpriteID(dex, form, gender);
-            using(var stream = new FileStream(MakeBodySpritePath(id), FileMode.Open, FileAccess.Read)) {
+        public static Image GetBodySprites(Pokemon mon) {
+            int id = GetBodySpriteID(mon);
+            using(var stream = new FileStream(MakeBodySpritePath(id), FileMode.Open, 
+                                              FileAccess.Read)) {
                 return Image.FromStream(stream);
             }
         }
 
         /// <param name="gender">male/unknown: 0, female: 1</param>
-        public static Image GetFaceSprite(int dex, int form, int gender) {
-            int id = GetFaceSpriteID(dex, form, gender);
-            using(var stream = new FileStream(MakeFaceSpritePath(id), FileMode.Open, FileAccess.Read)) {
+        public static Image GetFaceSprites(Pokemon mon) {
+            int id = GetFaceSpriteID(mon);
+            using(var stream = new FileStream(MakeFaceSpritePath(id), FileMode.Open, 
+                                              FileAccess.Read)) {
                 return Image.FromStream(stream);
             }
         }
 
-        public static void SetBodySprite(int dex, int form, int gender, Image sprite) {
-            int id = GetBodySpriteID(dex, form, gender);
+        public static void SetBodySprites(Pokemon mon, Image spriteSheet) {
+            int id = GetBodySpriteID(mon);
             string spritePath = MakeBodySpritePath(id);
-            var gtx = CreateGTX(spritePath, sprite);
+            var gtx = CreateGTX(spritePath, spriteSheet);
             FileUtils.ReplaceLZSS("menu_pokemon", id, gtx);
             FileUtils.DeleteFile(gtx.Path);
         }
 
-        public static void SetFaceSprite(int dex, int form, int gender, Image sprite) {
-            int id = GetFaceSpriteID(dex, form, gender);
+        public static void SetFaceSprites(Pokemon mon, Image spriteSheet) {
+            int id = GetFaceSpriteID(mon);
             string spritePath = MakeFaceSpritePath(id);
-            var gtx = CreateGTX(spritePath, sprite);
+            var gtx = CreateGTX(spritePath, spriteSheet);
             FileUtils.ReplaceLZSS("menu_face", id, gtx);
             FileUtils.DeleteFile(gtx.Path);
         }
@@ -144,18 +146,18 @@ namespace PBRHex.Tables
             throw new ArgumentException();
         }
 
-        private static int GetFaceSpriteID(int dex, int form, int gender) {
+        private static int GetFaceSpriteID(Pokemon mon) {
             int start = Common0.ReadInt(0x10),
-                idx = GetFaceSpriteIndex(dex);
+                idx = GetFaceSpriteIndex(mon.DexNo);
             // alternate form sprites need to be in consecutive rows
-            return Common0.ReadInt(start + (idx + form) * 0x10 + 8 * gender);
+            return Common0.ReadInt(start + (idx + mon.FormID) * 0x10 + 8 * mon.Gender);
         }
 
-        private static int GetBodySpriteID(int dex, int form, int gender) {
+        private static int GetBodySpriteID(Pokemon mon) {
             int start = Common0.ReadInt(0x10),
-                idx = GetBodySpriteIndex(dex);
+                idx = GetBodySpriteIndex(mon.DexNo);
             // alternate form sprites need to be in consecutive rows
-            return Common0.ReadInt(start + (idx + form) * 0x10 + 8 * gender + 4);
+            return Common0.ReadInt(start + (idx + mon.FormID) * 0x10 + 8 * mon.Gender + 4);
         }
 
         private static string MakeFaceSpritePath(int id) {

@@ -36,7 +36,7 @@ namespace PBRHex.Tables
             int offset = file.ReadInt(stringIdx * 4 + 0x10);
 
             var sb = new StringBuilder();
-            var gameString = new GameString();
+            var gameString = new GameString(id);
             int next;
             while(file.ReadInt(offset) != -1) {
                 next = (ushort)file.ReadShort(offset);
@@ -127,6 +127,13 @@ namespace PBRHex.Tables
 
         /// <param name="id">String ID</param>
         /// <param name="prop">Property name; one of "Text", "Size", "Spacing", "Alignment", "Color", "VertOffset"</param>
+        public static object GetStringProperty(int id, string prop) {
+            var gameString = GetString(id);
+            return typeof(GameString).GetProperty(prop).GetValue(gameString);
+        }
+
+        /// <param name="id">String ID</param>
+        /// <param name="prop">Property name; one of "Text", "Size", "Spacing", "Alignment", "Color", "VertOffset"</param>
         /// <param name="value">The new vaue for the specified property</param>
         public static void SetStringProperty(int id, string prop, object value) {
             var gameString = GetString(id);
@@ -152,26 +159,37 @@ namespace PBRHex.Tables
         }
 
         /// <returns>index of newly added string</returns>
-        public static int AddString(string s) {
-            var gameString = new GameString() { Text = s };
-            return AddString(gameString);
-        }
+        //public static int AddString(string s) {
+        //    var gameString = new GameString() { Text = s };
+        //    return AddString(gameString);
+        //}
 
-        private static int AddString(GameString s) {
+        public static int AddString(string s) {
             int count = MESCommon1.ReadInt(4);
             for(int i = 0; i < count; i++) {
                 int oldOffset = MESCommon1.ReadInt(i * 4 + 0x10);
                 MESCommon1.WriteInt(i * 4 + 0x10, oldOffset + 4);
             }
+            int numStrs = Common5B.ReadInt(4);
+            var gs = new GameString(numStrs + 1) { Text = s };
             MESCommon1.WriteInt(4, count + 1);
             MESCommon1.InsertRange(count * 4 + 0x10, HexUtils.IntToBytes(MESCommon1.Size + 4));
-            MESCommon1.AddRange(s.ToBytes());
-            int numStrs = Common5B.ReadInt(4);
+            MESCommon1.AddRange(gs.ToBytes());
             Common5B.WriteInt(4, numStrs + 1);
             Common5B.AddRange(HexUtils.ShortToBytes(1)); // file index
             Common5B.AddRange(HexUtils.ShortToBytes((short)(count + 1))); // string index
-            return numStrs + 1;
+            return gs.ID;
         }
+
+        //public static GameString RemoveString(int id) {
+        //    int numStrs = Common5B.ReadInt(4),
+        //        fileIdx = Common5B.ReadShort(id * 4 + 4) - 1,
+        //        stringIdx = Common5B.ReadShort(id * 4 + 6) - 1;
+        //    Common5B.WriteInt(4, numStrs - 1);
+        //    Common5B.DeleteRange(id * 4 + 4, 4);
+        //    var file = Files[fileIdx];
+        //    int offset = file.ReadInt(stringIdx * 4 + 0x10);
+        //}
 
         public static void Write() {
             FSYSTable.WriteFile("common");
@@ -184,6 +202,7 @@ namespace PBRHex.Tables
 
     public class GameString
     {
+        public readonly int ID;
         public string Text { get; set; }
 
         public int Size { get; set; }
@@ -196,7 +215,7 @@ namespace PBRHex.Tables
         public int Length => ToBytes().Length;
 
         public static GameString Copy(GameString s) {
-            return new GameString()
+            return new GameString(s.ID)
             {
                 Text = s.Text,
                 Size = s.Size,
@@ -205,6 +224,10 @@ namespace PBRHex.Tables
                 Color = s.Color,
                 VertOffset = s.VertOffset
             };
+        }
+
+        public GameString(int id) {
+            ID = id;
         }
 
         public byte[] ToBytes() {

@@ -64,14 +64,14 @@ namespace PBRHex.Tables
         private static FSYS Common => FSYSTable.GetFile("common");
         private static FileBuffer Common6 => Common.Files[6];
 
-        public static int GetBoneCount(int dex, int form, int gender, bool shiny = false) {
-            var file = GetModel(dex, form, gender, shiny);
+        public static int GetBoneCount(Pokemon mon) {
+            var file = GetModel(mon);
             int skeleAddr = file.ReadInt(file.ReadInt(8));
             return file.ReadShort(skeleAddr + 6);
         }
 
-        public static string GetBoneName(int index, int dex, int form, int gender, bool shiny = false) {
-            var file = GetModel(dex, form, gender, shiny);
+        public static string GetBoneName(Pokemon mon, int index) {
+            var file = GetModel(mon);
             int skeleAddr = file.ReadInt(file.ReadInt(8)),
                 boneCount = file.ReadShort(skeleAddr + 6);
             if(index > boneCount - 1)
@@ -82,30 +82,30 @@ namespace PBRHex.Tables
             return file.ReadString(nameAddr);
         }
 
-        public static string[] GetBoneNames(int dex, int form, int gender, bool shiny = false) {
-            int count = GetBoneCount(dex, form, gender, shiny);
+        public static string[] GetBoneNames(Pokemon mon) {
+            int count = GetBoneCount(mon);
             string[] names = new string[count];
             for(int i = 0; i < names.Length; i++) {
-                names[i] = GetBoneName(i, dex, form, gender, shiny);
+                names[i] = GetBoneName(mon, i);
             }
             return names;
         }
 
-        public static int GetBoneSlot(int dex, int form, int gender, int slot) {
+        public static int GetBoneSlot(Pokemon mon, int slot) {
             if(slot > 0x18)
                 throw new IndexOutOfRangeException();
-            int offset = GetModelTableOffset(dex, form, gender);
+            int offset = GetModelTableOffset(mon);
             return Common6.ReadByte(offset + 0x19 + slot);
         }
 
-        public static int GetAnimCount(int dex, int form, int gender, bool shiny = false) {
-            var file = GetModel(dex, form, gender, shiny);
+        public static int GetAnimCount(Pokemon mon) {
+            var file = GetModel(mon);
             int skeleAddr = file.ReadInt(file.ReadInt(8));
             return file.ReadShort(skeleAddr + 8);
         }
 
-        public static string GetAnimName(int index, int dex, int form, int gender, bool shiny = false) {
-            var file = GetModel(dex, form, gender, shiny);
+        public static string GetAnimName(Pokemon mon, int index) {
+            var file = GetModel(mon);
             int skeleAddr = file.ReadInt(file.ReadInt(8)),
                 numActions = file.ReadShort(skeleAddr + 8);
             if(index > numActions - 1)
@@ -115,53 +115,53 @@ namespace PBRHex.Tables
             return file.ReadString(nameAddr);
         }
 
-        public static string[] GetAnimNames(int dex, int form, int gender, bool shiny = false) {
-            int count = GetAnimCount(dex, form, gender, shiny);
+        public static string[] GetAnimNames(Pokemon mon) {
+            int count = GetAnimCount(mon);
             string[] names = new string[count];
             for(int i = 0; i < names.Length; i++) {
-                names[i] = GetAnimName(i, dex, form, gender, shiny);
+                names[i] = GetAnimName(mon, i);
             }
             return names;
         }
 
-        public static int GetAnimSlot(int dex, int form, int gender, int slot) {
+        public static int GetAnimSlot(Pokemon mon, int slot) {
             if(slot > 0x15)
                 throw new IndexOutOfRangeException();
-            int offset = GetModelTableOffset(dex, form, gender);
+            int offset = GetModelTableOffset(mon);
             return Common6.ReadByte(offset + 0x32 + slot);
         }
 
-        public static void SetBoneSlot(int dex, int form, int gender, int slot, int bone) {
+        public static void SetBoneSlot(Pokemon mon, int slot, int bone) {
             if(slot > 0x18)
                 throw new IndexOutOfRangeException();
-            int offset = GetModelTableOffset(dex, form, gender);
+            int offset = GetModelTableOffset(mon);
             Common6.WriteByte(offset + 0x19 + slot, (byte)bone);
         }
 
         /// <returns>The index of the bone with the given name, or -1 if no match found.</returns>
-        public static int FindBone(string name, int dex, int form, int gender, bool shiny = false) {
-            var numBones = GetBoneCount(dex, form, gender, shiny);
+        public static int FindBone(Pokemon mon, string name) {
+            var numBones = GetBoneCount(mon);
             for(int i = 0; i < numBones; i++) {
-                if(name == GetBoneName(i, dex, form, gender, shiny))
+                if(name == GetBoneName(mon, i))
                     return i;
             }
             return -1;
         }
 
         /// <returns>The index of the animation with the given name, or -1 if no match found.</returns>
-        public static int FindAnim(string name, int dex, int form, int gender, bool shiny = false) {
-            var numAnims = GetAnimCount(dex, form, gender, shiny);
+        public static int FindAnim(Pokemon mon, string name) {
+            var numAnims = GetAnimCount(mon);
             for(int i = 0; i < numAnims; i++) {
-                if(name == GetAnimName(i, dex, form, gender, shiny))
+                if(name == GetAnimName(mon, i))
                     return i;
             }
             return -1;
         }
 
-        public static void SetAnimSlot(int dex, int form, int gender, int slot, int anim) {
+        public static void SetAnimSlot(Pokemon mon, int slot, int anim) {
             if(slot > 0x15)
                 throw new IndexOutOfRangeException();
-            int offset = GetModelTableOffset(dex, form, gender);
+            int offset = GetModelTableOffset(mon);
             Common6.WriteByte(offset + 0x32 + slot, (byte)anim);
         }
 
@@ -184,42 +184,42 @@ namespace PBRHex.Tables
         }
 
         /// <param name="gender">male/unknown: 0, female: 1</param>
-        public static FileBuffer GetModel(int dex, int form, int gender, bool shiny) {
-            int fsysID = GetModelFSYSID(dex, form, gender),
-                fileID = GetModelFileID(dex, form, gender, shiny);
+        public static FileBuffer GetModel(Pokemon mon) {
+            int fsysID = GetModelFSYSID(mon),
+                fileID = GetModelFileID(mon);
             var fsys = FSYSTable.GetFile(fsysID);
             return fsys.GetFile(fileID);
         }
 
-        private static int GetModelFSYSID(int dex, int form, int gender) {
-            int offset = GetModelTableOffset(dex, form, gender);
+        private static int GetModelFSYSID(Pokemon mon) {
+            int offset = GetModelTableOffset(mon);
             return Common6.ReadInt(offset + 4);
         }
 
-        private static int GetModelFileID(int dex, int form, int gender, bool shiny) {
-            int offset = GetModelTableOffset(dex, form, gender);
-            return Common6.ReadInt(offset + (shiny ? 0xc : 8));
+        private static int GetModelFileID(Pokemon mon) {
+            int offset = GetModelTableOffset(mon);
+            return Common6.ReadInt(offset + (mon.Shiny ? 0xc : 8));
         }
 
-        private static int GetModelTableOffset(int dex, int form, int gender) {
+        private static int GetModelTableOffset(Pokemon mon) {
             int start = Common6.ReadInt(0x10),
                 cols = Common6.ReadInt(4),
-                idx = GetModelTableIndex(dex, form, gender);
+                idx = GetModelTableIndex(mon);
             return start + cols * idx;
         }
 
-        private static int GetModelTableIndex(int dex, int form, int gender) {
+        private static int GetModelTableIndex(Pokemon mon) {
             int start = Common6.ReadInt(0x10),
                 rows = Common6.ReadInt(0),
                 cols = Common6.ReadInt(4),
-                dexID = DexTable.GetIndex(dex, form);
+                dexID = DexTable.GetIndex(mon);
             int idx = -1;
             for(int i = 0; i < rows; i++) {
                 int offset = start + cols * i;
-                if(dexID == Common6.ReadShort(offset + 0x14) && form == Common6.ReadByte(offset + 0x18)) {
+                if(dexID == Common6.ReadShort(offset + 0x14) && mon.FormID == Common6.ReadByte(offset + 0x18)) {
                     idx = i;
                     int flags = Common6.ReadInt(offset);
-                    if(((flags >> 26) & 1) == gender)
+                    if(((flags >> 26) & 1) == mon.Gender)
                         break;
                 }
             }
@@ -228,15 +228,15 @@ namespace PBRHex.Tables
             return idx;
         }
 
-        public static void SetModel(FileBuffer sdr, int dex, int form, int gender, bool shiny = false) {
-            int fsysID = GetModelFSYSID(dex, form, gender),
-                fileID = GetModelFileID(dex, form, gender, shiny);
+        public static void SetModel(FileBuffer sdr, Pokemon mon) {
+            int fsysID = GetModelFSYSID(mon),
+                fileID = GetModelFileID(mon);
             var fsys = FSYSTable.GetFile(fsysID);
             FileUtils.ReplaceLZSS(fsys.Name, fileID, sdr);
         }
 
-        public static void AddModelSlot(int dex) {
-            string fname = $"pkx_{dex:D3}";
+        public static void AddModelSlot(Pokemon mon) {
+            string fname = $"pkx_{mon.DexNo:D3}";
             FileUtils.CopyFile(FSYSTable.MakePath("pkx_sub"), FSYSTable.MakePath(fname));
             int fsysID = FSYSTable.AddFile(fname);
             var subModel = FSYSTable.GetFile("pkx_sub");
@@ -252,7 +252,7 @@ namespace PBRHex.Tables
             Common6.WriteInt(address + 8, subModel.Files[0].ID); // 0x97A0400 = Substitute doll's file ID
             Common6.WriteInt(address + 0xc, shinyID);
             Common6.WriteFloat(address + 0x10, 20.0); // run speed
-            Common6.WriteShort(address + 0x14, (short)DexTable.GetIndex(dex, 0));
+            Common6.WriteShort(address + 0x14, (short)DexTable.GetIndex(mon));
             // update count
             Common6.WriteInt(0, rows + 1);
         }

@@ -124,23 +124,22 @@
       <DependentUpon>CodeEditorWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Command.cs" />
-    <Compile Include="DexEditor\Commands\RedoCommand.cs" />
-    <Compile Include="DexEditor\Commands\SaveCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetFaceSpriteCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetModelCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetNameCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetStatCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetTypeCommand.cs" />
-    <Compile Include="DexEditor\Commands\UndoCommand.cs" />
-    <Compile Include="DexEditor\DexEditorWindow.cs">
+    <Compile Include="Commands\SpriteCommands\SetFaceSpriteCommand.cs" />
+    <Compile Include="Commands\ModelCommands\SetModelCommand.cs" />
+    <Compile Include="Commands\DexCommands\SetSpeciesNameCommand.cs" />
+    <Compile Include="Commands\DexCommands\SetBaseStatCommand.cs" />
+    <Compile Include="Commands\DexCommands\SetTypingCommand.cs" />
+    <Compile Include="Commands\StringCommands\AddStringCommand.cs" />
+    <Compile Include="Commands\StringCommands\SetStringTextCommand.cs" />
+    <Compile Include="DexEditorWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DexEditor\DexEditorWindow.Designer.cs">
+    <Compile Include="DexEditorWindow.Designer.cs">
       <DependentUpon>DexEditorWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="DexEditor\Commands\SetBodySpriteCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetBoneSlotCommand.cs" />
-    <Compile Include="DexEditor\Commands\SetAnimSlotCommand.cs" />
+    <Compile Include="Commands\SpriteCommands\SetBodySpriteCommand.cs" />
+    <Compile Include="Commands\ModelCommands\SetBoneSlotCommand.cs" />
+    <Compile Include="Commands\ModelCommands\SetAnimSlotCommand.cs" />
     <Compile Include="Dialogs\HexInputDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -149,6 +148,13 @@
     </Compile>
     <Compile Include="Enums.cs" />
     <Compile Include="Files\GTX.cs" />
+    <Compile Include="Commands\StringCommands\SetStringAlignmentCommand.cs" />
+    <Compile Include="Commands\StringCommands\SetStringVertOffsetCommand.cs" />
+    <Compile Include="Commands\StringCommands\SetStringColorCommand.cs" />
+    <Compile Include="Commands\StringCommands\SetStringSpacingCommand.cs" />
+    <Compile Include="Commands\StringCommands\SetStringSizeCommand.cs" />
+    <Compile Include="Interfaces.cs" />
+    <Compile Include="Pokemon.cs" />
     <Compile Include="Uninstall.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -160,21 +166,15 @@
     <Compile Include="Tables\ModelTable.cs" />
     <Compile Include="Tables\SpriteTable.cs" />
     <Compile Include="Tables\StringTable.cs" />
-    <Compile Include="HexEditor\Commands\AddFileCommand.cs" />
-    <Compile Include="HexEditor\Commands\AddLabelCommand.cs" />
-    <Compile Include="HexEditor\Commands\CreateFileCommand.cs" />
-    <Compile Include="HexEditor\Commands\DeleteRangeCommand.cs" />
-    <Compile Include="HexEditor\Commands\FillRangeCommand.cs" />
-    <Compile Include="HexEditor\Commands\InsertRangeCommand.cs" />
-    <Compile Include="HexEditor\Commands\PasteCommand.cs" />
-    <Compile Include="HexEditor\Commands\RedoCommand.cs" />
-    <Compile Include="HexEditor\Commands\RemoveFileCommand.cs" />
-    <Compile Include="HexEditor\Commands\RemoveLabelCommand.cs" />
-    <Compile Include="HexEditor\Commands\RenameLabelCommand.cs" />
-    <Compile Include="HexEditor\Commands\SaveCommand.cs" />
-    <Compile Include="HexEditor\Commands\SetRangeCommand.cs" />
-    <Compile Include="HexEditor\Commands\UndoCommand.cs" />
-    <Compile Include="StringEditor\Commands\GoToCommand.cs" />
+    <Compile Include="Commands\FsysCommands\AddFileCommand.cs" />
+    <Compile Include="Commands\FileCommands\AddLabelCommand.cs" />
+    <Compile Include="Commands\FsysCommands\CreateFileCommand.cs" />
+    <Compile Include="Commands\FileCommands\DeleteRangeCommand.cs" />
+    <Compile Include="Commands\FileCommands\InsertRangeCommand.cs" />
+    <Compile Include="Commands\FsysCommands\RemoveFileCommand.cs" />
+    <Compile Include="Commands\FileCommands\RemoveLabelCommand.cs" />
+    <Compile Include="Commands\FileCommands\RenameLabelCommand.cs" />
+    <Compile Include="Commands\FileCommands\SetRangeCommand.cs" />
     <Compile Include="Tape.cs" />
     <Compile Include="Dialogs\AlertDialog.cs">
       <SubType>Form</SubType>
@@ -196,7 +196,6 @@
     </Compile>
     <Compile Include="Files\DOL.cs" />
     <Compile Include="Files\FileBuffer.cs" />
-    <Compile Include="HexEditor\Commands\GoToCommand.cs" />
     <Compile Include="HexEditor\Events\CellEditEventArgs.cs" />
     <Compile Include="HexEditor\Controls\AsciiViewer.cs">
       <SubType>Component</SubType>
@@ -231,10 +230,10 @@
       <DependentUpon>LabelsListBox.cs</DependentUpon>
     </Compile>
     <Compile Include="HexEditor\LabelDict.cs" />
-    <Compile Include="StringEditor\StringEditorWindow.cs">
+    <Compile Include="StringEditorWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="StringEditor\StringEditorWindow.Designer.cs">
+    <Compile Include="StringEditorWindow.Designer.cs">
       <DependentUpon>StringEditorWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\AssemblyUtils.cs" />
@@ -254,7 +253,7 @@
       <DependentUpon>CodeEditorWindow.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DexEditor\DexEditorWindow.resx">
+    <EmbeddedResource Include="DexEditorWindow.resx">
       <DependentUpon>DexEditorWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\AlertDialog.resx">
@@ -297,7 +296,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="StringEditor\StringEditorWindow.resx">
+    <EmbeddedResource Include="StringEditorWindow.resx">
       <DependentUpon>StringEditorWindow.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -339,5 +338,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

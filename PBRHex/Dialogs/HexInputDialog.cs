@@ -7,9 +7,9 @@ namespace PBRHex.Dialogs
 {
     public partial class HexInputDialog : Form
     {
-        public string Prompt { get; set; }
+        public readonly string Prompt;
         public string Default { get; set; }
-        public int Response 
+        public int Response
         { 
             get {
                 if(decimalRadioButton.Checked)
@@ -18,8 +18,9 @@ namespace PBRHex.Dialogs
             } 
         }
 
-        public HexInputDialog() {
+        public HexInputDialog(string prompt) {
             InitializeComponent();
+            Prompt = prompt;
         }
 
         protected override void OnLoad(EventArgs e) {
