@@ -31,6 +31,7 @@ namespace PBRHex
                 new UnhandledExceptionEventHandler(OnUnhandledException);
 
             CreateFolders();
+            Log("==================================================");
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.ApplicationExit += new EventHandler(Application_ApplicationExit);

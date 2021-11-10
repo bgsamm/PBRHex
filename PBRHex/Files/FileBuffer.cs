@@ -107,20 +107,16 @@ namespace PBRHex.Files
             return false;
         }
 
-        public HexLabel AddLabel(int address, int size, LabelType type, string name) {
-            var label = new HexLabel(address, size, type, name);
+        public void AddLabel(HexLabel label) {
             LabelDict.Add(label);
-            return label;
         }
 
-        public void RenameLabel(int address, string name) {
-            LabelDict[address].Name = name;
+        public void RenameLabel(HexLabel label, string name) {
+            LabelDict[label.Address].Name = name;
         }
 
-        public HexLabel RemoveLabel(int address) {
-            var label = LabelDict[address];
-            LabelDict.Remove(address);
-            return label;
+        public void RemoveLabel(HexLabel label) {
+            LabelDict.Remove(label.Address);
         }
 
         public virtual void InsertRange(int offset, int size) {

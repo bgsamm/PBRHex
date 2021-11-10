@@ -104,6 +104,7 @@ namespace PBRHex.Tables
 
         public static FSYS GetFile(string name) {
             lock(TableLock) {
+                name = Path.GetFileNameWithoutExtension(name);
                 int id = NameToID[name];
                 return GetFile(id);
             }
@@ -250,10 +251,21 @@ namespace PBRHex.Tables
                 foreach(var file in fsys.Files) {
                     file.Save();
                 }
-                string path = FileUtils.CompressFSYS(fsys);
-                FileUtils.MoveFile(path, fsys.Path);
+                var temp = FileUtils.CompressFSYS(fsys);
+                fsys.Overwrite(temp.GetBufferCopy());
+                FileUtils.WriteToISO(fsys);
                 LoadedFiles.Remove(id);
                 Program.NotifyDone();
+            }
+        }
+
+        public static void CloseFile(string name) {
+            lock(TableLock) {
+                name = Path.GetFileNameWithoutExtension(name);
+                int id = NameToID[name];
+                if(!LoadedFiles.ContainsKey(id))
+                    return;
+                LoadedFiles.Remove(id);
             }
         }
     }

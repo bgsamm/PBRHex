@@ -17,7 +17,7 @@ namespace PBRHex.Commands.DexCommands
         }
 
         public override bool Execute() {
-            OldName = DexTable.GetName(Pokemon.DexNo);
+            OldName = DexTable.GetSpeciesName(Pokemon.DexNo);
             DexTable.SetSpeciesName(Pokemon.DexNo, NewName);
             Editor.SetSpeciesName(Pokemon, NewName);
             return true;

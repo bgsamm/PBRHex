@@ -17,19 +17,19 @@ namespace PBRHex.Commands.StringCommands
         }
 
         public override bool Execute() {
-            OldOffset = (int)StringTable.GetStringProperty(StringID, "Offset");
-            StringTable.SetStringProperty(StringID, "Offset", NewOffset);
+            OldOffset = (int)StringTable.GetStringProperty(StringID, "VertOffset");
+            StringTable.SetStringProperty(StringID, "VertOffset", NewOffset);
             Editor.SetVertOffset(StringID, NewOffset);
             return true;
         }
 
         public override void Redo() {
-            StringTable.SetStringProperty(StringID, "Offset", NewOffset);
+            StringTable.SetStringProperty(StringID, "VertOffset", NewOffset);
             Editor.SetVertOffset(StringID, NewOffset);
         }
 
         public override void Undo() {
-            StringTable.SetStringProperty(StringID, "Offset", OldOffset);
+            StringTable.SetStringProperty(StringID, "VertOffset", OldOffset);
             Editor.SetVertOffset(StringID, OldOffset);
         }
     }

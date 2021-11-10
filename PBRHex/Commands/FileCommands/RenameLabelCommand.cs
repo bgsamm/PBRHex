@@ -22,20 +22,20 @@ namespace PBRHex.Commands.FileCommands
 
         public override bool Execute() {
             Label.Name = NewName;
-            File.RenameLabel(Label.Address, NewName);
+            File.RenameLabel(Label, NewName);
             Editor.RenameLabel(Label, NewName);
-            return false;
+            return true;
         }
 
         public override void Redo() {
             Label.Name = NewName;
-            File.RenameLabel(Label.Address, NewName);
+            File.RenameLabel(Label, NewName);
             Editor.RenameLabel(Label, NewName);
         }
 
         public override void Undo() {
             Label.Name = OldName;
-            File.RenameLabel(Label.Address, OldName);
+            File.RenameLabel(Label, OldName);
             Editor.RenameLabel(Label, OldName);
         }
     }

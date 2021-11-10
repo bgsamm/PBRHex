@@ -9,28 +9,20 @@ namespace PBRHex.Commands.ModelCommands
     {
         private readonly IModelEditor Editor;
         private readonly Pokemon Pokemon;
-        private readonly byte[] NewModelData;
-        private byte[] OldModelData;
+        private readonly FileBuffer NewModel;
+        private FileBuffer OldModel;
         private readonly int[] OldBoneSlots, NewBoneSlots;
         private readonly int[] OldAnimSlots, NewAnimSlots;
 
         public SetModelCommand(IModelEditor editor, FileBuffer sdr, Pokemon mon) {
             Editor = editor;
             Pokemon = mon;
-            NewModelData = sdr.GetBufferCopy();
+            NewModel = sdr;
 
             OldBoneSlots = new int[ModelTable.BoneFilters.Length];
             NewBoneSlots = new int[ModelTable.BoneFilters.Length];
             OldAnimSlots = new int[ModelTable.AnimFilters.Length];
             NewAnimSlots = new int[ModelTable.AnimFilters.Length];
-        }
-
-        private void SetModelFromBytes(byte[] bytes) {
-            string path = $@"{Program.TempDir}\temp.sdr";
-            var temp = FileUtils.CreateFile(path, bytes);
-            ModelTable.SetModel(temp, Pokemon);
-            Editor.SetModel(Pokemon, temp);
-            FileUtils.DeleteFile(path);
         }
 
         private void SetBoneSlots(int[] slots) {
@@ -46,8 +38,8 @@ namespace PBRHex.Commands.ModelCommands
         }
 
         public override bool Execute() {
-            OldModelData = ModelTable.GetModel(Pokemon).GetBufferCopy();
-            SetModelFromBytes(NewModelData);
+            OldModel = ModelTable.GetModel(Pokemon);
+            ModelTable.SetModel(NewModel, Pokemon);
             // slots are determined from the normal/base model
             if(Pokemon.Shiny)
                 return true;
@@ -79,23 +71,26 @@ namespace PBRHex.Commands.ModelCommands
                 }
             }
             SetAnimSlots(NewAnimSlots);
+            Editor.SetModel(Pokemon, NewModel);
             return true;
         }
 
         public override void Redo() {
-            SetModelFromBytes(NewModelData);
+            ModelTable.SetModel(NewModel, Pokemon);
             if(!Pokemon.Shiny) {
                 SetBoneSlots(NewBoneSlots);
                 SetAnimSlots(NewAnimSlots);
             }
+            Editor.SetModel(Pokemon, NewModel);
         }
 
         public override void Undo() {
-            SetModelFromBytes(OldModelData);
+            ModelTable.SetModel(OldModel, Pokemon);
             if(!Pokemon.Shiny) {
                 SetBoneSlots(OldBoneSlots);
                 SetAnimSlots(OldAnimSlots);
             }
+            Editor.SetModel(Pokemon, OldModel);
         }
     }
 }

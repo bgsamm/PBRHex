@@ -197,13 +197,15 @@ namespace PBRHex.StringEditor
             if(IgnoreEvent)
                 return;
             int alignment;
-            if(sender == radioButtonLeft)
-                alignment = 0;
-            else if(sender == radioButtonCenter)
-                alignment = 2;
-            else
-                alignment = 3;
-            ExecuteCommand(new SetStringAlignmentCommand(this, CurrentIndex, alignment));
+            if(((RadioButton)sender).Checked) {
+                if(sender == radioButtonLeft)
+                    alignment = 0;
+                else if(sender == radioButtonCenter)
+                    alignment = 2;
+                else
+                    alignment = 3;
+                ExecuteCommand(new SetStringAlignmentCommand(this, CurrentIndex, alignment));
+            }
         }
 
         private void OffsetUpDown_ValueChanged(object sender, EventArgs e) {
@@ -279,6 +281,11 @@ namespace PBRHex.StringEditor
                 ExecuteCommand(new AddStringCommand(this, text));
             else
                 ExecuteCommand(new SetStringTextCommand(this, e.RowIndex + 1, text));
+            stringTableGridView.Invalidate();
+        }
+
+        private void SaveMenuItem_Click(object sender, EventArgs e) {
+            Save();
         }
 
         private void UndoMenuItem_Click(object sender, EventArgs e) {

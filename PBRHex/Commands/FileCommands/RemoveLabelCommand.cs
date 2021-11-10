@@ -8,28 +8,27 @@ namespace PBRHex.Commands.FileCommands
     {
         private readonly IFileEditor Editor;
         private readonly FileBuffer File;
-        private readonly int Address;
-        private HexLabel Label;
+        private readonly HexLabel Label;
 
-        public RemoveLabelCommand(IFileEditor editor, FileBuffer file, int address) {
+        public RemoveLabelCommand(IFileEditor editor, FileBuffer file, HexLabel label) {
             Editor = editor;
             File = file;
-            Address = address;
+            Label = label;
         }
 
         public override bool Execute() {
-            Label = File.RemoveLabel(Address);
+            File.RemoveLabel(Label);
             Editor.RemoveLabel(Label);
             return true;
         }
 
         public override void Redo() {
-            File.RemoveLabel(Address);
+            File.RemoveLabel(Label);
             Editor.RemoveLabel(Label);
         }
 
         public override void Undo() {
-            Label = File.AddLabel(Address, Label.Size, Label.Type, Label.Name);
+            File.AddLabel(Label);
             Editor.AddLabel(Label);
         }
     }

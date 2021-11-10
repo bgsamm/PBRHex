@@ -39,6 +39,8 @@ namespace PBRHex.Utils
         }
 
         public static void CopyFile(string inpath, string outpath) {
+            if(inpath == outpath)
+                return;
             File.Copy(inpath, outpath, true);
         }
 
@@ -111,7 +113,7 @@ namespace PBRHex.Utils
                 workspace = CreateWorkspace(fsysPath),
                 indir = $@"{workspace}\files",
                 outdir = $@"{workspace}\lzss";
-            CopyFile(file.Path, $@"{indir}\{file.Name}");
+            CreateFile($@"{indir}\{file.Name}", file.GetBufferCopy());
             CommandUtils.CompressLZSSFiles(indir, outdir);
             var fsys = new FileBuffer(fsysPath) { WorkingDir = workspace };
             int count = fsys.ReadInt(0xc),
@@ -173,7 +175,7 @@ namespace PBRHex.Utils
                 workspace = CreateWorkspace(fsysPath),
                 indir = $@"{workspace}\files",
                 outdir = $@"{workspace}\lzss";
-            CopyFile(file.Path, $@"{indir}\{file.Name}");
+            CreateFile($@"{indir}\{file.Name}", file.GetBufferCopy());
             CommandUtils.CompressLZSSFiles(indir, outdir);
             var fsys = new FileBuffer(fsysPath) { WorkingDir = workspace };
             var lzss = File.ReadAllBytes(Directory.GetFiles(outdir)[0]);
@@ -318,8 +320,8 @@ namespace PBRHex.Utils
             };
         }
 
-        /// <returns>The path to the resulting .fsys file.</returns>
-        public static string CompressFSYS(FSYS fsys) {
+        /// <returns>A FileBuffer for the resulting .fsys file.</returns>
+        public static FileBuffer CompressFSYS(FSYS fsys) {
             // recompress LZSS files
             string outdir = $@"{fsys.WorkingDir}\lzss";
             CommandUtils.CompressLZSSFiles(fsys.ExtractedDir, outdir);
@@ -429,7 +431,7 @@ namespace PBRHex.Utils
             outfile.Write(Encoding.ASCII.GetBytes("FSYS"), 0, 4);
             outfile.Close();
 
-            return outpath;
+            return new FileBuffer(outpath) { WorkingDir = outdir };
         }
     }
 }

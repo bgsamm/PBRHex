@@ -30,7 +30,7 @@ namespace PBRHex.Tables
             throw new ArgumentOutOfRangeException();
         }
 
-        public static string GetName(int dex) {
+        public static string GetSpeciesName(int dex) {
             int nameID = GetNameID(dex);
             return StringTable.GetString(nameID).Text;
         }

@@ -213,7 +213,7 @@ namespace PBRHex.DexEditor
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(789, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(789, 24);
             this.menuStrip1.TabIndex = 2;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -223,7 +223,7 @@ namespace PBRHex.DexEditor
             this.undoMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("undoMenuItem.Image")));
             this.undoMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.undoMenuItem.Name = "undoMenuItem";
-            this.undoMenuItem.Size = new System.Drawing.Size(28, 24);
+            this.undoMenuItem.Size = new System.Drawing.Size(28, 20);
             this.undoMenuItem.Click += new System.EventHandler(this.UndoMenuItem_Click);
             // 
             // redoMenuItem
@@ -232,7 +232,7 @@ namespace PBRHex.DexEditor
             this.redoMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("redoMenuItem.Image")));
             this.redoMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.redoMenuItem.Name = "redoMenuItem";
-            this.redoMenuItem.Size = new System.Drawing.Size(28, 24);
+            this.redoMenuItem.Size = new System.Drawing.Size(28, 20);
             this.redoMenuItem.Click += new System.EventHandler(this.RedoMenuItem_Click);
             // 
             // addMonMenuItem
@@ -243,7 +243,7 @@ namespace PBRHex.DexEditor
             this.addMonMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.addMonMenuItem.Name = "addMonMenuItem";
             this.addMonMenuItem.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.addMonMenuItem.Size = new System.Drawing.Size(28, 24);
+            this.addMonMenuItem.Size = new System.Drawing.Size(28, 20);
             this.addMonMenuItem.ToolTipText = "Add new Pokémon";
             this.addMonMenuItem.Click += new System.EventHandler(this.AddMonMenuItem_Click);
             // 
@@ -253,7 +253,7 @@ namespace PBRHex.DexEditor
             this.saveMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveMenuItem.Image")));
             this.saveMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.saveMenuItem.Name = "saveMenuItem";
-            this.saveMenuItem.Size = new System.Drawing.Size(28, 24);
+            this.saveMenuItem.Size = new System.Drawing.Size(28, 20);
             this.saveMenuItem.Click += new System.EventHandler(this.SaveMenuItem_Click);
             // 
             // backArrowMenuItem
@@ -670,7 +670,7 @@ namespace PBRHex.DexEditor
             this.nameTextBox.Name = "nameTextBox";
             this.nameTextBox.Size = new System.Drawing.Size(161, 22);
             this.nameTextBox.TabIndex = 0;
-            this.nameTextBox.TextChanged += new System.EventHandler(this.NameTextBox_TextChanged);
+            this.nameTextBox.Leave += new System.EventHandler(this.NameTextBox_Leave);
             // 
             // dexNumLabel
             // 

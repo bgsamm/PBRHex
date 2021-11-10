@@ -10,6 +10,7 @@ using PBRHex.Dialogs;
 using PBRHex.Events;
 using PBRHex.Files;
 using PBRHex.HexLabels;
+using PBRHex.Tables;
 using PBRHex.Utils;
 
 /*
@@ -75,6 +76,8 @@ namespace PBRHex.HexEditor
                         Save();
                     else if(result != DialogResult.No)
                         e.Cancel = true;
+                    if(ContainingArchive != null)
+                        FSYSTable.CloseFile(ContainingArchive.Name);
                     return;
                 }
             }
@@ -91,12 +94,10 @@ namespace PBRHex.HexEditor
             foreach(var file in Files) {
                 file.Save();
             }
-            if(ContainingArchive != null) {
-                string path = FileUtils.CompressFSYS(ContainingArchive);
-                FileUtils.MoveFile(path, ContainingArchive.Path);
-            } else {
+            if(ContainingArchive != null)
+                FSYSTable.WriteFile(ContainingArchive.Name);
+            else
                 FileUtils.WriteToISO(CurrentFile);
-            }
             Console.WriteLine("Changes saved");
         }
 
@@ -137,11 +138,16 @@ namespace PBRHex.HexEditor
             RefreshUndoRedoButtons();
         }
 
-        public void GoTo(int address) {
+        public void GoTo(int address, bool record = false) {
             if(!IsAddressInbounds(address))
                 new AlertDialog("Address out of bounds.").ShowDialog();
             else
                 hexGrid.GoTo(address);
+
+            if(record) {
+                LocationHistory.Insert(address);
+                RefreshHistoryButtons();
+            }
         }
 
         public bool SearchHex(string hex, out int address, int start = 0, bool reverse = false) {
@@ -210,11 +216,13 @@ namespace PBRHex.HexEditor
 
         public void AddLabel(HexLabel label) {
             labelsListBox.AddItem(label);
+            labelsListBox.Invalidate();
             hexGrid.Invalidate();
         }
 
         public void RemoveLabel(HexLabel label) {
             labelsListBox.RemoveItem(label);
+            labelsListBox.Invalidate();
             hexGrid.Invalidate();
         }
 
@@ -224,7 +232,8 @@ namespace PBRHex.HexEditor
 
         public void InsertRange(int address, byte[] bytes) {
             UpdateHexGrid();
-            GoTo(address);
+            hexGrid.SelectCell(address);
+            //GoTo(address);
         }
 
         public void DeleteRange(int address, int size) {
@@ -232,7 +241,8 @@ namespace PBRHex.HexEditor
             // handle deleting at EOF
             if(address / 16 == hexGrid.RowCount)
                 address -= 16;
-            GoTo(address);
+            hexGrid.SelectCell(address);
+            //GoTo(address);
         }
 
         public void SetRange(int address, byte[] bytes) {
@@ -300,8 +310,9 @@ namespace PBRHex.HexEditor
             }
             var input = new InputDialog( "Label name:" );
 
-            if(type == LabelType.Float)
-                input.Default = HexUtils.BytesToFloat(GetSelection()).ToString();
+            byte[] selection = GetSelection();
+            if(type == LabelType.Float && selection.Length == 4)
+                input.Default = HexUtils.BytesToFloat(selection).ToString();
             else
                 input.Default = $"0x{address:X8}";
 
@@ -327,13 +338,17 @@ namespace PBRHex.HexEditor
 
         private bool PromptFillRange(out byte[] bytes) {
             bytes = new byte[0];
-            var input = new InputDialog("Fill value:" )
+            var selectionRange = GetSelectionRange();
+            if(selectionRange.Y >= CurrentFile.Size) {
+                new AlertDialog( "Invalid selection." ).ShowDialog();
+                return false;
+            }
+            var input = new InputDialog( "Fill value:" )
             {
                 Default = "00"
             };
             if(input.ShowDialog() == DialogResult.OK) {
                 Program.NotifyWaiting();
-                var selectionRange = GetSelectionRange();
                 int size = selectionRange.Y - selectionRange.X + 1,
                     address = GetSelectionRange().X;
                 byte value = Convert.ToByte(input.Response, 16);
@@ -359,7 +374,7 @@ namespace PBRHex.HexEditor
                 case Keys.Control | Keys.G:
                     var input = new HexInputDialog( "Enter address:" );
                     if(input.ShowDialog() == DialogResult.OK)
-                        GoTo(input.Response);
+                        GoTo(input.Response, true);
                     return true;
                 case Keys.Control | Keys.S:
                     Save();
@@ -407,7 +422,8 @@ namespace PBRHex.HexEditor
                     if(PromptAddLabel(type, out string name)) {
                         int address = GetSelectionRange().X,
                             size = GetSelection().Length;
-                        ExecuteCommand(new AddLabelCommand(this, CurrentFile, type, address, size, name));
+                        var label = new HexLabel(address, size, type, name);
+                        ExecuteCommand(new AddLabelCommand(this, CurrentFile, label));
                     }
                     return true;
 
@@ -429,13 +445,17 @@ namespace PBRHex.HexEditor
         }
 
         private void BackArrowMenuItem_Click(object sender, EventArgs e) {
-            GoTo(LocationHistory.MoveBackward());
-            RefreshHistoryButtons();
+            if(LocationHistory.HasPast()) {
+                GoTo(LocationHistory.MoveBackward());
+                RefreshHistoryButtons();
+            }
         }
 
         private void ForwardArrowMenuItem_Click(object sender, EventArgs e) {
-            GoTo(LocationHistory.MoveForward());
-            RefreshHistoryButtons();
+            if(LocationHistory.HasFuture()) {
+                GoTo(LocationHistory.MoveForward());
+                RefreshHistoryButtons();
+            }
         }
 
         private void UndoMenuItem_Click(object sender, EventArgs e) {
@@ -543,38 +563,42 @@ namespace PBRHex.HexEditor
                 alert.Show();
                 return;
             }
-            GoTo(address);
+            GoTo(address, true);
         }
 
         private void AddLabelMenuItem_Click(object sender, EventArgs e) {
             var type = (LabelType)Enum.Parse(typeof(LabelType), sender.ToString());
-            int address = GetSelectionRange().X,
-                size = GetSelection().Length;
-            if(PromptAddLabel(type, out string name))
-                ExecuteCommand(new AddLabelCommand(this, CurrentFile, type, address, size, name));
+            if(PromptAddLabel(type, out string name)) {
+                int address = GetSelectionRange().X,
+                    size = GetSelection().Length;
+                var label = new HexLabel(address, size, type, name);
+                ExecuteCommand(new AddLabelCommand(this, CurrentFile, label));
+            }
         }
 
         private void RemoveLabelMenuItem_Click(object sender, EventArgs e) {
-            int address = ((HexLabel)labelsListBox.SelectedItem).Address;
-            ExecuteCommand(new RemoveLabelCommand(this, CurrentFile, address));
+            var label = (HexLabel)labelsListBox.SelectedItem;
+            ExecuteCommand(new RemoveLabelCommand(this, CurrentFile, label));
         }
 
         private void InsertRangeMenuItem_Click(object sender, EventArgs e) {
-            if(!IsSelectionContiguous()) {
+            var selectionRange = GetSelectionRange();
+            if(!IsSelectionContiguous() || selectionRange.Y >= CurrentFile.Size) {
                 new AlertDialog( "Invalid selection." ).ShowDialog();
                 return;
             }
-            int address = GetSelectionRange().X,
+            int address = selectionRange.X,
                 size = GetSelection().Length;
             ExecuteCommand(new InsertRangeCommand(this, CurrentFile, address, size));
         }
 
         private void DeleteRangeMenuItem_Click(object sender, EventArgs e) {
-            if(!IsSelectionContiguous()) {
+            var selectionRange = GetSelectionRange();
+            if(!IsSelectionContiguous() || selectionRange.Y >= CurrentFile.Size) {
                 new AlertDialog( "Invalid selection." ).ShowDialog();
                 return;
             }
-            int address = GetSelectionRange().X,
+            int address = selectionRange.X,
                 size = GetSelection().Length;
             ExecuteCommand(new DeleteRangeCommand(this, CurrentFile, address, size));
         }
@@ -596,18 +620,19 @@ namespace PBRHex.HexEditor
 
         private void GoToLabelMenuItem_Click(object sender, EventArgs e) {
             var label = (HexLabel)labelsListBox.SelectedItem;
-            GoTo(label.Address);
+            GoTo(label.Address, true);
         }
 
         private void LabelsListBox_MouseDoubleClick(object sender, MouseEventArgs e) {
+            var label = (HexLabel)labelsListBox.SelectedItem;
             if(e.Button == MouseButtons.Left)
-                GoTo(((HexLabel)labelsListBox.SelectedItem).Address);
+                GoTo(label.Address, true);
         }
 
         private void GoToAddressMenuItem1_Click(object sender, EventArgs e) {
             var label = (HexLabel)labelsListBox.SelectedItem;
             int address = HexUtils.BytesToInt(CurrentFile.GetRange(label.Address, label.Size));
-            GoTo(address);
+            GoTo(address, true);
         }
 
         private void RenameLabelMenuItem_Click(object sender, EventArgs e) {

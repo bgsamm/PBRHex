@@ -48,7 +48,7 @@ namespace PBRHex.DexEditor
             modelPage.Enabled = false;
 
             for(int i = 1; i <= DexTable.GetRange(); i++) {
-                pokemonListBox.Items.Add(DexTable.GetName(i));
+                pokemonListBox.Items.Add(DexTable.GetSpeciesName(i));
             }
 
             statUpDowns = new NumericUpDown[]
@@ -238,7 +238,7 @@ namespace PBRHex.DexEditor
             modelPage.Enabled = true;
             // dex & name
             dexNumLabel.Text = $"#{CurrentSpecies:D3}";
-            nameTextBox.Text = DexTable.GetName(CurrentSpecies);
+            nameTextBox.Text = DexTable.GetSpeciesName(CurrentSpecies);
             // formes
             formsComboBox.Items.Clear();
             int numForms = DexTable.GetFormCount(CurrentSpecies);
@@ -280,10 +280,12 @@ namespace PBRHex.DexEditor
             Redo();
         }
 
-        private void NameTextBox_TextChanged(object sender, EventArgs e) {
+        private void NameTextBox_Leave(object sender, EventArgs e) {
             if(IgnoreEvent)
                 return;
-            ExecuteCommand(new SetSpeciesNameCommand(this, CurrentPokemon, nameTextBox.Text));
+            string name = nameTextBox.Text;
+            if(name != DexTable.GetSpeciesName(CurrentSpecies))
+                ExecuteCommand(new SetSpeciesNameCommand(this, CurrentPokemon, name));
         }
 
         private void StatUpDown_ValueChanged(object sender, EventArgs e) {
@@ -397,7 +399,7 @@ namespace PBRHex.DexEditor
 
         private void AddMonMenuItem_Click(object sender, EventArgs e) {
             int dex = DexTable.AddSlot();
-            pokemonListBox.Items.Add(DexTable.GetName(dex));
+            pokemonListBox.Items.Add(DexTable.GetSpeciesName(dex));
             //var input = new InputDialog() { Prompt = "Enter species name:" };
             //if(input.ShowDialog() == DialogResult.OK) {
             //    int index = DexTable.AddSlot();

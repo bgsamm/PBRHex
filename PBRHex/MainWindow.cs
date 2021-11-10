@@ -192,6 +192,7 @@ namespace PBRHex
                     FileTree.Nodes.Clear();
                     FileTree.Refresh();
                     messageLabel.Text = "Please wait. This will take some time.";
+                    messageLabel.Visible = true;
                     messageLabel.Refresh();
                     CommandUtils.UnpackISO(openISODialog.FileName);
                     FSYSTable.Initialize();
@@ -289,6 +290,8 @@ namespace PBRHex
 
         private void RestoreMenuItem_Click(object sender, EventArgs e) {
             FileUtils.RestoreFile(SelectedFilePath);
+            if(Path.GetExtension(SelectedFilePath) == ".fsys")
+                FSYSTable.CloseFile(Path.GetFileName(SelectedFilePath));
             FileTree.SelectedNode.ImageIndex = 2;
             FileTree.SelectedNode.SelectedImageIndex = 2;
         }
