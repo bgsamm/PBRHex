@@ -346,7 +346,7 @@ namespace PBRHex
         private void SecondaryAbilityComboBox_SelectedIndexChanged(object sender, EventArgs e) {
             if(IgnoreEvent)
                 return;
-            ExecuteCommand(new SetAbilityCommand(this, CurrentPokemon, 0, secondaryAbilityComboBox.SelectedIndex));
+            ExecuteCommand(new SetAbilityCommand(this, CurrentPokemon, 1, secondaryAbilityComboBox.SelectedIndex));
         }
 
         private void BoneComboBox_SelectedIndexChanged(object sender, EventArgs e) {

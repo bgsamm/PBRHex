@@ -193,6 +193,13 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="dolphinMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        wwAADsMBx2+oZAAAAE5JREFUOE+dy8EJACAMBMG0Yv9FRu4R0LhqyMH+bizNU6W5+dgr4hMWMUP1wYyi
+        B2awdsF8zgHmY64FAWl8ji5IY6AeSGshrYVicf4gswkA0sVTYd+XnQAAAABJRU5ErkJggg==
+</value>
+  </data>
   <data name="stringEditorMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
@@ -221,13 +228,6 @@
         dAAAEnQB3mYfeAAAAGFJREFUOE/FjsEJwDAMA71vR+ieXSeNfAlpwTj+5UBgxAlsR2nF/GjX/ZQilwmE
         UhS5TMDL3niyWy4TQBhkt1wm4GUlcpmAl70J3/vecpkAwiC75TIBLyuRy2Qxy12OYPYCTfYEjEFX8+sA
         AAAASUVORK5CYII=
-</value>
-  </data>
-  <data name="dolphinMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        wwAADsMBx2+oZAAAAE5JREFUOE+dy8EJACAMBMG0Yv9FRu4R0LhqyMH+bizNU6W5+dgr4hMWMUP1wYyi
-        B2awdsF8zgHmY64FAWl8ji5IY6AeSGshrYVicf4gswkA0sVTYd+XnQAAAABJRU5ErkJggg==
 </value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
