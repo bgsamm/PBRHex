@@ -18,9 +18,9 @@ using PBRHex.Tables;
  * -Speed up "replace model"
  */
 
-namespace PBRHex.DexEditor
+namespace PBRHex
 {
-    public partial class DexEditorWindow : Form, IDexEditor, ISpriteEditor, IModelEditor
+    public partial class DexEditor : Form, IDexEditor, ISpriteEditor, IModelEditor
     {
         private Pokemon CurrentPokemon => new Pokemon(CurrentSpecies, CurrentForm);
         private int CurrentSpecies => pokemonListBox.SelectedIndex + 1;
@@ -33,7 +33,7 @@ namespace PBRHex.DexEditor
         private ComboBox[] boneComboBoxes, animComboBoxes;
         private bool IgnoreEvent;
 
-        public DexEditorWindow() {
+        public DexEditor() {
             InitializeComponent();
 
             EditHistory = new Tape<Command>();
@@ -50,6 +50,14 @@ namespace PBRHex.DexEditor
             for(int i = 1; i <= DexTable.GetRange(); i++) {
                 pokemonListBox.Items.Add(DexTable.GetSpeciesName(i));
             }
+
+            string[] abilities = new string[AbilityTable.Count - 1];
+            for(int i = 1; i < AbilityTable.Count; i++) {
+                abilities[i - 1] = AbilityTable.GetName(i);
+            }
+            primaryAbilityComboBox.Items.AddRange(abilities);
+            secondaryAbilityComboBox.Items.Add("(None)");
+            secondaryAbilityComboBox.Items.AddRange(abilities);
 
             statUpDowns = new NumericUpDown[]
             {
@@ -93,7 +101,6 @@ namespace PBRHex.DexEditor
                 case Keys.Control | Keys.Shift | Keys.Z:
                     Redo();
                     return true;
-
                 default:
                     return base.ProcessCmdKey(ref msg, keyData);
             }
@@ -164,6 +171,16 @@ namespace PBRHex.DexEditor
                 secondaryTypeComboBox.SelectedIndex = type < 9 ? type + 1 : type;
             if(primaryTypeComboBox.SelectedIndex == secondaryTypeComboBox.SelectedIndex - 1)
                 secondaryTypeComboBox.SelectedIndex = 0;
+            IgnoreEvent = false;
+        }
+
+        public void SetAbility(Pokemon mon, int slot, int ability) {
+            GoTo(mon);
+            IgnoreEvent = true;
+            if(slot == 0)
+                primaryAbilityComboBox.SelectedIndex = ability - 1;
+            else
+                secondaryAbilityComboBox.SelectedIndex = ability;
             IgnoreEvent = false;
         }
 
@@ -264,6 +281,11 @@ namespace PBRHex.DexEditor
                 type2 = DexTable.GetTyping(CurrentPokemon, 1);
             SetTyping(CurrentPokemon, 0, type1);
             SetTyping(CurrentPokemon, 1, type2);
+            // abilities
+            int ability1 = DexTable.GetAbility(CurrentPokemon, 0),
+                ability2 = DexTable.GetAbility(CurrentPokemon, 1);
+            SetAbility(CurrentPokemon, 0, ability1);
+            SetAbility(CurrentPokemon, 1, ability2);
             // sprites
             SetFaceSprites(CurrentPokemon, SpriteTable.GetFaceSprites(CurrentPokemon));
             SetBodySprites(CurrentPokemon, SpriteTable.GetBodySprites(CurrentPokemon));
@@ -313,6 +335,18 @@ namespace PBRHex.DexEditor
             else if(type <= 9)
                 type--;
             ExecuteCommand(new SetTypingCommand(this, CurrentPokemon, 1, type));
+        }
+
+        private void PrimaryAbilityComboBox_SelectedIndexChanged(object sender, EventArgs e) {
+            if(IgnoreEvent)
+                return;
+            ExecuteCommand(new SetAbilityCommand(this, CurrentPokemon, 0, primaryAbilityComboBox.SelectedIndex + 1));
+        }
+
+        private void SecondaryAbilityComboBox_SelectedIndexChanged(object sender, EventArgs e) {
+            if(IgnoreEvent)
+                return;
+            ExecuteCommand(new SetAbilityCommand(this, CurrentPokemon, 0, secondaryAbilityComboBox.SelectedIndex));
         }
 
         private void BoneComboBox_SelectedIndexChanged(object sender, EventArgs e) {

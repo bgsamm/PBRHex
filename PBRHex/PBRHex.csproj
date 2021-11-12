@@ -117,13 +117,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CodeEditor\CodeEditorWindow.cs">
+    <Compile Include="CodeEditorWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="CodeEditor\CodeEditorWindow.Designer.cs">
+    <Compile Include="CodeEditorWindow.Designer.cs">
       <DependentUpon>CodeEditorWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Command.cs" />
+    <Compile Include="Commands\DexCommands\SetAbilityCommand.cs" />
+    <Compile Include="Commands\PassCommands\SetPassSlotAbilityCommand.cs" />
+    <Compile Include="Commands\PassCommands\SetPassSlotHeldItemCommand.cs" />
+    <Compile Include="Commands\PassCommands\SetPassSlotMoveCommand.cs" />
+    <Compile Include="Commands\PassCommands\SetPassSlotSpeciesCommand.cs" />
     <Compile Include="Commands\SpriteCommands\SetFaceSpriteCommand.cs" />
     <Compile Include="Commands\ModelCommands\SetModelCommand.cs" />
     <Compile Include="Commands\DexCommands\SetSpeciesNameCommand.cs" />
@@ -131,11 +136,11 @@
     <Compile Include="Commands\DexCommands\SetTypingCommand.cs" />
     <Compile Include="Commands\StringCommands\AddStringCommand.cs" />
     <Compile Include="Commands\StringCommands\SetStringTextCommand.cs" />
-    <Compile Include="DexEditorWindow.cs">
+    <Compile Include="DexEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DexEditorWindow.Designer.cs">
-      <DependentUpon>DexEditorWindow.cs</DependentUpon>
+    <Compile Include="DexEditor.Designer.cs">
+      <DependentUpon>DexEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Commands\SpriteCommands\SetBodySpriteCommand.cs" />
     <Compile Include="Commands\ModelCommands\SetBoneSlotCommand.cs" />
@@ -154,7 +159,17 @@
     <Compile Include="Commands\StringCommands\SetStringSpacingCommand.cs" />
     <Compile Include="Commands\StringCommands\SetStringSizeCommand.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="PassEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PassEditor.Designer.cs">
+      <DependentUpon>PassEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Pokemon.cs" />
+    <Compile Include="Tables\AbilityTable.cs" />
+    <Compile Include="Tables\ItemTable.cs" />
+    <Compile Include="Tables\MoveTable.cs" />
+    <Compile Include="Tables\PassTable.cs" />
     <Compile Include="Uninstall.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -230,11 +245,11 @@
       <DependentUpon>LabelsListBox.cs</DependentUpon>
     </Compile>
     <Compile Include="HexEditor\LabelDict.cs" />
-    <Compile Include="StringEditorWindow.cs">
+    <Compile Include="StringEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="StringEditorWindow.Designer.cs">
-      <DependentUpon>StringEditorWindow.cs</DependentUpon>
+    <Compile Include="StringEditor.Designer.cs">
+      <DependentUpon>StringEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils\AssemblyUtils.cs" />
     <Compile Include="Utils\FileUtils.cs" />
@@ -249,12 +264,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CommandUtils.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
-    <EmbeddedResource Include="CodeEditor\CodeEditorWindow.resx">
+    <EmbeddedResource Include="CodeEditorWindow.resx">
       <DependentUpon>CodeEditorWindow.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="DexEditorWindow.resx">
-      <DependentUpon>DexEditorWindow.cs</DependentUpon>
+    <EmbeddedResource Include="DexEditor.resx">
+      <DependentUpon>DexEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\AlertDialog.resx">
       <DependentUpon>AlertDialog.cs</DependentUpon>
@@ -286,6 +301,9 @@
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PassEditor.resx">
+      <DependentUpon>PassEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -296,8 +314,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="StringEditorWindow.resx">
-      <DependentUpon>StringEditorWindow.cs</DependentUpon>
+    <EmbeddedResource Include="StringEditor.resx">
+      <DependentUpon>StringEditor.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="PBRHex_TemporaryKey.pfx" />

@@ -46,13 +46,12 @@ namespace PBRHex.Utils
             RunProcess($@"{witDir}\wit.exe", $@"COPY ""{Program.ISODir}"" ""{outpath}""");
         }
 
-        public static void PlayTest() {
-            //RunProcess($"{dolphinDir}\\Dolphin.exe", 
-            //    $@"-e ""{Program.ISODir}\DATA\sys\main.dol""", false);
-            throw new NotImplementedException();
+        public static Process RunDolphin() {
+            return RunProcess($"Dolphin.exe",
+                    $@"-b -e ""{Program.ISODir}\DATA\sys\main.dol""", false);
         }
 
-        private static void RunProcess(string path, string args, bool wait = true) {
+        private static Process RunProcess(string path, string args, bool wait = true) {
             Process p;
 
             ProcessStartInfo info = new ProcessStartInfo(path, args)
@@ -65,12 +64,15 @@ namespace PBRHex.Utils
             try {
                 Program.NotifyWaiting();
                 p = Process.Start(info);
-                if(wait) 
+                p.EnableRaisingEvents = true;
+                if(wait)
                     p.WaitForExit();
             }
             finally {
                 Program.NotifyDone();
             }
+
+            return p;
         }
     }
 }

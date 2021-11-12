@@ -46,7 +46,8 @@ namespace PBRHex
             this.stringEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.assemblyEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.dexEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rentalPassEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dolphinMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.messageLabel = new System.Windows.Forms.Label();
             this.fileTreeContextMenu.SuspendLayout();
@@ -138,15 +139,15 @@ namespace PBRHex
             this.saveISODialog.Filter = "Disc Image File|*.iso";
             this.saveISODialog.Title = "Select a Save Location";
             // 
-            // menuStrip1
+            // headerMenuStrip
             // 
             this.headerMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.headerMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.editorsToolStripMenuItem,
-            this.playToolStripMenuItem});
+            this.dolphinMenuItem});
             this.headerMenuStrip.Location = new System.Drawing.Point(0, 0);
-            this.headerMenuStrip.Name = "menuStrip1";
+            this.headerMenuStrip.Name = "headerMenuStrip";
             this.headerMenuStrip.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
             this.headerMenuStrip.ShowItemToolTips = true;
             this.headerMenuStrip.Size = new System.Drawing.Size(595, 28);
@@ -165,15 +166,15 @@ namespace PBRHex
             // unpackISOToolStripMenuItem
             // 
             this.unpackISOToolStripMenuItem.Name = "unpackISOToolStripMenuItem";
-            this.unpackISOToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.unpackISOToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
             this.unpackISOToolStripMenuItem.Text = "Unpack ISO";
             this.unpackISOToolStripMenuItem.Click += new System.EventHandler(this.UnpackISOButton_Click);
             // 
-            // rebuildISOToolStripMenuItem
+            // rebuildISOMenuItem
             // 
             this.rebuildISOMenuItem.Enabled = false;
-            this.rebuildISOMenuItem.Name = "rebuildISOToolStripMenuItem";
-            this.rebuildISOMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.rebuildISOMenuItem.Name = "rebuildISOMenuItem";
+            this.rebuildISOMenuItem.Size = new System.Drawing.Size(170, 26);
             this.rebuildISOMenuItem.Text = "Rebuild ISO";
             this.rebuildISOMenuItem.Click += new System.EventHandler(this.RebuildISOButton_Click);
             // 
@@ -182,7 +183,8 @@ namespace PBRHex
             this.editorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.stringEditorMenuItem,
             this.assemblyEditorMenuItem,
-            this.dexEditorMenuItem});
+            this.dexEditorMenuItem,
+            this.rentalPassEditorToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
             this.editorsToolStripMenuItem.Size = new System.Drawing.Size(69, 24);
             this.editorsToolStripMenuItem.Text = "Editors";
@@ -196,7 +198,7 @@ namespace PBRHex
             this.stringEditorMenuItem.Name = "stringEditorMenuItem";
             this.stringEditorMenuItem.Size = new System.Drawing.Size(224, 26);
             this.stringEditorMenuItem.Text = "String Editor";
-            this.stringEditorMenuItem.Click += new System.EventHandler(this.EditStringsMenuItem_Click);
+            this.stringEditorMenuItem.Click += new System.EventHandler(this.StringEditorMenuItem_Click);
             // 
             // assemblyEditorMenuItem
             // 
@@ -206,7 +208,8 @@ namespace PBRHex
             this.assemblyEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.assemblyEditorMenuItem.Name = "assemblyEditorMenuItem";
             this.assemblyEditorMenuItem.Size = new System.Drawing.Size(224, 26);
-            this.assemblyEditorMenuItem.Text = "Code Editor";
+            this.assemblyEditorMenuItem.Text = "Assembly Editor";
+            this.assemblyEditorMenuItem.Click += new System.EventHandler(this.CodeEditorMenuItem_Click);
             // 
             // dexEditorMenuItem
             // 
@@ -219,17 +222,27 @@ namespace PBRHex
             this.dexEditorMenuItem.Text = "Dex Editor";
             this.dexEditorMenuItem.Click += new System.EventHandler(this.DexEditorMenuItem_Click);
             // 
-            // playToolStripMenuItem
+            // rentalPassEditorToolStripMenuItem
             // 
-            this.playToolStripMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.playToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("playToolStripMenuItem.Image")));
-            this.playToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-            this.playToolStripMenuItem.Margin = new System.Windows.Forms.Padding(0, 0, 10, 0);
-            this.playToolStripMenuItem.Name = "playToolStripMenuItem";
-            this.playToolStripMenuItem.Size = new System.Drawing.Size(28, 24);
-            this.playToolStripMenuItem.ToolTipText = "Play";
-            this.playToolStripMenuItem.Visible = false;
-            this.playToolStripMenuItem.Click += new System.EventHandler(this.DolphinButton_Click);
+            this.rentalPassEditorToolStripMenuItem.Enabled = false;
+            this.rentalPassEditorToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("rentalPassEditorToolStripMenuItem.Image")));
+            this.rentalPassEditorToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.rentalPassEditorToolStripMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
+            this.rentalPassEditorToolStripMenuItem.Name = "rentalPassEditorToolStripMenuItem";
+            this.rentalPassEditorToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.rentalPassEditorToolStripMenuItem.Text = "Rental Pass Editor";
+            this.rentalPassEditorToolStripMenuItem.Click += new System.EventHandler(this.RentalPassEditorMenuItem_Click);
+            // 
+            // dolphinMenuItem
+            // 
+            this.dolphinMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.dolphinMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("dolphinMenuItem.Image")));
+            this.dolphinMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.dolphinMenuItem.Margin = new System.Windows.Forms.Padding(0, 0, 10, 0);
+            this.dolphinMenuItem.Name = "dolphinMenuItem";
+            this.dolphinMenuItem.Size = new System.Drawing.Size(28, 24);
+            this.dolphinMenuItem.ToolTipText = "Play";
+            this.dolphinMenuItem.Click += new System.EventHandler(this.DolphinButton_Click);
             // 
             // panel1
             // 
@@ -298,9 +311,10 @@ namespace PBRHex
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem unpackISOToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rebuildISOMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem playToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dolphinMenuItem;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label messageLabel;
+        private System.Windows.Forms.ToolStripMenuItem rentalPassEditorToolStripMenuItem;
     }
 }
 

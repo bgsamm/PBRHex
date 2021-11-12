@@ -343,20 +343,23 @@ namespace PBRHex.HexEditor
                 new AlertDialog( "Invalid selection." ).ShowDialog();
                 return false;
             }
-            var input = new InputDialog( "Fill value:" )
+            var input = new HexInputDialog( "Fill value:" )
             {
                 Default = "00"
             };
             if(input.ShowDialog() == DialogResult.OK) {
+                if(input.Response < 0 || input.Response > 0xff) {
+                    new AlertDialog( "Invalid fill value." ).ShowDialog();
+                    return false;
+                }
                 Program.NotifyWaiting();
                 int size = selectionRange.Y - selectionRange.X + 1,
                     address = GetSelectionRange().X;
-                byte value = Convert.ToByte(input.Response, 16);
                 var range = GetRange(address, size);
                 bytes = new byte[size];
                 for(int i = 0; i < size; i++) {
                     if(IsCellSelected(address + i))
-                        bytes[i] = value;
+                        bytes[i] = (byte)input.Response;
                     else
                         bytes[i] = range[i];
                 }

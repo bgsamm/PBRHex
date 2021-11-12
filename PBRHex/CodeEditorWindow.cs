@@ -6,15 +6,15 @@ using PBRHex.Dialogs;
 using PBRHex.Files;
 using PBRHex.Utils;
 
-namespace PBRHex.CodeEditor
+namespace PBRHex
 {
-    public partial class CodeEditorWindow : Form
+    public partial class CodeEditor : Form
     {
         private int CurrentSection => sectionSelectDropdown.SelectedIndex;
         private uint CurrentSectionAddress => DOL.GetSectionMemAddr(CurrentSection);
         private int CurrentSectionSize => DOL.GetSectionSize(CurrentSection);
 
-        public CodeEditorWindow() {
+        public CodeEditor() {
             InitializeComponent();
 
             // double buffer

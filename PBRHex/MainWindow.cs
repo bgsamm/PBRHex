@@ -2,22 +2,20 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Windows.Forms;
-using PBRHex.CodeEditor;
-using PBRHex.DexEditor;
 using PBRHex.Dialogs;
 using PBRHex.Files;
 using PBRHex.HexEditor;
-using PBRHex.StringEditor;
 using PBRHex.Tables;
 using PBRHex.Utils;
 
 /*
  * TODO:
+ * -Support NTSC-J ISOs
  * -FileBuffers should automatically create workspaces for themselves
  * -Keep all changes to data tables in memory/temp files rather than writing directly to ISO
  * -'Add file', 'Remove file', 'Replace file', 'Restore all', etc.
@@ -48,6 +46,8 @@ namespace PBRHex
         [DllImport("user32.dll")]
         static extern Int32 FlashWindowEx(ref FLASHWINFO pwfi);
 
+        public static GameRegion ISORegion;
+
         private readonly TreeView FileTree;
         private string SelectedFilePath => (string)FileTree.SelectedNode.Tag;
 
@@ -63,6 +63,22 @@ namespace PBRHex
                 messageLabel.Visible = false;
                 FSYSTable.Initialize();
                 DOL.Initialize();
+                int gameCodeSize = DOL.GetSectionSize(1);
+                switch(gameCodeSize) {
+                    case 0x3DEB20:
+                        ISORegion = GameRegion.NTSCU;
+                        break;
+                    case 0x3C69E0:
+                        ISORegion = GameRegion.NTSCJ;
+                        break;
+                    case 0x3DB4E0:
+                        ISORegion = GameRegion.PAL;
+                        break;
+                    default:
+                        // shouldn't ever get here but in case it does just don't load the ISO
+                        return;
+                }
+                Console.WriteLine($"{gameCodeSize:X8}");
                 BuildFileTree();
                 EnableMenuItems();
             }
@@ -90,12 +106,14 @@ namespace PBRHex
             TreeNode node;
 
             if(parentNode == null) {
-                node = new TreeNode("root") 
+                string rootName = ISORegion.ToString().Replace("NTSC", "NTSC-");
+                node = new TreeNode(rootName)
                 {
                     ImageIndex = 0,
                     SelectedImageIndex = 0,
                     Tag = dir,
                 };
+                //node.NodeFont = new Font(FontFamily.GenericSansSerif, 9, FontStyle.Bold);
                 fileTreeView.Nodes.Add(node);
             }
             else {
@@ -127,15 +145,33 @@ namespace PBRHex
         }
 
         private void OpenHexEditor(FileBuffer file) {
-            HexEditorWindow editor;
-            if(file as FSYS != null) {
+            HexEditorWindow hexEditor;
+            
+            foreach(Form form in Application.OpenForms) {
+                if(form is HexEditorWindow editor) {
+                    if((file is FSYS && editor.Name == $"{file.Name}_unpacked") ||
+                       (!(file is FSYS) && editor.Name == file.Name)) {
+                        form.BringToFront();
+                        return;
+                    } 
+                    //else if((file is FSYS && editor.Name == file.Name) ||
+                    //          (!(file is FSYS) && editor.Name == $"{file.Name}_unpacked")) {
+                    //    new AlertDialog(
+                    //        "This file is already open in another editor."
+                    //    ).ShowDialog();
+                    //    return;
+                    //}
+                }
+            }
+
+            if(file is FSYS fsys) {
                 var files = new List<FileBuffer>();
-                var fsys = (FSYS)file;
                 foreach(var f in fsys.Files) {
                     files.Add(f);
                 }
-                editor = new HexEditorWindow(files.ToArray(), fsys)
+                hexEditor = new HexEditorWindow(files.ToArray(), fsys)
                 {
+                    Name = $"{file.Name}_unpacked",
                     Text = $"{file.Name} (unpacked)"
                 };
             }
@@ -150,25 +186,36 @@ namespace PBRHex
                         return;
                 }
                 file.WorkingDir = FileUtils.CreateWorkspace(file.Path);
-                editor = new HexEditorWindow(new FileBuffer[] { file }) 
-                { 
+                hexEditor = new HexEditorWindow(new FileBuffer[] { file }) 
+                {
+                    Name = file.Name,
                     Text = file.Name 
                 };
             }
             var node = FileTree.SelectedNode;
-            editor.FormClosed += (sender, e) => {
+            hexEditor.FormClosed += (sender, e) => {
                 if(FileUtils.HasBackup(node.Text)) {
                     node.ImageIndex = 3;
                     node.SelectedImageIndex = 3;
                 }
             };
-            editor.Show();
+            hexEditor.Show();
+        }
+
+        private Form GetOpenForm(Type t) {
+            foreach(Form form in Application.OpenForms) {
+                if(form.GetType() == t) {
+                    form.BringToFront();
+                    return form;
+                }
+            }
+            return null;
         }
 
         private void CloseForms() {
             for(int i = Application.OpenForms.Count - 1; i >= 0; i--) {
                 var form = Application.OpenForms[i];
-                if(form.GetType() != typeof(MainWindow))
+                if(!(form is MainWindow))
                     form.Close();
             }
         }
@@ -182,8 +229,27 @@ namespace PBRHex
             }
         }
 
+        private string ReadGameCode(string path) {
+            var iso = File.OpenRead(path);
+            byte[] bytes = new byte[6];
+            iso.Read(bytes, 0, 6);
+            iso.Close();
+            return HexUtils.BytesToAscii(bytes);
+        }
+
         private void UnpackISOButton_Click(object sender, EventArgs e) {
             if(openISODialog.ShowDialog() == DialogResult.OK) {
+                string gameCode = ReadGameCode(openISODialog.FileName);
+                if(gameCode != "RPBE01" && gameCode != "RPBP01") {
+                    new AlertDialog("This ISO is not supported by PBRHex.").ShowDialog();
+                    return;
+                }
+                if(gameCode == "RPBJ01")
+                    ISORegion = GameRegion.NTSCJ;
+                else if(gameCode == "RPBE01")
+                    ISORegion = GameRegion.NTSCU;
+                else if(gameCode == "RPBP01")
+                    ISORegion = GameRegion.PAL;
                 CloseForms();
                 try {
                     Program.Log("Unpacking ISO...");
@@ -199,9 +265,22 @@ namespace PBRHex
                     FSYSTable.RenameFile("pkx_600", "pkx_egg");
                     FSYSTable.RenameFile("pkx_601", "pkx_sub");
                     SpriteTable.DecodeSprites();
-                    DexTable.PatchDex();
                     DOL.Initialize();
-                    DOL.WriteInstruction(0x8022e1e4, 0x48000108);
+                    DexTable.PatchDex();
+                    // disable anti-modification function
+                    uint address = 0;
+                    switch(ISORegion) {
+                        case GameRegion.NTSCJ:
+                            address = 0x8021de60;
+                            break;
+                        case GameRegion.NTSCU:
+                            address = 0x8022e1e4;
+                            break;
+                        case GameRegion.PAL:
+                            address = 0x8022965c;
+                            break;
+                    }
+                    DOL.WriteInstruction(address, 0x48000108);
                     DOL.Write();
                     BuildFileTree();
                     FlashTaskbar();
@@ -232,8 +311,20 @@ namespace PBRHex
             }
         }
 
-        private void DolphinButton_Click(object sender, EventArgs e) {
-            CommandUtils.PlayTest();
+        private void DolphinButton_Click(object sender, EventArgs args) {
+            try {
+                CommandUtils.RunDolphin().Exited += (s, e) =>
+                {
+                    // must use Invoke to execute on the UI thread
+                    Invoke(new Action(() =>
+                    {
+                        dolphinMenuItem.Enabled = true;
+                    }));
+                };
+                dolphinMenuItem.Enabled = false;
+            } catch {
+                new AlertDialog( "Could not launch Dolphin. Please ensure that Dolphin is on the PATH." ).ShowDialog();
+            }
         }
 
         private void FileTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e) {
@@ -296,34 +387,43 @@ namespace PBRHex
             FileTree.SelectedNode.SelectedImageIndex = 2;
         }
 
-        private void DisassembleDOLMenuItem_Click(object sender, EventArgs e) {
-            foreach(Form form in Application.OpenForms) {
-                if(form.GetType() == typeof(CodeEditorWindow)) {
-                    form.BringToFront();
-                    return;
-                }
+        private void CodeEditorMenuItem_Click(object sender, EventArgs e) {
+            var form = GetOpenForm(typeof(CodeEditor));
+            if(form != null) {
+                form.BringToFront();
+                return;
             }
-            new CodeEditorWindow().Show();
+            var dialog = new ConfirmDialog(
+                "Note: This feature is still under development\n" +
+                "and may not always work as intended.\n" +
+                "Do you still wish to continue?" 
+            );
+            if(dialog.ShowDialog() == DialogResult.Yes)
+                new CodeEditor().Show();
         }
 
-        private void EditStringsMenuItem_Click(object sender, EventArgs e) {
-            foreach(Form form in Application.OpenForms) {
-                if(form.GetType() == typeof(StringEditorWindow)) {
-                    form.BringToFront();
-                    return;
-                }
-            }
-            new StringEditorWindow().Show();
+        private void StringEditorMenuItem_Click(object sender, EventArgs e) {
+            var form = GetOpenForm(typeof(StringEditor));
+            if(form != null)
+                form.BringToFront();
+            else
+                new StringEditor().Show();
         }
 
         private void DexEditorMenuItem_Click(object sender, EventArgs e) {
-            foreach(Form form in Application.OpenForms) {
-                if(form.GetType() == typeof(DexEditorWindow)) {
-                    form.BringToFront();
-                    return;
-                }
-            }
-            new DexEditorWindow().Show();
+            var form = GetOpenForm(typeof(DexEditor));
+            if(form != null)
+                form.BringToFront();
+            else
+                new DexEditor().Show();
+        }
+
+        private void RentalPassEditorMenuItem_Click(object sender, EventArgs e) {
+            var form = GetOpenForm(typeof(PassEditor));
+            if(form != null)
+                form.BringToFront();
+            else
+                new PassEditor().Show();
         }
     }
 }

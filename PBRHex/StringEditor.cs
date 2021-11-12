@@ -12,9 +12,9 @@ using PBRHex.Utils;
  * -Allow discarding of unsaved changes when closing
  */
 
-namespace PBRHex.StringEditor
+namespace PBRHex
 {
-    public partial class StringEditorWindow : Form, IStringEditor
+    public partial class StringEditor : Form, IStringEditor
     {
         public readonly Tape<Command> EditHistory;
         public int LastSavePosition;
@@ -23,7 +23,7 @@ namespace PBRHex.StringEditor
 
         private bool IgnoreEvent;
 
-        public StringEditorWindow() {
+        public StringEditor() {
             InitializeComponent();
 
             EditHistory = new Tape<Command>();

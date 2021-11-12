@@ -2,6 +2,13 @@
 
 namespace PBRHex
 {
+    public enum GameRegion
+    {
+        NTSCJ = 0,
+        NTSCU = 1,
+        PAL = 2
+    }
+
     public enum FileType
     {
         NONE = 0,

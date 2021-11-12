@@ -22,12 +22,22 @@ namespace PBRHex.Tables
 
         // I'd really like to do everything in dex #s, but b/c of how the
         // game handles things, I'll have to wait until I can patch the DOL
+        /// <returns>
+        /// The index of the given Pokemon in the dex table.
+        /// This is the number used by the game to identify Pokemon.
+        /// </returns>
         public static int GetIndex(Pokemon mon) {
             for(int i = 0; i < Count; i++) {
                 if(GetDexNum(i) == mon.DexNo && GetFormIndex(i) == mon.FormID)
                     return i;
             }
             throw new ArgumentOutOfRangeException();
+        }
+
+        public static Pokemon GetMonByIndex(int index) {
+            int dexNo = GetDexNum(index),
+                formID = GetFormIndex(index);
+            return new Pokemon(dexNo, formID);
         }
 
         public static string GetSpeciesName(int dex) {
@@ -54,6 +64,12 @@ namespace PBRHex.Tables
             if(slot > 1)
                 throw new ArgumentOutOfRangeException();
             return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x24 + slot);
+        }
+
+        public static int GetAbility(Pokemon mon, int slot) {
+            if(slot > 1)
+                throw new ArgumentOutOfRangeException();
+            return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x30 + slot);
         }
 
         public static int GetStat(Pokemon mon, int stat) {
@@ -90,13 +106,19 @@ namespace PBRHex.Tables
             Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x24 + slot, (byte)type);
         }
 
+        public static void SetAbility(Pokemon mon, int slot, int ability) {
+            if(slot > 1)
+                throw new ArgumentOutOfRangeException();
+            Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x30 + slot, (byte)ability);
+        }
+
         public static void SetStat(Pokemon mon, int stat, int value) {
             if(stat > 5)
                 throw new ArgumentOutOfRangeException();
             Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x1e + stat, (byte)value);
         }
 
-        private static int GetDexNum(int index) {
+        public static int GetDexNum(int index) {
             return Common8.ReadShort(GetTableOffset(index) + 0x10);
         }
 
@@ -118,15 +140,15 @@ namespace PBRHex.Tables
 
         private static int GetTableOffset(int index) {
             int start = Common8.ReadInt(0x10),
-                cols = Common8.ReadInt(4);
-            return start + index * cols;
+                stride = Common8.ReadInt(4);
+            return start + index * stride;
         }
 
         /// <returns>index of newly added slot</returns>
         public static int AddSlot() {
-            int cols = Common8.ReadInt(4);
+            int stide = Common8.ReadInt(4);
             // add empty row
-            Common8.AddRange(cols);
+            Common8.AddRange(stide);
             // update row count
             Common8.WriteInt(0, Count + 1);
             PatchDOL();
@@ -203,6 +225,20 @@ namespace PBRHex.Tables
             // zero out egg dex num in model table; probably not kosher but fine for now
             //Common.Files[6].WriteShort(0xb564, 0);
             Write();
+
+            // temporary fix to string ID calculation for added mons
+            if(MainWindow.ISORegion == GameRegion.NTSCU) {
+                uint op1 = AssemblyUtils.Assemble($"b 801cae4c", 0x803e3478),
+                    op2 = AssemblyUtils.Assemble($"b 801cae98", 0x801cae80);
+                DOL.WriteInstruction(0x803e3478, op1);
+                DOL.WriteInstruction(0x801cae80, op2);
+            } else if(MainWindow.ISORegion == GameRegion.PAL) {
+                uint op1 = AssemblyUtils.Assemble($"b 801c6210", 0x803dfe48),
+                    op2 = AssemblyUtils.Assemble($"b 801c625c", 0x801c6244);
+                DOL.WriteInstruction(0x803dfe48, op1);
+                DOL.WriteInstruction(0x801c6244, op2);
+            }
+            DOL.Write();
         }
 
         // doesn't add a new string slot, so far doesn't seem necessary
@@ -229,17 +265,35 @@ namespace PBRHex.Tables
         }
 
         private static void PatchDOL() {
-            uint op1 = AssemblyUtils.Assemble($"cmplwi r0, 0x{Count - 1:X}"),
+            uint op = AssemblyUtils.Assemble($"subi r0, r31, 0x{Count:X}"),
+                op1 = AssemblyUtils.Assemble($"cmplwi r0, 0x{Count - 1:X}"),
                 op2 = AssemblyUtils.Assemble($"cmplwi r4, 0x{Count - 1:X}");
-            DOL.WriteInstruction(0x80058c6c, op1);
-            DOL.WriteInstruction(0x80058ce4, op1);
-            DOL.WriteInstruction(0x8005d1f4, op2);
-            DOL.WriteInstruction(0x8005d4a4, op2);
-            DOL.WriteInstruction(0x8005db8c, op2);
-            DOL.WriteInstruction(0x8005de38, op2);
-            // fixes opposing AI constantly switching
-            uint op = AssemblyUtils.Assemble($"subi r0, r31, 0x{Count:X}");
-            DOL.WriteInstruction(0x801cae90, op);
+            if(MainWindow.ISORegion == GameRegion.NTSCU) {
+                DOL.WriteInstruction(0x80058c6c, op1);
+                DOL.WriteInstruction(0x80058ce4, op1);
+                DOL.WriteInstruction(0x8005d1f4, op2);
+                DOL.WriteInstruction(0x8005d4a4, op2);
+                DOL.WriteInstruction(0x8005db8c, op2);
+                DOL.WriteInstruction(0x8005de38, op2);
+                // fixes opposing AI constantly switching
+                //DOL.WriteInstruction(0x801cae90, op);
+            } else if(MainWindow.ISORegion == GameRegion.NTSCJ) {
+                DOL.WriteInstruction(0x8005614c, op1);
+                DOL.WriteInstruction(0x800561c4, op1);
+                DOL.WriteInstruction(0x80059888, op2);
+                DOL.WriteInstruction(0x80059b38, op2);
+                DOL.WriteInstruction(0x8005a1d4, op2);
+                DOL.WriteInstruction(0x8005a480, op2);
+                //DOL.WriteInstruction(0x801bbfbc, op);
+            } else if(MainWindow.ISORegion == GameRegion.PAL) {
+                DOL.WriteInstruction(0x80056c0c, op1);
+                DOL.WriteInstruction(0x80056c84, op1);
+                DOL.WriteInstruction(0x8005b704, op2);
+                DOL.WriteInstruction(0x8005b9b4, op2);
+                DOL.WriteInstruction(0x8005c09c, op2);
+                DOL.WriteInstruction(0x8005c348, op2);
+                //DOL.WriteInstruction(0x801c6254, op);
+            }
             DOL.Write();
         }
 

@@ -1,7 +1,7 @@
 ﻿
-namespace PBRHex.DexEditor
+namespace PBRHex
 {
-    partial class DexEditorWindow
+    partial class DexEditor
     {
         /// <summary>
         /// Required designer variable.
@@ -26,7 +26,7 @@ namespace PBRHex.DexEditor
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DexEditorWindow));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DexEditor));
             this.pokemonListBox = new System.Windows.Forms.ListBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.undoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -39,6 +39,11 @@ namespace PBRHex.DexEditor
             this.openModelDialog = new System.Windows.Forms.OpenFileDialog();
             this.pokemonTabControl = new System.Windows.Forms.TabControl();
             this.attributesPage = new System.Windows.Forms.TabPage();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.secondaryAbilityComboBox = new System.Windows.Forms.ComboBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.primaryAbilityComboBox = new System.Windows.Forms.ComboBox();
+            this.label28 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.formsComboBox = new System.Windows.Forms.ComboBox();
             this.replaceFaceShinySpriteButton = new System.Windows.Forms.Button();
@@ -173,6 +178,7 @@ namespace PBRHex.DexEditor
             this.menuStrip1.SuspendLayout();
             this.pokemonTabControl.SuspendLayout();
             this.attributesPage.SuspendLayout();
+            this.panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.faceShinySpritePictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bodyShinySpritePictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bodySpritePictureBox)).BeginInit();
@@ -289,6 +295,7 @@ namespace PBRHex.DexEditor
             // 
             // attributesPage
             // 
+            this.attributesPage.Controls.Add(this.panel3);
             this.attributesPage.Controls.Add(this.label1);
             this.attributesPage.Controls.Add(this.formsComboBox);
             this.attributesPage.Controls.Add(this.replaceFaceShinySpriteButton);
@@ -311,6 +318,60 @@ namespace PBRHex.DexEditor
             this.attributesPage.TabIndex = 0;
             this.attributesPage.Text = "Attributes";
             this.attributesPage.UseVisualStyleBackColor = true;
+            // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.secondaryAbilityComboBox);
+            this.panel3.Controls.Add(this.label25);
+            this.panel3.Controls.Add(this.primaryAbilityComboBox);
+            this.panel3.Controls.Add(this.label28);
+            this.panel3.Location = new System.Drawing.Point(7, 250);
+            this.panel3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(232, 68);
+            this.panel3.TabIndex = 34;
+            // 
+            // secondaryAbilityComboBox
+            // 
+            this.secondaryAbilityComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.secondaryAbilityComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.secondaryAbilityComboBox.FormattingEnabled = true;
+            this.secondaryAbilityComboBox.Location = new System.Drawing.Point(69, 36);
+            this.secondaryAbilityComboBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.secondaryAbilityComboBox.Name = "secondaryAbilityComboBox";
+            this.secondaryAbilityComboBox.Size = new System.Drawing.Size(121, 24);
+            this.secondaryAbilityComboBox.TabIndex = 1;
+            this.secondaryAbilityComboBox.SelectedIndexChanged += new System.EventHandler(this.SecondaryAbilityComboBox_SelectedIndexChanged);
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(3, 39);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(61, 17);
+            this.label25.TabIndex = 2;
+            this.label25.Text = "Ability 2:";
+            // 
+            // primaryAbilityComboBox
+            // 
+            this.primaryAbilityComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.primaryAbilityComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.primaryAbilityComboBox.FormattingEnabled = true;
+            this.primaryAbilityComboBox.Location = new System.Drawing.Point(69, 7);
+            this.primaryAbilityComboBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.primaryAbilityComboBox.Name = "primaryAbilityComboBox";
+            this.primaryAbilityComboBox.Size = new System.Drawing.Size(121, 24);
+            this.primaryAbilityComboBox.TabIndex = 0;
+            this.primaryAbilityComboBox.SelectedIndexChanged += new System.EventHandler(this.PrimaryAbilityComboBox_SelectedIndexChanged);
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(3, 10);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(61, 17);
+            this.label28.TabIndex = 0;
+            this.label28.Text = "Ability 1:";
             // 
             // label1
             // 
@@ -1945,7 +2006,7 @@ namespace PBRHex.DexEditor
             this.replaceModelButton.UseVisualStyleBackColor = true;
             this.replaceModelButton.Click += new System.EventHandler(this.ReplaceModelButton_Click);
             // 
-            // DexEditorWindow
+            // DexEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -1957,13 +2018,15 @@ namespace PBRHex.DexEditor
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.Name = "DexEditorWindow";
+            this.Name = "DexEditor";
             this.Text = "DexEditorWindow";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.pokemonTabControl.ResumeLayout(false);
             this.attributesPage.ResumeLayout(false);
             this.attributesPage.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.faceShinySpritePictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bodyShinySpritePictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bodySpritePictureBox)).EndInit();
@@ -2134,5 +2197,10 @@ namespace PBRHex.DexEditor
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button replaceModelShinyButton;
         private System.Windows.Forms.ToolStripMenuItem saveMenuItem;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.ComboBox secondaryAbilityComboBox;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.ComboBox primaryAbilityComboBox;
+        private System.Windows.Forms.Label label28;
     }
 }

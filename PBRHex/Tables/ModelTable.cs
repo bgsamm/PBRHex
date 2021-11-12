@@ -203,19 +203,19 @@ namespace PBRHex.Tables
 
         private static int GetModelTableOffset(Pokemon mon) {
             int start = Common6.ReadInt(0x10),
-                cols = Common6.ReadInt(4),
+                stride = Common6.ReadInt(4),
                 idx = GetModelTableIndex(mon);
-            return start + cols * idx;
+            return start + stride * idx;
         }
 
         private static int GetModelTableIndex(Pokemon mon) {
             int start = Common6.ReadInt(0x10),
                 rows = Common6.ReadInt(0),
-                cols = Common6.ReadInt(4),
+                stride = Common6.ReadInt(4),
                 dexID = DexTable.GetIndex(mon);
             int idx = -1;
             for(int i = 0; i < rows; i++) {
-                int offset = start + cols * i;
+                int offset = start + stride * i;
                 if(dexID == Common6.ReadShort(offset + 0x14) && mon.FormID == Common6.ReadByte(offset + 0x18)) {
                     idx = i;
                     int flags = Common6.ReadInt(offset);
@@ -244,9 +244,9 @@ namespace PBRHex.Tables
             // add new entry
             int start = Common6.ReadInt(0x10),
                 rows = Common6.ReadInt(0),
-                cols = Common6.ReadInt(4),
-                address = start + rows * cols;
-            Common6.AddRange(cols);
+                stride = Common6.ReadInt(4),
+                address = start + rows * stride;
+            Common6.AddRange(stride);
             Common6.WriteInt(address, 0x60D0D0D0); // first byte dictates "spacing" in some sense
             Common6.WriteInt(address + 4, fsysID);
             Common6.WriteInt(address + 8, subModel.Files[0].ID); // 0x97A0400 = Substitute doll's file ID

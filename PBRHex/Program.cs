@@ -61,7 +61,7 @@ namespace PBRHex
             if(WaitingCount > 0)
                 WaitingCount--;
             if(WaitingCount == 0)
-                Cursor.Current = Cursors.WaitCursor;
+                Cursor.Current = Cursors.Default;
         }
 
         public static void Log(string msg) {
