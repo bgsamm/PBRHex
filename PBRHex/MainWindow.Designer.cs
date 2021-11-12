@@ -84,7 +84,7 @@ namespace PBRHex
             this.fileTreeImageList.Images.SetKeyName(0, "TM_Normal_Sprite.png");
             this.fileTreeImageList.Images.SetKeyName(1, "Town_Map_Sprite.png");
             this.fileTreeImageList.Images.SetKeyName(2, "File_Unmodified_Sprite.png");
-            this.fileTreeImageList.Images.SetKeyName(3, "File_Modified_Sprite.png");
+            this.fileTreeImageList.Images.SetKeyName(3, "Yellow_Shard_Sprite.png");
             // 
             // fileLocationMenuItem
             // 
@@ -196,7 +196,7 @@ namespace PBRHex
             this.stringEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.stringEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.stringEditorMenuItem.Name = "stringEditorMenuItem";
-            this.stringEditorMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.stringEditorMenuItem.Size = new System.Drawing.Size(209, 26);
             this.stringEditorMenuItem.Text = "String Editor";
             this.stringEditorMenuItem.Click += new System.EventHandler(this.StringEditorMenuItem_Click);
             // 
@@ -207,7 +207,7 @@ namespace PBRHex
             this.assemblyEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.assemblyEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.assemblyEditorMenuItem.Name = "assemblyEditorMenuItem";
-            this.assemblyEditorMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.assemblyEditorMenuItem.Size = new System.Drawing.Size(209, 26);
             this.assemblyEditorMenuItem.Text = "Assembly Editor";
             this.assemblyEditorMenuItem.Click += new System.EventHandler(this.CodeEditorMenuItem_Click);
             // 
@@ -218,7 +218,7 @@ namespace PBRHex
             this.dexEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.dexEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.dexEditorMenuItem.Name = "dexEditorMenuItem";
-            this.dexEditorMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.dexEditorMenuItem.Size = new System.Drawing.Size(209, 26);
             this.dexEditorMenuItem.Text = "Dex Editor";
             this.dexEditorMenuItem.Click += new System.EventHandler(this.DexEditorMenuItem_Click);
             // 
