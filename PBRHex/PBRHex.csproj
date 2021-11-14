@@ -170,12 +170,6 @@
     <Compile Include="Tables\ItemTable.cs" />
     <Compile Include="Tables\MoveTable.cs" />
     <Compile Include="Tables\PassTable.cs" />
-    <Compile Include="Uninstall.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Uninstall.Designer.cs">
-      <DependentUpon>Uninstall.cs</DependentUpon>
-    </Compile>
     <Compile Include="Tables\DexTable.cs" />
     <Compile Include="Tables\FSYSTable.cs" />
     <Compile Include="Tables\ModelTable.cs" />

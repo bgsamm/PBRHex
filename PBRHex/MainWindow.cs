@@ -97,9 +97,8 @@ namespace PBRHex
 
         private void BuildFileTree() {
             BuildFileTreeLoop(Program.ISODir);
-            // expand first two nodes
+            // expand first nodes
             fileTreeView.Nodes[0].Expand();
-            fileTreeView.Nodes[0].Nodes[0].Expand();
         }
 
         private void BuildFileTreeLoop(string dir, TreeNode parentNode = null) {

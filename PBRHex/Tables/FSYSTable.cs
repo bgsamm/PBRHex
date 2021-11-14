@@ -24,7 +24,7 @@ namespace PBRHex.Tables
             {
                 lock(TableLock) {
                     initStart.Set();
-                    string tocPath = $@"{Program.ISODir}\DATA\files\GSfsys.toc";
+                    string tocPath = $@"{Program.ISODir}\files\GSfsys.toc";
                     GSfsys = new FileBuffer(tocPath) {
                         WorkingDir = FileUtils.CreateWorkspace(tocPath)
                     };
@@ -122,7 +122,7 @@ namespace PBRHex.Tables
         public static string MakePath(string name) {
             if(!name.EndsWith(".fsys"))
                 name += ".fsys";
-            string path = $@"{Program.ISODir}\DATA\files\{name}";
+            string path = $@"{Program.ISODir}\files\{name}";
             return path;
         }
 

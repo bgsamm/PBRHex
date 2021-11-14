@@ -34,11 +34,11 @@ namespace PBRHex.Utils
 
         public static void UnpackISO(string inpath) {
             FileUtils.DeleteDirectory(Program.ISODir);
-            RunProcess($@"{witDir}\wit.exe", $@"EXTRACT ""{inpath}"" ""{Program.ISODir}""");
-            FileUtils.DeleteFile($@"{Program.ISODir}\DATA\align-files.txt");
-            FileUtils.DeleteFile($@"{Program.ISODir}\DATA\setup.bat");
-            FileUtils.DeleteFile($@"{Program.ISODir}\DATA\setup.sh");
-            FileUtils.DeleteFile($@"{Program.ISODir}\DATA\setup.txt");
+            RunProcess($@"{witDir}\wit.exe", $@"EXTRACT ""{inpath}"" ""{Program.ISODir}"" --psel ""DATA""");
+            FileUtils.DeleteFile($@"{Program.ISODir}\align-files.txt");
+            FileUtils.DeleteFile($@"{Program.ISODir}\setup.bat");
+            FileUtils.DeleteFile($@"{Program.ISODir}\setup.sh");
+            FileUtils.DeleteFile($@"{Program.ISODir}\setup.txt");
         }
 
         public static void BuildISO(string outpath) {
@@ -48,7 +48,7 @@ namespace PBRHex.Utils
 
         public static Process RunDolphin() {
             return RunProcess($"Dolphin.exe",
-                    $@"-b -e ""{Program.ISODir}\DATA\sys\main.dol""", false);
+                    $@"-b -e ""{Program.ISODir}\sys\main.dol""", false);
         }
 
         private static Process RunProcess(string path, string args, bool wait = true) {
