@@ -60,6 +60,9 @@ namespace PBRHex
             base.OnLoad(e);
 
             if(Directory.Exists(Program.ISODir)) {
+                // provides backwards compatibility with old versions of PBRHex
+                if(Directory.Exists($@"{Program.ISODir}\DATA"))
+                    FlattenISODir();
                 messageLabel.Visible = false;
                 FSYSTable.Initialize();
                 DOL.Initialize();
@@ -236,13 +239,25 @@ namespace PBRHex
             return HexUtils.BytesToAscii(bytes);
         }
 
+        private void FlattenISODir() {
+            FileUtils.MoveContents($@"{Program.ISODir}\DATA", Program.ISODir, true);
+            FileUtils.DeleteDirectory($@"{Program.ISODir}\UPDATE");
+        }
+
         private void UnpackISOButton_Click(object sender, EventArgs e) {
             if(openISODialog.ShowDialog() == DialogResult.OK) {
                 string gameCode = ReadGameCode(openISODialog.FileName);
+                // not as robust as I'd like but I'm not yet sure how else to detect an nkit
+                if(openISODialog.FileName.Contains(".nkit")) {
+                    new AlertDialog("PBRHex cannot open NKit files.\n" +
+                        "Please convert it to an ISO and try again.").ShowDialog();
+                    return;
+                }
                 if(gameCode != "RPBE01" && gameCode != "RPBP01") {
                     new AlertDialog("This ISO is not supported by PBRHex.").ShowDialog();
                     return;
                 }
+
                 if(gameCode == "RPBJ01")
                     ISORegion = GameRegion.NTSCJ;
                 else if(gameCode == "RPBE01")
@@ -250,51 +265,41 @@ namespace PBRHex
                 else if(gameCode == "RPBP01")
                     ISORegion = GameRegion.PAL;
                 CloseForms();
-                try {
-                    Program.Log("Unpacking ISO...");
-                    FileUtils.DeleteDirectory(Program.TempDir);
-                    FileUtils.CreateDirectory(Program.BackupsDir, true);
-                    FileTree.Nodes.Clear();
-                    FileTree.Refresh();
-                    messageLabel.Text = "Please wait. This will take some time.";
-                    messageLabel.Visible = true;
-                    messageLabel.Refresh();
-                    CommandUtils.UnpackISO(openISODialog.FileName);
-                    FSYSTable.Initialize();
-                    FSYSTable.RenameFile("pkx_600", "pkx_egg");
-                    FSYSTable.RenameFile("pkx_601", "pkx_sub");
-                    SpriteTable.DecodeSprites();
-                    DOL.Initialize();
-                    DexTable.PatchDex();
-                    // disable anti-modification function
-                    uint address = 0;
-                    switch(ISORegion) {
-                        case GameRegion.NTSCJ:
-                            address = 0x8021de60;
-                            break;
-                        case GameRegion.NTSCU:
-                            address = 0x8022e1e4;
-                            break;
-                        case GameRegion.PAL:
-                            address = 0x8022965c;
-                            break;
-                    }
-                    DOL.WriteInstruction(address, 0x48000108);
-                    DOL.Write();
-                    BuildFileTree();
-                    FlashTaskbar();
-                    messageLabel.Visible = false;
-                    EnableMenuItems();
+                Program.Log("Unpacking ISO...");
+                FileUtils.DeleteDirectory(Program.TempDir);
+                FileUtils.CreateDirectory(Program.BackupsDir, true);
+                FileTree.Nodes.Clear();
+                FileTree.Refresh();
+                messageLabel.Text = "Please wait. This will take some time.";
+                messageLabel.Visible = true;
+                messageLabel.Refresh();
+                CommandUtils.UnpackISO(openISODialog.FileName);
+                FlattenISODir();
+                FSYSTable.Initialize();
+                FSYSTable.RenameFile("pkx_600", "pkx_egg");
+                FSYSTable.RenameFile("pkx_601", "pkx_sub");
+                SpriteTable.DecodeSprites();
+                DOL.Initialize();
+                DexTable.PatchDex();
+                // disable anti-modification function
+                uint address = 0;
+                switch(ISORegion) {
+                    case GameRegion.NTSCJ:
+                        address = 0x8021de60;
+                        break;
+                    case GameRegion.NTSCU:
+                        address = 0x8022e1e4;
+                        break;
+                    case GameRegion.PAL:
+                        address = 0x8022965c;
+                        break;
                 }
-                catch(SecurityException ex) {
-                    MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +
-                    $"Details:\n\n{ex.StackTrace}");
-                }
-                //catch(IOException) {
-                //    new AlertDialog() {
-                //        Message = "One or more files are in use by another program.\nPlease close the files and try again."
-                //    }.ShowDialog();
-                //}
+                DOL.WriteInstruction(address, 0x48000108);
+                DOL.Write();
+                BuildFileTree();
+                FlashTaskbar();
+                messageLabel.Visible = false;
+                EnableMenuItems();
             }
         }
 

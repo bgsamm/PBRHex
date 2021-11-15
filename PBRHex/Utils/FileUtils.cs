@@ -25,6 +25,15 @@ namespace PBRHex.Utils
                 Directory.Delete(path, true);
         }
 
+        public static void MoveContents(string inpath, string outpath, bool deleteSourceDir) {
+            CreateDirectory(outpath, false);
+            foreach(var path in Directory.EnumerateFileSystemEntries(inpath)) {
+                Directory.Move(path, $@"{outpath}\{Path.GetFileName(path)}");
+            }
+            if(deleteSourceDir)
+                DeleteDirectory(inpath);
+        }
+
         public static FileBuffer CreateFile(string path, int size) {
             return CreateFile(path, new byte[size]);
         }

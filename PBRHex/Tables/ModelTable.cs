@@ -43,7 +43,7 @@ namespace PBRHex.Tables
             new string[]{ "punch", "tackle", "move_phys" }, // 3
             new string[]{ "kick", "tackle", "move_phys" }, // 4
             new string[]{ "takeoff", "wait" }, // 5
-            new string[]{ "dive", "wait" }, // 6
+            new string[]{ "divebomb", "wait" }, // 6
             new string[]{ "punch", "tackle", "move_phys" }, // 7
             new string[]{ "damage", "hurt" }, // 8
             new string[]{ "down", "faint" }, // 9

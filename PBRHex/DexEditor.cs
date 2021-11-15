@@ -434,6 +434,7 @@ namespace PBRHex
         private void AddMonMenuItem_Click(object sender, EventArgs e) {
             int dex = DexTable.AddSlot();
             pokemonListBox.Items.Add(DexTable.GetSpeciesName(dex));
+            pokemonListBox.SelectedIndex = pokemonListBox.Items.Count - 1;
             //var input = new InputDialog() { Prompt = "Enter species name:" };
             //if(input.ShowDialog() == DialogResult.OK) {
             //    int index = DexTable.AddSlot();
