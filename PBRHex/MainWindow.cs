@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -274,7 +273,6 @@ namespace PBRHex
                 messageLabel.Visible = true;
                 messageLabel.Refresh();
                 CommandUtils.UnpackISO(openISODialog.FileName);
-                FlattenISODir();
                 FSYSTable.Initialize();
                 FSYSTable.RenameFile("pkx_600", "pkx_egg");
                 FSYSTable.RenameFile("pkx_601", "pkx_sub");
