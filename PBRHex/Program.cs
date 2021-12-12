@@ -20,6 +20,7 @@ namespace PBRHex
         public static readonly string BackupsDir = $@"{UserDir}\backups";
 
         private static int WaitingCount;
+        private static readonly object LoggerLock = new object();
 
         /// <summary>
         /// The main entry point for the application.
@@ -65,8 +66,10 @@ namespace PBRHex
         }
 
         public static void Log(string msg) {
-            using(var w = File.AppendText($@"{DataDir}\log.txt")) {
-                w.WriteLine(msg);
+            lock(LoggerLock) {
+                using(var w = File.AppendText($@"{DataDir}\log.txt")) {
+                    w.WriteLine(msg);
+                }
             }
         }
     }

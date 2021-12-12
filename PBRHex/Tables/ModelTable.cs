@@ -232,7 +232,8 @@ namespace PBRHex.Tables
             int fsysID = GetModelFSYSID(mon),
                 fileID = GetModelFileID(mon);
             var fsys = FSYSTable.GetFile(fsysID);
-            FileUtils.ReplaceLZSS(fsys.Name, fileID, sdr);
+            sdr.ID = fileID;
+            FileUtils.ReplaceLZSS(fsys.Name, sdr);
         }
 
         public static void AddModelSlot(Pokemon mon) {

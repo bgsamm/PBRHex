@@ -16,8 +16,8 @@ namespace PBRHex.Files
         public LabelType[] LabelMap => MakeLabelMap();
         public ReadOnlyLabelDict Labels => new ReadOnlyLabelDict(LabelDict);
 
-        public readonly Tape<Command> EditHistory;
-        public readonly Tape<int> LocationHistory;
+        public Tape<Command> EditHistory { get; private set; }
+        public Tape<int> LocationHistory { get; private set; }
         public int SaveHead;
 
         protected byte[] Buffer { get; set; }
@@ -32,7 +32,7 @@ namespace PBRHex.Files
         /// <summary>
         /// The full path of the item.
         /// </summary>
-        public readonly string Path;
+        public string Path { get; private set; }
         /// <summary>
         /// The path to the containing directory of the item.
         /// </summary>
@@ -42,7 +42,7 @@ namespace PBRHex.Files
         /// <summary>
         /// The path to the file's working directory when editing.
         /// </summary>
-        public string WorkingDir { get; set; }
+        public string WorkingDir { get; private set; }
         public string WorkingPath => $@"{WorkingDir}\{Name}";
 
         private string Key => Extension == "" ?
@@ -61,9 +61,19 @@ namespace PBRHex.Files
                 LoadMetadata();
         }
 
-        public FileBuffer(string filepath) {
-            Path = System.IO.Path.GetFullPath(filepath);
+        public FileBuffer(string path) {
+            Path = System.IO.Path.GetFullPath(path);
+            WorkingDir = FileUtils.CreateWorkspace(Path);
+            Initialize();
+        }
 
+        public FileBuffer(string path, string workspace) {
+            Path = System.IO.Path.GetFullPath(path);
+            WorkingDir = workspace;
+            Initialize();
+        }
+
+        private void Initialize() {
             Buffer = File.ReadAllBytes(Path);
 
             LocationHistory = new Tape<int>();

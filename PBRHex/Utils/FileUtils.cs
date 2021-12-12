@@ -34,13 +34,29 @@ namespace PBRHex.Utils
                 DeleteDirectory(inpath);
         }
 
-        public static FileBuffer CreateFile(string path, int size) {
-            return CreateFile(path, new byte[size]);
+        /// <param name="path">Path at which to create the file</param>
+        /// <param name="size">Initial size of the file</param>
+        public static void CreateFile(string path, int size) {
+            CreateFile(path, new byte[size]);
         }
 
-        public static FileBuffer CreateFile(string path, byte[] bytes) {
+        /// <param name="path">Path at which to create the file</param>
+        /// <param name="bytes">Data to initialize the file with</param>
+        public static void CreateFile(string path, byte[] bytes) {
             File.WriteAllBytes(path, bytes);
-            return new FileBuffer(path);
+        }
+
+        public static void CreateFSYS(string path) {
+            byte[] bytes = new byte[]
+            {
+                0x46, 0x53, 0x59, 0x53, 0x00, 0x00, 0x02, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+            CreateFile(path, bytes);
         }
 
         public static void DeleteFile(string path) {
@@ -63,6 +79,7 @@ namespace PBRHex.Utils
             MoveFile(inpath, $@"{Path.GetDirectoryName(inpath)}\{name}");
         }
 
+        /// <returns>The path of the newly created workspace</returns>
         public static string CreateWorkspace(string inpath) {
             string fname = Path.GetFileName(inpath),
                 workspace = $@"{Program.TempDir}\{fname}";
@@ -116,21 +133,22 @@ namespace PBRHex.Utils
             CopyFile(file.WorkingPath, file.Path);
         }
 
-        public static void ReplaceLZSS(string name, int id, FileBuffer file) {
+        /// <param name="name">The name of the FSYS in which to replace</param>
+        /// <param name="file">A FileBuffer representing the replacement file</param>
+        public static void ReplaceLZSS(string name, FileBuffer file) {
             FSYSTable.WriteFile(name);
-            string fsysPath = FSYSTable.MakePath(name),
-                workspace = CreateWorkspace(fsysPath),
-                indir = $@"{workspace}\files",
-                outdir = $@"{workspace}\lzss";
+            string fsysPath = FSYSTable.MakePath(name);
+            var fsys = new FileBuffer(fsysPath);
+            string indir = $@"{ fsys.WorkingDir}\files",
+                outdir = $@"{fsys.WorkingDir}\lzss";
             CreateFile($@"{indir}\{file.Name}", file.GetBufferCopy());
             CommandUtils.CompressLZSSFiles(indir, outdir);
-            var fsys = new FileBuffer(fsysPath) { WorkingDir = workspace };
             int count = fsys.ReadInt(0xc),
                 lzssAddrList = fsys.ReadInt(fsys.ReadInt(0x18)),
                 index = -1, lzssHeaderAddr = 0;
             for(int i = 0; i < count; i++) {
                 int address = fsys.ReadInt(lzssAddrList + 4 * i);
-                if(fsys.ReadInt(address) == id) {
+                if(fsys.ReadInt(address) == file.ID) {
                     lzssHeaderAddr = address;
                     index = i;
                     break;
@@ -180,13 +198,12 @@ namespace PBRHex.Utils
         /// <returns>The file ID of the new LZSS.</returns>
         public static int AddLZSS(string name, FileBuffer file) {
             FSYSTable.WriteFile(name);
-            string fsysPath = FSYSTable.MakePath(name),
-                workspace = CreateWorkspace(fsysPath),
-                indir = $@"{workspace}\files",
-                outdir = $@"{workspace}\lzss";
+            string fsysPath = FSYSTable.MakePath(name);
+            var fsys = new FileBuffer(fsysPath);
+            string indir = $@"{fsys.WorkingDir}\files",
+                outdir = $@"{fsys.WorkingDir}\lzss";
             CreateFile($@"{indir}\{file.Name}", file.GetBufferCopy());
             CommandUtils.CompressLZSSFiles(indir, outdir);
-            var fsys = new FileBuffer(fsysPath) { WorkingDir = workspace };
             var lzss = File.ReadAllBytes(Directory.GetFiles(outdir)[0]);
             int count = fsys.ReadInt(0xc);
             // add row before file names if no room for new pointer
@@ -243,14 +260,13 @@ namespace PBRHex.Utils
             int dataAddr = (prevDataAddr + prevDataSize + 0xf) / 0x10 * 0x10 + 0x10,
                 size = (lzss.Length + 0xf) / 0x10 * 0x10 + 0x20;
             // fill in newly added header
-            var ftype = TypeFromExtension(file.Extension);
-            int id = GenerateFileID(fsys, ftype);
+            int id = GenerateFileID(fsys, file);
             fsys.WriteInt(headerAddr, id);
             fsys.WriteInt(headerAddr + 4, dataAddr);
             fsys.WriteInt(headerAddr + 8, file.Size);
             fsys.WriteInt(headerAddr + 0xc, 0x80000000);
             fsys.WriteInt(headerAddr + 0x14, lzss.Length);
-            fsys.WriteInt(headerAddr + 0x20, (int)ftype);
+            fsys.WriteInt(headerAddr + 0x20, (int)TypeFromExtension(file.Extension));
             fsys.WriteInt(headerAddr + 0x24, nameAddr);
             // insert new lzss data
             fsys.InsertRange(dataAddr - 0x10, size);
@@ -267,7 +283,7 @@ namespace PBRHex.Utils
             return id;
         }
 
-        private static int GenerateFileID(FileBuffer fsys, FileType type) {
+        public static int GenerateFileID(FileBuffer fsys, FileBuffer file) {
             var rand = new Random();
             int count = fsys.ReadInt(0xc),
                 lzssListAddr = fsys.ReadInt(fsys.ReadInt(0x18)),
@@ -279,13 +295,12 @@ namespace PBRHex.Utils
                     i = -1;
                 }
             }
-            return id * 0x10000 + (int)type * 0x200;
+            return id * 0x10000 + (int)TypeFromExtension(file.Extension) * 0x200;
         }
 
-        /// <returns>The path to the folder containing the extracted files.</returns>
-        public static FSYS DecompressFSYS(string name) {
-            string path = FSYSTable.MakePath(name),
-                outdir = $@"{CreateWorkspace(path)}\files";
+        /// <returns>An array of FileBuffers of the extracted files.</returns>
+        public static FileBuffer[] DecompressFSYS(string path) {
+            string outdir = $@"{CreateWorkspace(path)}\files";
             CommandUtils.ExtractFSYS(path, outdir);
 
             var paths = Directory.GetFiles(outdir).ToList();
@@ -314,26 +329,18 @@ namespace PBRHex.Utils
                 string withExt = $"{paths[i]}{ExtensionFromType((FileType)ftype)}";
                 File.Move(paths[i], withExt);
                 paths[i] = withExt;
-                if((FileType)ftype == FileType.GTX)
-                    files[i] = new GTX(paths[i]);
-                else
-                    files[i] = new FileBuffer(paths[i]);
-                files[i].ID = id;
-                files[i].WorkingDir = outdir;
+                files[i] = new FileBuffer(paths[i], outdir) { ID = id };
             }
             file.Close();
-            return new FSYS(path, files)
-            {
-                WorkingDir = Path.GetDirectoryName(outdir),
-                ExtractedDir = outdir
-            };
+            return files;
         }
 
-        /// <returns>A FileBuffer for the resulting .fsys file.</returns>
+        /// <returns>The path of the newly created .fsys file.</returns>
         public static FileBuffer CompressFSYS(FSYS fsys) {
             // recompress LZSS files
-            string outdir = $@"{fsys.WorkingDir}\lzss";
-            CommandUtils.CompressLZSSFiles(fsys.ExtractedDir, outdir);
+            string indir = $@"{fsys.WorkingDir}\files",
+                outdir = $@"{fsys.WorkingDir}\lzss";
+            CommandUtils.CompressLZSSFiles(indir, outdir);
 
             string[] paths = Directory.GetFiles(outdir);
             // would probably be a good idea NOT to hold all of them in memory at the same time...
@@ -440,7 +447,7 @@ namespace PBRHex.Utils
             outfile.Write(Encoding.ASCII.GetBytes("FSYS"), 0, 4);
             outfile.Close();
 
-            return new FileBuffer(outpath) { WorkingDir = outdir };
+            return new FileBuffer(outpath, outdir);
         }
     }
 }

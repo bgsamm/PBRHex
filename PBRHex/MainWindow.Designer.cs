@@ -42,6 +42,8 @@ namespace PBRHex
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.unpackISOToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rebuildISOMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newFSYSMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stringEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.assemblyEditorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -50,6 +52,7 @@ namespace PBRHex
             this.dolphinMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.messageLabel = new System.Windows.Forms.Label();
+            this.selectFilesDialog = new System.Windows.Forms.OpenFileDialog();
             this.fileTreeContextMenu.SuspendLayout();
             this.headerMenuStrip.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -144,6 +147,7 @@ namespace PBRHex
             this.headerMenuStrip.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.headerMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
+            this.editToolStripMenuItem,
             this.editorsToolStripMenuItem,
             this.dolphinMenuItem});
             this.headerMenuStrip.Location = new System.Drawing.Point(0, 0);
@@ -178,6 +182,21 @@ namespace PBRHex
             this.rebuildISOMenuItem.Text = "Rebuild ISO";
             this.rebuildISOMenuItem.Click += new System.EventHandler(this.RebuildISOButton_Click);
             // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newFSYSMenuItem});
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
+            this.editToolStripMenuItem.Text = "Edit";
+            // 
+            // newFSYSMenuItem
+            // 
+            this.newFSYSMenuItem.Name = "newFSYSMenuItem";
+            this.newFSYSMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.newFSYSMenuItem.Text = "New FSYS";
+            this.newFSYSMenuItem.Click += new System.EventHandler(this.NewFSYSMenuItem_Click);
+            // 
             // editorsToolStripMenuItem
             // 
             this.editorsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -186,8 +205,8 @@ namespace PBRHex
             this.dexEditorMenuItem,
             this.rentalPassEditorToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(69, 24);
-            this.editorsToolStripMenuItem.Text = "Editors";
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
+            this.editorsToolStripMenuItem.Text = "Tools";
             // 
             // stringEditorMenuItem
             // 
@@ -229,7 +248,7 @@ namespace PBRHex
             this.rentalPassEditorToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.rentalPassEditorToolStripMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.rentalPassEditorToolStripMenuItem.Name = "rentalPassEditorToolStripMenuItem";
-            this.rentalPassEditorToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.rentalPassEditorToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
             this.rentalPassEditorToolStripMenuItem.Text = "Rental Pass Editor";
             this.rentalPassEditorToolStripMenuItem.Click += new System.EventHandler(this.RentalPassEditorMenuItem_Click);
             // 
@@ -265,6 +284,12 @@ namespace PBRHex
             this.messageLabel.Size = new System.Drawing.Size(270, 18);
             this.messageLabel.TabIndex = 2;
             this.messageLabel.Text = "Go to \"File > Unpack ISO\" to get started";
+            // 
+            // selectFilesDialog
+            // 
+            this.selectFilesDialog.FileName = "Select file(s) to add to the archive";
+            this.selectFilesDialog.Multiselect = true;
+            this.selectFilesDialog.Title = "Select file(s)";
             // 
             // MainWindow
             // 
@@ -315,6 +340,9 @@ namespace PBRHex
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label messageLabel;
         private System.Windows.Forms.ToolStripMenuItem rentalPassEditorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newFSYSMenuItem;
+        private System.Windows.Forms.OpenFileDialog selectFilesDialog;
     }
 }
 

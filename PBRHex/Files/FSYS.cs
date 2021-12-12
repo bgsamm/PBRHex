@@ -6,13 +6,11 @@ namespace PBRHex.Files
 {
     public class FSYS : FileBuffer
     {
-        public List<FileBuffer> Files { get; private set; }
         public int FileCount => Files.Count;
-        public string ExtractedDir { get; set; }
+        public readonly List<FileBuffer> Files;
 
-        public FSYS(string path, FileBuffer[] files) : base(path) {
-            Files = new List<FileBuffer>(files.Length);
-            Files.AddRange(files);
+        public FSYS(string path) : base(path) {
+            Files = new List<FileBuffer>(FileUtils.DecompressFSYS(Path));
         }
 
         public FileBuffer GetFile(int id) {
@@ -23,37 +21,33 @@ namespace PBRHex.Files
             return null;
         }
 
-        //public FileBuffer AddFile() {
-        //    string outpath = $@"{ExtractedDir}\(null)_{Files.Count.ToString("X8").ToLower()}";
-        //    FileUtils.CreateFile(outpath, 800);
-        //    var file = new FileBuffer(outpath) { WorkingDir = ExtractedDir };
-        //    Files.Add(file);
-        //    return file;
-        //}
-
-        //public FileBuffer AddFile(string inpath) {
-        //    string outpath = $@"{ExtractedDir}\(null)_{Files.Count.ToString("X8").ToLower()}";
-        //    FileUtils.CopyFile(inpath, outpath);
-        //    var file = new FileBuffer(outpath) { WorkingDir = ExtractedDir };
-        //    Files.Add(file);
-        //    return file;
-        //}
+        public FileBuffer AddFile(string inpath) {
+            string outpath = $@"{WorkingDir}\files\(null)_{Files.Count:x8}{System.IO.Path.GetExtension(inpath)}";
+            FileUtils.CopyFile(inpath, outpath);
+            var newFile = new FileBuffer(outpath, $@"{WorkingDir}\files");
+            newFile.ID = FileUtils.GenerateFileID(this, newFile);
+            Files.Add(newFile);
+            return newFile;
+        }
 
         /// <summary>
         /// Copies the supplied file into the archive, returning the newly created file.
         /// </summary>
         public FileBuffer AddFile(FileBuffer file) {
-            string path = $@"{ExtractedDir}\(null)_{Files.Count.ToString("X8").ToLower()}";
-            var newFile = FileUtils.CreateFile(path, file.GetBufferCopy());
-            newFile.WorkingDir = ExtractedDir;
-            newFile.ID = file.ID;
+            string path = $@"{WorkingDir}\files\(null)_{Files.Count:x8}";
+            FileUtils.CreateFile(path, file.GetBufferCopy());
+            var newFile = new FileBuffer(path, $@"{WorkingDir}\files");
+            if(file.ID != 0)
+                newFile.ID = file.ID;
+            else
+                newFile.ID = FileUtils.GenerateFileID(this, newFile);
             Files.Add(newFile);
             return newFile;
         }
 
         public void RemoveFile(int id) {
             var file = GetFile(id);
-            FileUtils.DeleteFile($@"{ExtractedDir}\{file.Name}");
+            FileUtils.DeleteFile($@"{WorkingDir}\files\{file.Name}");
             Files.Remove(file);
         }
     }

@@ -41,17 +41,19 @@ namespace PBRHex.Tables
         public static void SetBodySprites(Pokemon mon, Image spriteSheet) {
             int id = GetBodySpriteID(mon);
             string spritePath = MakeBodySpritePath(id);
-            var gtx = CreateGTX(spritePath, spriteSheet);
-            FileUtils.ReplaceLZSS("menu_pokemon", id, gtx);
-            FileUtils.DeleteFile(gtx.Path);
+            var temp = CreateGTX(spritePath, spriteSheet);
+            temp.ID = id;
+            FileUtils.ReplaceLZSS("menu_pokemon", temp);
+            FileUtils.DeleteFile(temp.Path);
         }
 
         public static void SetFaceSprites(Pokemon mon, Image spriteSheet) {
             int id = GetFaceSpriteID(mon);
             string spritePath = MakeFaceSpritePath(id);
-            var gtx = CreateGTX(spritePath, spriteSheet);
-            FileUtils.ReplaceLZSS("menu_face", id, gtx);
-            FileUtils.DeleteFile(gtx.Path);
+            var temp = CreateGTX(spritePath, spriteSheet);
+            temp.ID = id;
+            FileUtils.ReplaceLZSS("menu_face", temp);
+            FileUtils.DeleteFile(temp.Path);
         }
 
         public static void AddSpriteSlots(int dex) {
@@ -67,19 +69,23 @@ namespace PBRHex.Tables
             AddBodySpriteSlot(dex, count);
             AddFaceSpriteSlot(dex, count);
 
-            var body = CreateGTX($@"{Program.TempDir}\temp.png", Resources.Unknown_Body);
-            int bodyID = FileUtils.AddLZSS("menu_pokemon", body);
-            Resources.Unknown_Body.Save(MakeBodySpritePath(bodyID));
+            string path = $@"{Program.TempDir}\temp.png";
 
-            var face = CreateGTX($@"{Program.TempDir}\temp.png", Resources.Unknown_Face);
-            int faceID = FileUtils.AddLZSS("menu_face", face);
-            Resources.Unknown_Face.Save(MakeFaceSpritePath(faceID));
+            var body = CreateGTX(path, Resources.Unknown_Body);
+            body.ID = FileUtils.AddLZSS("menu_pokemon", body);
+            Resources.Unknown_Body.Save(MakeBodySpritePath(body.ID));
+
+            var face = CreateGTX(path, Resources.Unknown_Face);
+            face.ID = FileUtils.AddLZSS("menu_face", face);
+            Resources.Unknown_Face.Save(MakeFaceSpritePath(face.ID));
 
             int offset = start + count * 0x10;
-            Common0.WriteInt(offset, faceID); // male face
-            Common0.WriteInt(offset + 4, bodyID); // male body
-            Common0.WriteInt(offset + 8, faceID); // female face
-            Common0.WriteInt(offset + 0xc, bodyID); // female body
+            Common0.WriteInt(offset, face.ID); // male face
+            Common0.WriteInt(offset + 4, body.ID); // male body
+            Common0.WriteInt(offset + 8, face.ID); // female face
+            Common0.WriteInt(offset + 0xc, body.ID); // female body
+
+            FileUtils.DeleteFile(path);
         }
 
         private static void AddBodySpriteSlot(int dex, int index) {
@@ -117,7 +123,8 @@ namespace PBRHex.Tables
             image.Save(path);
             var buf = ImageUtils.ImageToGTX(image, ImageEncoding.RGB5A3);
             string gtxPath = $@"{Program.TempDir}\temp.gtx";
-            return FileUtils.CreateFile(gtxPath, buf);
+            FileUtils.CreateFile(gtxPath, buf);
+            return new FileBuffer(gtxPath, Program.TempDir);
         }
 
         private static int GetFaceSpriteIndex(int dex) {

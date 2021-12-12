@@ -18,10 +18,7 @@ namespace PBRHex.Files
         private static FileBuffer Main;
 
         public static void Initialize() {
-            Main = new FileBuffer($@"{Program.ISODir}\sys\main.dol")
-            {
-                WorkingDir = FileUtils.CreateWorkspace($@"{Program.ISODir}\sys\main.dol")
-            };
+            Main = new FileBuffer($@"{Program.ISODir}\sys\main.dol");
             Comments = new Dictionary<uint, string>();
             string path = $@"{Program.UserDir}\comments.txt";
             if(File.Exists(path)) {

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Windows.Forms;
 using PBRHex.Files;
 using PBRHex.Utils;
 
@@ -25,9 +23,7 @@ namespace PBRHex.Tables
                 lock(TableLock) {
                     initStart.Set();
                     string tocPath = $@"{Program.ISODir}\files\GSfsys.toc";
-                    GSfsys = new FileBuffer(tocPath) {
-                        WorkingDir = FileUtils.CreateWorkspace(tocPath)
-                    };
+                    GSfsys = new FileBuffer(tocPath);
                     LoadTableOfContents();
                     LoadedFiles = new Dictionary<int, FSYS>();
                     // pre-load common.fsys
@@ -56,51 +52,17 @@ namespace PBRHex.Tables
             }
         }
 
-        //private static void Write() {
-        //    Cursor.Current = Cursors.WaitCursor;
-        //    var toc = File.OpenWrite($@"{Program.ISODir}\DATA\files\GSfsys.toc");
-        //    var paths = Directory.GetFiles(
-        //        $@"{Program.ISODir}\DATA\files",
-        //        "*.fsys",
-        //        SearchOption.AllDirectories).ToList();
-        //    // alphabetize
-        //    paths.Sort();
+        public static string MakePath(string name) {
+            if(!name.EndsWith(".fsys"))
+                name += ".fsys";
+            string path = $@"{Program.ISODir}\files\{name}";
+            return path;
+        }
 
-        //    toc.Write(Encoding.ASCII.GetBytes("GLLA"), 0, 4);
-        //    toc.Write(HexUtils.IntToBytes(0x251), 0, 4);
-        //    toc.Write(HexUtils.IntToBytes(paths.Count), 0, 4);
-        //    toc.Seek(0x14, SeekOrigin.Begin);
-        //    toc.Write(HexUtils.IntToBytes(0x20), 0, 4);
-        //    toc.Seek(0x20, SeekOrigin.Begin);
-        //    var offsets = new List<int>();
-        //    for(int i = 0; i < paths.Count; i++) {
-        //        offsets.Add((int)toc.Position);
-        //        var bytes = Encoding.ASCII.GetBytes(Path.GetFileNameWithoutExtension(paths[i]));
-        //        toc.Write(bytes, 0, bytes.Length);
-        //        toc.WriteByte(0);
-        //    }
-        //    int remainder = 0x10 - (int)toc.Position % 0x10;
-        //    if(remainder != 0x10)
-        //        toc.Write(new byte[remainder], 0, remainder);
-        //    int headers = (int)toc.Position;
-        //    toc.Seek(0x10, SeekOrigin.Begin);
-        //    toc.Write(HexUtils.IntToBytes(headers), 0, 4);
-        //    toc.Seek(headers, SeekOrigin.Begin);
-        //    for(int i = 0; i < offsets.Count; i++) {
-        //        string fname = Path.GetFileName(paths[i]);
-        //        if(!TableOfContents.ContainsKey(fname)) {
-        //            var ids = TableOfContents.Values.ToList();
-        //            ids.Sort();
-        //            TableOfContents[fname] = ids.Last() + 1;
-        //        }
-        //        toc.Write(HexUtils.IntToBytes(TableOfContents[fname]), 0, 4);
-        //        toc.Write(HexUtils.IntToBytes(offsets[i]), 0, 4);
-        //        toc.Write(new byte[0x8], 0, 0x8);
-        //    }
-        //    toc.Write(new byte[0x10], 0, 0x10);
-        //    toc.Close();
-        //    Cursor.Current = Cursors.Default;
-        //}
+        public static bool ContainsFile(string name) {
+            name = Path.GetFileNameWithoutExtension(name);
+            return NameToID.ContainsKey(name);
+        }
 
         public static FSYS GetFile(string name) {
             lock(TableLock) {
@@ -114,16 +76,9 @@ namespace PBRHex.Tables
             lock(TableLock) {
                 string name = IDtoName[id];
                 if(!LoadedFiles.ContainsKey(id))
-                    LoadedFiles[id] = FileUtils.DecompressFSYS(name);
+                    LoadedFiles[id] = new FSYS(MakePath(name));
                 return LoadedFiles[id];
             }
-        }
-
-        public static string MakePath(string name) {
-            if(!name.EndsWith(".fsys"))
-                name += ".fsys";
-            string path = $@"{Program.ISODir}\files\{name}";
-            return path;
         }
 
         /// <returns>The file ID of the newly added entry.</returns>
@@ -138,9 +93,9 @@ namespace PBRHex.Tables
                 for(int i = 0; i < count; i++) {
                     string nextName = GSfsys.ReadString(nextNameAddr);
                     int comparison = name.CompareTo(nextName);
-                    if(comparison == 0)
+                    if(comparison == 0) {
                         throw new ArgumentException("A file already exists with that name.");
-                    else if(comparison < 0) {
+                    } else if(comparison < 0) {
                         nameAddr = nextNameAddr;
                         break;
                     }
@@ -182,16 +137,10 @@ namespace PBRHex.Tables
 
         private static int GenerateFileID() {
             var rand = new Random();
-            int count = GSfsys.ReadInt(0x8),
-                start = GSfsys.ReadInt(0x10),
+            int id;
+            do {
                 id = rand.Next(1, 0xffff);
-            for(int i = 0; i < count; i++) {
-                int offset = start + i * 0x10;
-                if(id == GSfsys.ReadInt(offset)) {
-                    id = rand.Next(1, 0xffff);
-                    i = -1;
-                }
-            }
+            } while(IDtoName.ContainsKey(id));
             return id;
         }
 

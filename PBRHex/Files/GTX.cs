@@ -4,8 +4,10 @@ using PBRHex.Utils;
 
 namespace PBRHex.Files
 {
-    public class GTX : FileBuffer
+    public class GTX
     {
+        public int ID => Buffer.ID;
+
         public readonly int Width;
         public readonly int Height;
         public readonly ImageEncoding Encoding;
@@ -13,21 +15,24 @@ namespace PBRHex.Files
 
         private readonly int ImageAddress;
         private readonly int PaletteAddress;
+        private readonly FileBuffer Buffer;
 
-        public GTX(string path) : base(path) {
-            Width = ReadShort(0);
-            Height = ReadShort(2);
-            Encoding = (ImageEncoding)ReadInt(8);
-            PaletteEncoding = (PaletteFormat)ReadInt(0xC);
+        public GTX(FileBuffer buffer) {
+            Buffer = buffer;
 
-            ImageAddress = ReadInt(0x28);
-            PaletteAddress = ReadInt(0x48);
+            Width = Buffer.ReadShort(0);
+            Height = Buffer.ReadShort(2);
+            Encoding = (ImageEncoding)Buffer.ReadInt(8);
+            PaletteEncoding = (PaletteFormat)Buffer.ReadInt(0xC);
+
+            ImageAddress = Buffer.ReadInt(0x28);
+            PaletteAddress = Buffer.ReadInt(0x48);
         }
 
         public int GetImageDataSize() {
             if(PaletteAddress > 0)
                 return Width * Height;
-            return ReadInt(0x4c);
+            return Buffer.ReadInt(0x4c);
         }
 
         public Color GetPixel(int x, int y) {
@@ -41,14 +46,16 @@ namespace PBRHex.Files
                 block_x * block_height * block_width +
                 (y % block_height) * block_width +
                 (x % block_width);
-            return GetColorFromPalette(ReadByte(ImageAddress + idx));
+            return GetColorFromPalette(Buffer.ReadByte(ImageAddress + idx));
         }
 
         public Color GetColorFromPalette(int index) {
             if(PaletteEncoding != PaletteFormat.RGB5A3)
                 throw new NotImplementedException();
-            int rgb5a3 = ReadShort(PaletteAddress + index * 2);
+            int rgb5a3 = Buffer.ReadShort(PaletteAddress + index * 2);
             return ImageUtils.RGB5A3toColor(rgb5a3);
         }
+
+        public static explicit operator GTX(FileBuffer file) => new GTX(file);
     }
 }

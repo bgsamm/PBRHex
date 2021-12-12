@@ -42,37 +42,44 @@ namespace PBRHex.Utils
         }
 
         public static void BuildISO(string outpath) {
-            Console.WriteLine($@"COPY ""{Program.ISODir}"" ""{outpath}""");
             RunProcess($@"{witDir}\wit.exe", $@"COPY ""{Program.ISODir}"" ""{outpath}""");
         }
 
         public static Process RunDolphin() {
-            return RunProcess($"Dolphin.exe",
+            return RunProcess("Dolphin.exe",
                     $@"-b -e ""{Program.ISODir}\sys\main.dol""", false);
         }
 
         private static Process RunProcess(string path, string args, bool wait = true) {
-            Process p;
 
-            ProcessStartInfo info = new ProcessStartInfo(path, args)
+            var info = new ProcessStartInfo(path, args)
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 WorkingDirectory = Path.GetDirectoryName(path)
             };
 
+            Program.NotifyWaiting();
+            Process process = new Process()
+            {
+                StartInfo = info,
+                EnableRaisingEvents = true
+            };
+            process.OutputDataReceived += (s, e) => { Program.Log(e.Data); };
+            process.ErrorDataReceived += (s, e) => { Program.Log(e.Data); };
             try {
-                Program.NotifyWaiting();
-                p = Process.Start(info);
-                p.EnableRaisingEvents = true;
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
                 if(wait)
-                    p.WaitForExit();
-            }
-            finally {
+                    process.WaitForExit();
+            } finally {
                 Program.NotifyDone();
             }
 
-            return p;
+            return process;
         }
     }
 }

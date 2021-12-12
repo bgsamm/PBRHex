@@ -98,6 +98,7 @@ namespace PBRHex
         }
 
         private void BuildFileTree() {
+            FileTree.Nodes.Clear();
             BuildFileTreeLoop(Program.ISODir);
             // expand first nodes
             fileTreeView.Nodes[0].Expand();
@@ -186,7 +187,6 @@ namespace PBRHex
                     if(result != DialogResult.Yes) 
                         return;
                 }
-                file.WorkingDir = FileUtils.CreateWorkspace(file.Path);
                 hexEditor = new HexEditorWindow(new FileBuffer[] { file }) 
                 {
                     Name = file.Name,
@@ -371,6 +371,35 @@ namespace PBRHex
             // open in file explorer
             Process.Start(SelectedFilePath);
         }
+
+        // Edit //
+
+        private void NewFSYSMenuItem_Click(object sender, EventArgs e) {
+            var input = new InputDialog("Name:");
+            if(input.ShowDialog() == DialogResult.OK) {
+                string name = input.Response;
+                if(FSYSTable.ContainsFile(name)) {
+                    new AlertDialog("A file already exists with that name.").ShowDialog();
+                    return;
+                }
+                if(selectFilesDialog.ShowDialog() == DialogResult.OK) {
+                    FSYSTable.AddFile(name);
+                    string path = FSYSTable.MakePath(name);
+                    FileUtils.CreateFSYS(path);
+
+                    var fsys = new FSYS(path);
+                    for(int i = 0; i < selectFilesDialog.FileNames.Length; i++) {
+                        fsys.AddFile(selectFilesDialog.FileNames[i]);
+                    }
+                    var temp = FileUtils.CompressFSYS(fsys);
+                    FileUtils.MoveFile(temp.Path, path);
+
+                    BuildFileTree();
+                }
+            }
+        }
+
+        // Tools //
 
         private void HexEditorMenuItem_Click(object sender, EventArgs e) {
             OpenHexEditor(new FileBuffer(SelectedFilePath));

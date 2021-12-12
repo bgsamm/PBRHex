@@ -16,8 +16,9 @@ namespace PBRHex.Commands.FsysCommands
         }
 
         public override bool Execute() {
-            var file = FileUtils.CreateFile($@"{Program.TempDir}\temp", 0x10);
-            File = FSYS.AddFile(file);
+            string path = $@"{Program.TempDir}\temp";
+            FileUtils.CreateFile(path, 0x10);
+            File = FSYS.AddFile(path);
             Editor.AddFile(File);
             return false;
         }
