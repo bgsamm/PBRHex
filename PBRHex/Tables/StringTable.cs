@@ -241,7 +241,7 @@ namespace PBRHex.Tables
             if(Color != 0)
                 sb.Append($"ffff0005{HexUtils.IntToHex(Color, 4)}");
             for(int i = 0; i < Text.Length; i++) {
-                if(Text[i] == '[') {
+                if(Text[i] == '[' && Text.IndexOf(']', i) != -1) {
                     int len = Text.IndexOf(']', i) - i - 1;
                     string substr = Text.Substring(i + 1, len);
                     if(substr == "\"No.\"")

@@ -43,13 +43,15 @@ namespace PBRHex
             DOL.Write();
         }
 
-        private void GoTo(int address) {
+        private void GoTo(uint address) {
+            int index = DOL.GetSectionIndex(address);
+            sectionSelectDropdown.SelectedIndex = index;
             codeView.FirstDisplayedScrollingRowIndex = (int)(address - CurrentSectionAddress) / 4;
             codeView.Invalidate();
         }
 
-        private bool IsAddressInbounds(int address) {
-            return address > CurrentSectionAddress + CurrentSectionSize;
+        private bool IsAddressInbounds(uint address) {
+            return DOL.IsAddrInBounds(address);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
@@ -57,10 +59,11 @@ namespace PBRHex
                 case Keys.Control | Keys.G:
                     var input = new HexInputDialog("Enter address:");
                     if(input.ShowDialog() == DialogResult.OK) {
-                        if(!IsAddressInbounds(input.Response))
+                        uint addr = (uint)input.Response;
+                        if(!IsAddressInbounds(addr))
                             new AlertDialog("Address out of bounds.").ShowDialog();
                         else
-                            GoTo(input.Response);
+                            GoTo(addr);
                     }
                     return true;
                 case Keys.Control | Keys.S:
@@ -139,19 +142,12 @@ namespace PBRHex
             uint address = RowToAddress(e.RowIndex);
             if(!DOL.IsAddrInBounds(address)) 
                 return;
-            if(e.ColumnIndex == 0) {
-                string asm = codeView[e.ColumnIndex + 1, e.RowIndex].Value.ToString();
-                e.Value = HexUtils.IntToHex(AssemblyUtils.Assemble(asm, RowToAddress(e.RowIndex)));
-            }
-            else if(e.ColumnIndex == 1) {
+            if(e.ColumnIndex == 0)
+                e.Value = HexUtils.IntToHex(DOL.GetInstruction(address));
+            else if(e.ColumnIndex == 1)
                 e.Value = AssemblyUtils.Disassemble(DOL.GetInstruction(address), RowToAddress(e.RowIndex));
-            }
-            else if(e.ColumnIndex == 2) {
-                if(DOL.Comments.ContainsKey(address))
-                    e.Value = DOL.Comments[address];
-                else
-                    e.Value = "";
-            }
+            else if(e.ColumnIndex == 2)
+                e.Value = DOL.Comments.ContainsKey(address) ? DOL.Comments[address] : "";
         }
 
         private void CodeView_CellPainting(object sender, DataGridViewCellPaintingEventArgs e) {
@@ -188,27 +184,21 @@ namespace PBRHex
         }
 
         private void LoadButton_Click(object sender, EventArgs e) {
-            new AlertDialog( "This functionality is not currently implemented." ).ShowDialog();
-            //if(openFileDialog.ShowDialog() == DialogResult.OK) {
-            //    try {
-            //        Program.NotifyWaiting();
-            //        codeView.FirstDisplayedScrollingRowIndex = 0;
+            var dialog = new ConfirmDialog("This will overwrite all data in the current section.\n" +
+                "Are you sure you wish to continue?");
+            if(dialog.ShowDialog() != DialogResult.Yes)
+                return;
+            //new AlertDialog( "This functionality is not currently implemented." ).ShowDialog();
+            if(openFileDialog.ShowDialog() == DialogResult.OK) {
+                Program.NotifyWaiting();
+                codeView.FirstDisplayedScrollingRowIndex = 0;
 
-            //        var lines = File.ReadAllLines(openFileDialog.FileName);
-            //        // Delete existing section
-            //        DOL.DeleteRange(CurrentSection.Item1, CurrentSection.Item2);
-
-            //        for(int i = 0; i < lines.Length; i++) {
-            //            uint op = AssemblyUtils.Assemble(lines[i], CurrentSectionAddress + (uint)i * 4);
-            //            DOL.InsertRange(CurrentSection.Item1 + i * 4, HexUtils.IntToBytes(op));
-            //        }
-            //        Program.NotifyDone();
-            //    }
-            //    catch(SecurityException ex) {
-            //        MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +
-            //        $"Details:\n\n{ex.StackTrace}");
-            //    }
-            //}
+                var bin = new FileBuffer(openFileDialog.FileName);
+                DOL.OverwriteSection(CurrentSection, bin.GetBufferCopy());
+                codeView.RowCount = CurrentSectionSize / 4 + 1;
+                codeView.Invalidate();
+                Program.NotifyDone();
+            }
         }
     }
 }

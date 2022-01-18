@@ -10,11 +10,7 @@ namespace PBRHex.Files
         public static Dictionary<uint, string> Comments;
         private static int Size => Main.Size;
 
-        // !!!THIS IS NOT THE SAME ORDER AS IN THE DOL HEADER!!!
-        /// <summary>
-        /// Tuples are of the form (offset, size, address).
-        /// </summary>
-        private static (int, int, uint)[] Sections;
+        private static Section[] Sections;
         private static FileBuffer Main;
 
         public static void Initialize() {
@@ -31,13 +27,13 @@ namespace PBRHex.Files
                 infile.Close();
             }
 
-            Sections = new (int, int, uint)[18];
+            Sections = new Section[18];
             for(int i = 0; i < Sections.Length; i++) {
                 int offset = Main.ReadInt(i * 4);
                 if(offset > 0) {
                     uint memLoc = (uint)Main.ReadInt(0x48 + i * 4);
                     int size = Main.ReadInt(0x90 + i * 4);
-                    Sections[i] = (offset, size, memLoc);
+                    Sections[i] = new Section(offset, size, memLoc);
                 }
             }
         }
@@ -52,15 +48,15 @@ namespace PBRHex.Files
         }
 
         public static bool SectionHasData(int index) {
-            return Sections[index].Item1 > 0;
+            return Sections[index].Offset > 0;
         }
 
         public static int GetSectionSize(int index) {
-            return Sections[index].Item2;
+            return Sections[index].Size;
         }
 
         public static uint GetSectionMemAddr(int index) {
-            return Sections[index].Item3;
+            return Sections[index].Address;
         }
 
         public static uint GetInstruction(uint memAddr) {
@@ -69,13 +65,15 @@ namespace PBRHex.Files
         }
 
         public static void InsertInstruction(uint memAddr, uint instruction) {
-            int fileOffset = MemAddrToFileOffset(memAddr);
-            InsertRange(fileOffset, HexUtils.IntToBytes(instruction));
+            int index = GetSectionIndex(memAddr);
+            var section = Sections[index];
+            InsertRange(index, (int)(memAddr - section.Address), HexUtils.IntToBytes(instruction));
         }
 
         public static void DeleteInstruction(uint memAddr) {
-            int fileOffset = MemAddrToFileOffset(memAddr);
-            DeleteRange(fileOffset, 4);
+            int index = GetSectionIndex(memAddr);
+            var section = Sections[index];
+            DeleteRange(index, (int)(memAddr - section.Address), 4);
         }
 
         public static void WriteInstruction(uint memAddr, uint instruction) {
@@ -86,120 +84,151 @@ namespace PBRHex.Files
                 Main.WriteInt(fileOffset, instruction);
         }
 
-        private static int MemAddrToFileOffset(uint memAddr) {
-            if(memAddr % 4 > 0)
-                throw new ArgumentException("Instruction addresses must be multiples of 4.");
-            foreach(var section in Sections) {
-                if(memAddr >= section.Item3 && memAddr < section.Item3 + section.Item2)
-                    return (int)((memAddr - section.Item3) + section.Item1);
-            }
-            throw new ArgumentOutOfRangeException();
+        public static void OverwriteSection(int index, byte[] bytes) {
+            var section = Sections[index];
+            if(section.Size > 0)
+                DeleteRange(index, 0, section.Size);
+            InsertRange(index, 0, bytes);
         }
 
-        private static void InsertRange(int fileOffset, byte[] bytes) {
+        public static int GetSectionIndex(uint memAddr) {
+            if(memAddr % 4 > 0)
+                throw new ArgumentException("Instruction addresses must be multiples of 4.");
+            for(int i = 0; i < Sections.Length; i++) {
+                var section = Sections[i];
+                if(memAddr >= section.Address && memAddr < section.Address + section.Size)
+                    return i;
+            }
+            throw new ArgumentOutOfRangeException("Address out of bounds");
+        }
+
+        private static int MemAddrToFileOffset(uint memAddr) {
+            int index = GetSectionIndex(memAddr);
+            var section = Sections[index];
+            return (int)(memAddr - section.Address) + section.Offset;
+        }
+
+        private static void InsertRange(int sectionIndex, int sectionOffset, byte[] bytes) {
+            var section = Sections[sectionIndex];
+            if(sectionOffset > section.Size)
+                throw new ArgumentOutOfRangeException();
+            int fileOffset = section.Offset + sectionOffset;
             Main.InsertRange(fileOffset, bytes);
 
-            var section = (0, 0, 0u);
-            for(int n = 0; n < Sections.Length; n++) {
-                section = Sections[n];
-                if(section.Item1 > 0 && fileOffset >= section.Item1 && fileOffset <= section.Item1 + section.Item2) {
-                    Sections[n].Item2 += bytes.Length;
-                    section.Item2 += bytes.Length;
-                    break;
-                }
+            int size = bytes.Length;
+            // update section headers
+            section.Size += size;
+            for(int i = 0; i < Sections.Length; i++) {
+                if(Sections[i].Offset > section.Offset)
+                    Sections[i].Offset += size;
             }
+            Sections[sectionIndex] = section;
 
             int BD, LI, c, offset;
-            uint insertionAddress = section.Item3 + (uint)(fileOffset - section.Item1),
+            uint insertionAddress = section.Address + (uint)(fileOffset - section.Offset),
                 op, address, target_addr;
-            for(int i = section.Item2 - 4; i >= 0; i -= 4) {
-                address = section.Item3 + (uint)i;
+            // iterate over instructions starting at the end of the section
+            for(int i = section.Size - 4; i >= 0; i -= 4) {
+                address = section.Address + (uint)i;
+                // shift comment addresses forward
                 if(Comments.ContainsKey(address) && address >= insertionAddress) {
                     var temp = Comments[address];
                     Comments.Remove(address);
-                    Comments[address + 4] = temp;
+                    Comments[address + (uint)size] = temp;
                 }
-
-                if(section.Item1 + i + 4 >= Main.Size)
+                // I don't recall why I need to do this
+                if(section.Offset + i + 4 >= Main.Size)
                     break;
 
-                op = (uint)Main.ReadInt(section.Item1 + i);
+                op = (uint)Main.ReadInt(section.Offset + i);
                 c = (int)(op >> 0x1a);
-                if(c == 0x10) {
-                    BD = (int)((op >> 2) & 0x3fff);
-                    target_addr = (uint)((short)(BD << 2) + address);
+                // update branches
+                if(c == 0x10 || c == 0x12) {
+                    // conditional branch
+                    if(c == 0x10) {
+                        BD = (int)((op >> 2) & 0x3fff);
+                        target_addr = (uint)((short)(BD << 2) + address);
+                    } 
+                    // unconditional branch
+                    else {
+                        LI = (int)((op >> 2) & 0xffffff);
+                        offset = (LI >> 23 == 1) ? (int)((LI << 2) | 0xfc000000) : LI << 2;
+                        target_addr = (uint)(address + offset);
+                    }
+                    // if instruction is before insertion and target is after,
+                    // increase target offset in pos. direction
                     if(address < insertionAddress && target_addr >= insertionAddress)
-                        op += 0x4;
+                        op += (uint)size;
+                    // if instruction is after insertion and target is before,
+                    // increase target offset in neg. direction
                     else if(address > insertionAddress && target_addr < insertionAddress)
-                        op -= 0x4;
-                    Main.WriteInt(section.Item1 + i, op);
-                    continue;
-                }
-                if(c == 0x12) {
-                    LI = (int)((op >> 2) & 0xffffff);
-                    offset = (LI >> 23 == 1) ? (int)((LI << 2) | 0xfc000000) : LI << 2;
-                    target_addr = (uint)(address + offset);
-                    if(address < insertionAddress && target_addr >= insertionAddress)
-                        op += 0x4;
-                    else if(address > insertionAddress && target_addr < insertionAddress)
-                        op -= 0x4;
-                    Main.WriteInt(section.Item1 + i, op);
+                        op -= (uint)size;
+                    Main.WriteInt(section.Offset + i, op);
                     continue;
                 }
             }
         }
 
-        // I feel like this is uber broken, I'll need to look closer at it at some point
-        private static byte[] DeleteRange(int fileOffset, int size) {
+        /// <param name="fileOffset">The file offset to delete data from</param>
+        /// <param name="size">The size of the range to delete</param>
+        /// <returns>The deleted bytes</returns>
+        private static byte[] DeleteRange(int sectionIndex, int sectionOffset, int size) {
+            var section = Sections[sectionIndex];
+            if(sectionOffset >= section.Size)
+                throw new ArgumentOutOfRangeException();
+            int fileOffset = section.Offset + sectionOffset;
             var oldBytes = Main.DeleteRange(fileOffset, size);
 
-            // update section header
-            var section = (0, 0, 0u);
-            for(int n = 0; n < Sections.Length; n++) {
-                section = Sections[n];
-                if(SectionHasData(n) && fileOffset >= section.Item1 && fileOffset < section.Item1 + section.Item2) {
-                    Sections[n].Item2 -= size;
-                    section.Item2 -= size;
-                    break;
-                }
+            // update section headers
+            section.Size -= size;
+            for(int i = 0; i < Sections.Length; i++) {
+                if(Sections[i].Offset > section.Offset)
+                    Sections[i].Offset -= size;
             }
+            Sections[sectionIndex] = section;
 
             // update branch instructions
             int BD, LI, c, offset;
-            uint deletionAddress = section.Item3 + (uint)(fileOffset - section.Item1),
+            uint deletionAddress = section.Address + (uint)(fileOffset - section.Offset),
                 op, address, target_addr;
-            for(int i = 0; i < section.Item2; i += 4) {
-                address = section.Item3 + (uint)i;
+            // iterate over instructions starting at the beginning of the section
+            for(int i = 0; i < section.Size; i += 4) {
+                address = section.Address + (uint)i;
+                // remove comments in range and shift comments in front back
                 if(Comments.ContainsKey(address) && address >= deletionAddress) {
                     var temp = Comments[address];
                     Comments.Remove(address);
                     if(address > deletionAddress)
-                        Comments[address - 4] = temp;
+                        Comments[address - (uint)size] = temp;
                 }
-                if(section.Item1 + i >= Main.Size)
+                // again, I don't recall why I need to do this
+                if(section.Offset + i >= Main.Size)
                     break;
 
-                op = (uint)Main.ReadInt(section.Item1 + i);
+                op = (uint)Main.ReadInt(section.Offset + i);
                 c = (int)(op >> 0x1a);
-                if(c == 0x10) {
-                    BD = (int)((op >> 2) & 0x3fff);
-                    target_addr = (uint)((short)(BD << 2) + address);
+                // update branches
+                if(c == 0x10 || c == 0x12) {
+                    // conditional branch
+                    if(c == 0x10) {
+                        BD = (int)((op >> 2) & 0x3fff);
+                        target_addr = (uint)((short)(BD << 2) + address);
+                    }
+                    // unconditional branch
+                    else {
+                        LI = (int)((op >> 2) & 0xffffff);
+                        offset = (LI >> 23 == 1) ? (int)((LI << 2) | 0xfc000000) : LI << 2;
+                        target_addr = (uint)(address + offset);
+                    }
+                    // if instruction is before deletion and target is after,
+                    // decrease target offset in pos. direction
                     if(address < deletionAddress && target_addr > deletionAddress)
-                        op -= 0x4;
+                        op -= (uint)size;
+                    // if instruction is after deletion and target is before,
+                    // decrease target offset in neg. direction
                     else if(address >= deletionAddress && target_addr < deletionAddress)
-                        op += 0x4;
-                    Main.WriteInt(section.Item1 + i, op);
-                    continue;
-                }
-                if(c == 0x12) {
-                    LI = (int)((op >> 2) & 0xffffff);
-                    offset = (LI >> 23 == 1) ? (int)((LI << 2) | 0xfc000000) : LI << 2;
-                    target_addr = (uint)(address + offset);
-                    if(address < deletionAddress && target_addr > deletionAddress)
-                        op -= 0x4;
-                    else if(address >= deletionAddress && target_addr < deletionAddress)
-                        op += 0x4;
-                    Main.WriteInt(section.Item1 + i, op);
+                        op += (uint)size;
+                    Main.WriteInt(section.Offset + i, op);
                     continue;
                 }
             }
@@ -217,7 +246,7 @@ namespace PBRHex.Files
                     Main.WriteInt(0x48 + i * 4, address);
                     // size (init to zero)
                     Main.WriteInt(0x90 + i * 4, 0);
-                    Sections[i] = (Main.Size, 0, address);
+                    Sections[i] = new Section(Main.Size, 0, address);
                     return i;
                 }
             }
@@ -227,9 +256,9 @@ namespace PBRHex.Files
         public static void Write() {
             // update section info
             for(int i = 0; i < Sections.Length; i++) {
-                Main.WriteInt(i * 4, Sections[i].Item1);
-                Main.WriteInt(0x48 + i * 4, Sections[i].Item3);
-                Main.WriteInt(0x90 + i * 4, Sections[i].Item2);
+                Main.WriteInt(i * 4, Sections[i].Offset);
+                Main.WriteInt(0x48 + i * 4, Sections[i].Address);
+                Main.WriteInt(0x90 + i * 4, Sections[i].Size);
             }
             FileUtils.WriteToISO(Main);
             // save comments
@@ -241,6 +270,19 @@ namespace PBRHex.Files
                 outfile.WriteLine($"{address:X8}:{Comments[address]}");
             }
             outfile.Close();
+        }
+    }
+
+    struct Section
+    {
+        public int Offset;
+        public int Size;
+        public uint Address;
+
+        public Section(int offset, int size, uint addr) {
+            Offset = offset;
+            Size = size;
+            Address = addr;
         }
     }
 }

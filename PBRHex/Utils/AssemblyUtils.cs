@@ -140,22 +140,22 @@ namespace PBRHex.Utils
                     bin = $"010000";
                     switch(op) {
                         case "beq":
-                            bin += "0110000010";
+                            bin += "01100 00010";
                             break;
                         case "bgt":
-                            bin += "0110000001";
+                            bin += "01100 00001";
                             break;
                         case "ble":
-                            bin += "0010000001";
+                            bin += "00100 00001";
                             break;
                         case "blt":
-                            bin += "0110000000";
+                            bin += "01100 00000";
                             break;
                         case "bne":
-                            bin += "0010000010";
+                            bin += "00100 00010";
                             break;
                         case "bdnz":
-                            bin += "1000000000";
+                            bin += "10000 00000";
                             break;
                     }
                     bin += $"{Binary(BD, 14)}00";
