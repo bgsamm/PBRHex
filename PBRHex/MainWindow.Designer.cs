@@ -53,6 +53,7 @@ namespace PBRHex
             this.panel1 = new System.Windows.Forms.Panel();
             this.messageLabel = new System.Windows.Forms.Label();
             this.selectFilesDialog = new System.Windows.Forms.OpenFileDialog();
+            this.patchEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fileTreeContextMenu.SuspendLayout();
             this.headerMenuStrip.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -71,11 +72,11 @@ namespace PBRHex
             this.fileTreeView.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.fileTreeView.ImageIndex = 0;
             this.fileTreeView.ImageList = this.fileTreeImageList;
-            this.fileTreeView.Location = new System.Drawing.Point(11, 7);
-            this.fileTreeView.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.fileTreeView.Location = new System.Drawing.Point(8, 6);
+            this.fileTreeView.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.fileTreeView.Name = "fileTreeView";
             this.fileTreeView.SelectedImageIndex = 0;
-            this.fileTreeView.Size = new System.Drawing.Size(525, 366);
+            this.fileTreeView.Size = new System.Drawing.Size(394, 297);
             this.fileTreeView.TabIndex = 1;
             this.fileTreeView.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.FileTreeView_NodeMouseClick);
             this.fileTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.FileTreeView_NodeMouseDoubleClick);
@@ -92,14 +93,14 @@ namespace PBRHex
             // fileLocationMenuItem
             // 
             this.fileLocationMenuItem.Name = "fileLocationMenuItem";
-            this.fileLocationMenuItem.Size = new System.Drawing.Size(216, 24);
+            this.fileLocationMenuItem.Size = new System.Drawing.Size(183, 22);
             this.fileLocationMenuItem.Text = "Open file location";
             this.fileLocationMenuItem.Click += new System.EventHandler(this.FileLocationMenuItem_Click);
             // 
             // hexEditorMenuItem
             // 
             this.hexEditorMenuItem.Name = "hexEditorMenuItem";
-            this.hexEditorMenuItem.Size = new System.Drawing.Size(216, 24);
+            this.hexEditorMenuItem.Size = new System.Drawing.Size(183, 22);
             this.hexEditorMenuItem.Text = "Open in hex editor";
             this.hexEditorMenuItem.Click += new System.EventHandler(this.HexEditorMenuItem_Click);
             // 
@@ -113,27 +114,27 @@ namespace PBRHex
             this.decompressFSYSMenuItem,
             this.restoreMenuItem});
             this.fileTreeContextMenu.Name = "fileTreeContextMenu";
-            this.fileTreeContextMenu.Size = new System.Drawing.Size(217, 124);
+            this.fileTreeContextMenu.Size = new System.Drawing.Size(184, 114);
             this.fileTreeContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.FileTreeContextMenu_Opening);
             // 
             // folderLocationMenuItem
             // 
             this.folderLocationMenuItem.Name = "folderLocationMenuItem";
-            this.folderLocationMenuItem.Size = new System.Drawing.Size(216, 24);
+            this.folderLocationMenuItem.Size = new System.Drawing.Size(183, 22);
             this.folderLocationMenuItem.Text = "Open folder location";
             this.folderLocationMenuItem.Click += new System.EventHandler(this.FolderLocationMenuItem_Click);
             // 
             // decompressFSYSMenuItem
             // 
             this.decompressFSYSMenuItem.Name = "decompressFSYSMenuItem";
-            this.decompressFSYSMenuItem.Size = new System.Drawing.Size(216, 24);
+            this.decompressFSYSMenuItem.Size = new System.Drawing.Size(183, 22);
             this.decompressFSYSMenuItem.Text = "Unpack";
             this.decompressFSYSMenuItem.Click += new System.EventHandler(this.DecompressFSYSMenuItem_Click);
             // 
             // restoreMenuItem
             // 
             this.restoreMenuItem.Name = "restoreMenuItem";
-            this.restoreMenuItem.Size = new System.Drawing.Size(216, 24);
+            this.restoreMenuItem.Size = new System.Drawing.Size(183, 22);
             this.restoreMenuItem.Text = "Restore";
             this.restoreMenuItem.Click += new System.EventHandler(this.RestoreMenuItem_Click);
             // 
@@ -152,9 +153,9 @@ namespace PBRHex
             this.dolphinMenuItem});
             this.headerMenuStrip.Location = new System.Drawing.Point(0, 0);
             this.headerMenuStrip.Name = "headerMenuStrip";
-            this.headerMenuStrip.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
+            this.headerMenuStrip.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
             this.headerMenuStrip.ShowItemToolTips = true;
-            this.headerMenuStrip.Size = new System.Drawing.Size(595, 28);
+            this.headerMenuStrip.Size = new System.Drawing.Size(446, 24);
             this.headerMenuStrip.TabIndex = 4;
             this.headerMenuStrip.Text = "menuStrip1";
             // 
@@ -164,13 +165,13 @@ namespace PBRHex
             this.unpackISOToolStripMenuItem,
             this.rebuildISOMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // unpackISOToolStripMenuItem
             // 
             this.unpackISOToolStripMenuItem.Name = "unpackISOToolStripMenuItem";
-            this.unpackISOToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.unpackISOToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.unpackISOToolStripMenuItem.Text = "Unpack ISO";
             this.unpackISOToolStripMenuItem.Click += new System.EventHandler(this.UnpackISOButton_Click);
             // 
@@ -178,22 +179,23 @@ namespace PBRHex
             // 
             this.rebuildISOMenuItem.Enabled = false;
             this.rebuildISOMenuItem.Name = "rebuildISOMenuItem";
-            this.rebuildISOMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.rebuildISOMenuItem.Size = new System.Drawing.Size(135, 22);
             this.rebuildISOMenuItem.Text = "Rebuild ISO";
             this.rebuildISOMenuItem.Click += new System.EventHandler(this.RebuildISOButton_Click);
             // 
             // editToolStripMenuItem
             // 
             this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.newFSYSMenuItem});
+            this.newFSYSMenuItem,
+            this.patchEditorToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-            this.editToolStripMenuItem.Size = new System.Drawing.Size(49, 24);
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
             this.editToolStripMenuItem.Text = "Edit";
             // 
             // newFSYSMenuItem
             // 
             this.newFSYSMenuItem.Name = "newFSYSMenuItem";
-            this.newFSYSMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.newFSYSMenuItem.Size = new System.Drawing.Size(180, 22);
             this.newFSYSMenuItem.Text = "New FSYS";
             this.newFSYSMenuItem.Click += new System.EventHandler(this.NewFSYSMenuItem_Click);
             // 
@@ -205,7 +207,7 @@ namespace PBRHex
             this.dexEditorMenuItem,
             this.rentalPassEditorToolStripMenuItem});
             this.editorsToolStripMenuItem.Name = "editorsToolStripMenuItem";
-            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(58, 24);
+            this.editorsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.editorsToolStripMenuItem.Text = "Tools";
             // 
             // stringEditorMenuItem
@@ -215,7 +217,7 @@ namespace PBRHex
             this.stringEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.stringEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.stringEditorMenuItem.Name = "stringEditorMenuItem";
-            this.stringEditorMenuItem.Size = new System.Drawing.Size(209, 26);
+            this.stringEditorMenuItem.Size = new System.Drawing.Size(180, 22);
             this.stringEditorMenuItem.Text = "String Editor";
             this.stringEditorMenuItem.Click += new System.EventHandler(this.StringEditorMenuItem_Click);
             // 
@@ -226,7 +228,7 @@ namespace PBRHex
             this.assemblyEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.assemblyEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.assemblyEditorMenuItem.Name = "assemblyEditorMenuItem";
-            this.assemblyEditorMenuItem.Size = new System.Drawing.Size(209, 26);
+            this.assemblyEditorMenuItem.Size = new System.Drawing.Size(180, 22);
             this.assemblyEditorMenuItem.Text = "Assembly Editor";
             this.assemblyEditorMenuItem.Click += new System.EventHandler(this.CodeEditorMenuItem_Click);
             // 
@@ -237,7 +239,7 @@ namespace PBRHex
             this.dexEditorMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.dexEditorMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.dexEditorMenuItem.Name = "dexEditorMenuItem";
-            this.dexEditorMenuItem.Size = new System.Drawing.Size(209, 26);
+            this.dexEditorMenuItem.Size = new System.Drawing.Size(180, 22);
             this.dexEditorMenuItem.Text = "Dex Editor";
             this.dexEditorMenuItem.Click += new System.EventHandler(this.DexEditorMenuItem_Click);
             // 
@@ -248,7 +250,7 @@ namespace PBRHex
             this.rentalPassEditorToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.rentalPassEditorToolStripMenuItem.Margin = new System.Windows.Forms.Padding(3, 0, 0, 0);
             this.rentalPassEditorToolStripMenuItem.Name = "rentalPassEditorToolStripMenuItem";
-            this.rentalPassEditorToolStripMenuItem.Size = new System.Drawing.Size(209, 26);
+            this.rentalPassEditorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.rentalPassEditorToolStripMenuItem.Text = "Rental Pass Editor";
             this.rentalPassEditorToolStripMenuItem.Click += new System.EventHandler(this.RentalPassEditorMenuItem_Click);
             // 
@@ -259,7 +261,7 @@ namespace PBRHex
             this.dolphinMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.dolphinMenuItem.Margin = new System.Windows.Forms.Padding(0, 0, 10, 0);
             this.dolphinMenuItem.Name = "dolphinMenuItem";
-            this.dolphinMenuItem.Size = new System.Drawing.Size(28, 24);
+            this.dolphinMenuItem.Size = new System.Drawing.Size(26, 20);
             this.dolphinMenuItem.ToolTipText = "Play";
             this.dolphinMenuItem.Click += new System.EventHandler(this.DolphinButton_Click);
             // 
@@ -269,19 +271,20 @@ namespace PBRHex
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panel1.Controls.Add(this.messageLabel);
             this.panel1.Controls.Add(this.fileTreeView);
-            this.panel1.Location = new System.Drawing.Point(23, 46);
-            this.panel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.panel1.Location = new System.Drawing.Point(17, 37);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(549, 380);
+            this.panel1.Size = new System.Drawing.Size(412, 309);
             this.panel1.TabIndex = 5;
             // 
             // messageLabel
             // 
             this.messageLabel.AutoSize = true;
             this.messageLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.messageLabel.Location = new System.Drawing.Point(135, 166);
+            this.messageLabel.Location = new System.Drawing.Point(101, 135);
+            this.messageLabel.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.messageLabel.Name = "messageLabel";
-            this.messageLabel.Size = new System.Drawing.Size(270, 18);
+            this.messageLabel.Size = new System.Drawing.Size(218, 15);
             this.messageLabel.TabIndex = 2;
             this.messageLabel.Text = "Go to \"File > Unpack ISO\" to get started";
             // 
@@ -291,18 +294,25 @@ namespace PBRHex
             this.selectFilesDialog.Multiselect = true;
             this.selectFilesDialog.Title = "Select file(s)";
             // 
+            // patchEditorToolStripMenuItem
+            // 
+            this.patchEditorToolStripMenuItem.Name = "patchEditorToolStripMenuItem";
+            this.patchEditorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.patchEditorToolStripMenuItem.Text = "Patch editor";
+            this.patchEditorToolStripMenuItem.Click += new System.EventHandler(this.PatchEditorMenuItem_Click);
+            // 
             // MainWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.RoyalBlue;
-            this.ClientSize = new System.Drawing.Size(595, 444);
+            this.ClientSize = new System.Drawing.Size(446, 361);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.headerMenuStrip);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.headerMenuStrip;
-            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.MaximizeBox = false;
             this.Name = "MainWindow";
             this.Text = "PBRHex";
@@ -343,6 +353,7 @@ namespace PBRHex
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newFSYSMenuItem;
         private System.Windows.Forms.OpenFileDialog selectFilesDialog;
+        private System.Windows.Forms.ToolStripMenuItem patchEditorToolStripMenuItem;
     }
 }
 

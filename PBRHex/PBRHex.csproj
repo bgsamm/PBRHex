@@ -159,11 +159,23 @@
     <Compile Include="Commands\StringCommands\SetStringSpacingCommand.cs" />
     <Compile Include="Commands\StringCommands\SetStringSizeCommand.cs" />
     <Compile Include="Interfaces.cs" />
+    <Compile Include="NewPatchEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewPatchEditor.Designer.cs">
+      <DependentUpon>NewPatchEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="PassEditor.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="PassEditor.Designer.cs">
       <DependentUpon>PassEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PatchEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PatchEditor.Designer.cs">
+      <DependentUpon>PatchEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="Pokemon.cs" />
     <Compile Include="Tables\AbilityTable.cs" />
@@ -295,8 +307,14 @@
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="NewPatchEditor.resx">
+      <DependentUpon>NewPatchEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PassEditor.resx">
       <DependentUpon>PassEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PatchEditor.resx">
+      <DependentUpon>PatchEditor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

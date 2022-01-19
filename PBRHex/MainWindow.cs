@@ -456,5 +456,13 @@ namespace PBRHex
             else
                 new PassEditor().Show();
         }
+
+        private void PatchEditorMenuItem_Click(object sender, EventArgs e) {
+            var form = GetOpenForm(typeof(PatchEditor));
+            if(form != null)
+                form.BringToFront();
+            else
+                new PatchEditor().Show();
+        }
     }
 }
