@@ -41,12 +41,13 @@ namespace PBRHex.HexEditor
         /// The currently selected file in FileSelect
         /// </summary>
         private FileBuffer CurrentFile => Files[fileSelectDropdown.SelectedIndex];
-        private readonly FSYS ContainingArchive;
+        private FSYS ContainingArchive => ArchiveName != null ? FSYSTable.GetFile(ArchiveName) : null;
+        private readonly string ArchiveName;
 
-        public HexEditorWindow(FileBuffer[] files, FSYS archive = null) {
+        public HexEditorWindow(FileBuffer[] files, string archive = null) {
             InitializeComponent();
             Files = new List<FileBuffer>(files);
-            ContainingArchive = archive;
+            ArchiveName = archive;
         }
 
         protected override void OnLoad(EventArgs e) {
@@ -205,6 +206,14 @@ namespace PBRHex.HexEditor
             Files.Add(file);
             fileSelectDropdown.Items.Add(file);
             fileSelectDropdown.SelectedIndex = fileSelectDropdown.Items.Count - 1;
+        }
+
+        public void ReplaceFile(FileBuffer oldFile, FileBuffer newFile) {
+            int i = fileSelectDropdown.Items.IndexOf(oldFile);
+            Files[i] = newFile;
+            fileSelectDropdown.Items[i] = newFile;
+            fileSelectDropdown.SelectedIndex = i;
+            hexGrid.Invalidate();
         }
 
         public void RemoveFile(FileBuffer file) {
@@ -481,10 +490,9 @@ namespace PBRHex.HexEditor
                 GoTo(address);
         }
 
-        private void AddFileMenuItem_Click(object sender, EventArgs e) {
+        private void OpenFileMenuItem_Click(object sender, EventArgs e) {
             if(openFileDialog.ShowDialog() == DialogResult.OK) {
-                var file = new FileBuffer(openFileDialog.FileName);
-                ExecuteCommand(new AddFileCommand(this, ContainingArchive, file));
+                ExecuteCommand(new ReplaceFileCommand(this, ContainingArchive, CurrentFile, openFileDialog.FileName));
             }
         }
 

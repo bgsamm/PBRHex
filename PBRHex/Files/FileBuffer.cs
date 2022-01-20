@@ -39,6 +39,7 @@ namespace PBRHex.Files
         public string Directory => System.IO.Path.GetDirectoryName(Path);
         public string Extension => System.IO.Path.GetExtension(Path);
         public string Name => System.IO.Path.GetFileName(Path);
+        public string NameNoExt => System.IO.Path.GetFileNameWithoutExtension(Path);
         /// <summary>
         /// The path to the file's working directory when editing.
         /// </summary>
@@ -57,7 +58,7 @@ namespace PBRHex.Files
 
         static FileBuffer() {
             Metadata = new Dictionary<string, Dictionary<string, object>>();
-            if(File.Exists($"{Program.UserDir}\\data.json"))
+            if (File.Exists($"{Program.UserDir}\\data.json"))
                 LoadMetadata();
         }
 
@@ -85,11 +86,11 @@ namespace PBRHex.Files
             LabelDict = new LabelDict();
             Notes = "";
 
-            if(Metadata.ContainsKey(Key)) {
+            if (Metadata.ContainsKey(Key)) {
                 var data = Metadata[Key];
-                if(data.ContainsKey("Labels"))
+                if (data.ContainsKey("Labels"))
                     LabelDict = (LabelDict)data["Labels"];
-                if(data.ContainsKey("Notes"))
+                if (data.ContainsKey("Notes"))
                     Notes = (string)data["Notes"];
             }
         }
@@ -104,13 +105,13 @@ namespace PBRHex.Files
         /// <returns>A bool indicating whether a match was found.</returns>
         public bool Search(byte[] bytes, out int address, int offset = 0, bool reverse = false) {
             int end = reverse ? 0 : Size - bytes.Length;
-            if(reverse)
+            if (reverse)
                 offset = Math.Min(offset, Size - bytes.Length);
 
             byte[] window = new byte[bytes.Length];
-            for(address = offset; Math.Abs(address - end) > 0; address += reverse ? -1 : 1) {
+            for (address = offset; Math.Abs(address - end) > 0; address += reverse ? -1 : 1) {
                 Array.Copy(Buffer, address, window, 0, bytes.Length);
-                if(Enumerable.SequenceEqual(window, bytes))
+                if (Enumerable.SequenceEqual(window, bytes))
                     return true;
             }
             return false;
@@ -134,14 +135,14 @@ namespace PBRHex.Files
 
         public virtual void InsertRange(int offset, byte[] bytes) {
             var buffer = Buffer.ToList();
-            if(offset > Size)
+            if (offset > Size)
                 buffer.AddRange(new byte[offset - Size]);
             buffer.InsertRange(offset, bytes);
             Buffer = buffer.ToArray();
 
             var temp = new LabelDict();
-            foreach(var label in LabelDict.Values) {
-                if(label.Address >= offset)
+            foreach (var label in LabelDict.Values) {
+                if (label.Address >= offset)
                     label.Address += bytes.Length;
                 temp.Add(label);
             }
@@ -168,9 +169,9 @@ namespace PBRHex.Files
             Buffer = buffer.ToArray();
 
             var temp = new LabelDict();
-            foreach(var label in LabelDict.Values) {
-                if(label.Address < offset || label.Address >= offset + size) {
-                    if(label.Address >= offset + size)
+            foreach (var label in LabelDict.Values) {
+                if (label.Address < offset || label.Address >= offset + size) {
+                    if (label.Address >= offset + size)
                         label.Address -= size;
                     temp.Add(label);
                 }
@@ -183,8 +184,8 @@ namespace PBRHex.Files
             byte[] oldBytes = new byte[bytes.Length];
             Array.Copy(Buffer, offset, oldBytes, 0, bytes.Length);
 
-            for(int i = 0; i < bytes.Length; i++) {
-                if(offset + i >= Buffer.Length)
+            for (int i = 0; i < bytes.Length; i++) {
+                if (offset + i >= Buffer.Length)
                     break;
                 Buffer[offset + i] = bytes[i];
             }
@@ -219,7 +220,7 @@ namespace PBRHex.Files
         }
 
         public byte[] GetRange(int offset, int size) {
-            if(offset + size > Size)
+            if (offset + size > Size)
                 size = Size - offset;
             byte[] range = new byte[size];
             Array.Copy(Buffer, offset, range, 0, size);
@@ -241,7 +242,7 @@ namespace PBRHex.Files
         public string ReadString(int offset) {
             var sb = new StringBuilder();
             char c;
-            while((c = (char)ReadByte(offset++)) != 0) {
+            while ((c = (char)ReadByte(offset++)) != 0) {
                 sb.Append(c);
             }
             return sb.ToString();
@@ -258,35 +259,34 @@ namespace PBRHex.Files
         public virtual void Save() {
             File.WriteAllBytes(WorkingPath, Buffer);
 
-            if(LabelDict.Count > 0 || Notes != "") {
-                if(!Metadata.ContainsKey(Key))
+            if (LabelDict.Count > 0 || Notes != "") {
+                if (!Metadata.ContainsKey(Key))
                     Metadata[Key] = new Dictionary<string, object>();
 
-                if(LabelDict.Count > 0)
+                if (LabelDict.Count > 0)
                     Metadata[Key]["Labels"] = LabelDict;
                 else
                     Metadata[Key].Remove("Labels");
 
-                if(Notes != "")
+                if (Notes != "")
                     Metadata[Key]["Notes"] = Notes.Replace("\r\n", @"\r\n").Replace("\n", @"\n");
                 else
                     Metadata[Key].Remove("Notes");
-            }
-            else {
+            } else {
                 Metadata.Remove(Key);
             }
 
             SaveMetadata();
         }
 
-        public byte[] GetBufferCopy() {
+        public byte[] GetBytes() {
             return (byte[])Buffer.Clone();
         }
 
         private LabelType[] MakeLabelMap() {
             var map = new LabelType[Buffer.Length];
-            foreach(var label in LabelDict.Values) {
-                for(int i = 0; i < label.Size; i++) {
+            foreach (var label in LabelDict.Values) {
+                for (int i = 0; i < label.Size; i++) {
                     map[label.Address + i] = label.Type;
                 }
             }
@@ -297,12 +297,12 @@ namespace PBRHex.Files
             StringBuilder sb = new StringBuilder();
 
             sb.Append("{\n");
-            foreach(var key in Metadata.Keys) {
+            foreach (var key in Metadata.Keys) {
                 var data = Metadata[key];
                 sb.Append($"\t\"{key}\": {{\n");
-                if(data.ContainsKey("Labels"))
+                if (data.ContainsKey("Labels"))
                     sb.Append($"\t\t\"Labels\": {LabelDict.Serialize((LabelDict)data["Labels"], 3)},\n");
-                if(data.ContainsKey("Notes")) {
+                if (data.ContainsKey("Notes")) {
                     string notes = ((string)data["Notes"]).Replace("\r\n", @"\r\n").Replace("\n", @"\n");
                     sb.Append($"\t\t\"Notes\": \"{notes}\",\n");
                 }
@@ -317,11 +317,11 @@ namespace PBRHex.Files
             string raw = File.ReadAllText($@"{Program.UserDir}\data.json");
             var options = new JsonSerializerOptions() { AllowTrailingCommas = true };
             var json = JsonSerializer.Deserialize<JsonElement>(raw, options);
-            foreach(var file in json.EnumerateObject()) {
+            foreach (var file in json.EnumerateObject()) {
                 var labels = new LabelDict();
                 var notes = "";
-                foreach(var prop in file.Value.EnumerateObject()) {
-                    switch(prop.Name) {
+                foreach (var prop in file.Value.EnumerateObject()) {
+                    switch (prop.Name) {
                         case "Labels":
                             labels = LabelDict.Deserialize(prop.Value);
                             break;

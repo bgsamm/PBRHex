@@ -23,7 +23,7 @@ namespace PBRHex.Tables
         /// <param name="gender">male/unknown: 0, female: 1</param>
         public static Image GetBodySprites(Pokemon mon) {
             int id = GetBodySpriteID(mon);
-            using(var stream = new FileStream(MakeBodySpritePath(id), FileMode.Open, 
+            using (var stream = new FileStream(MakeBodySpritePath(id), FileMode.Open,
                                               FileAccess.Read)) {
                 return Image.FromStream(stream);
             }
@@ -32,7 +32,7 @@ namespace PBRHex.Tables
         /// <param name="gender">male/unknown: 0, female: 1</param>
         public static Image GetFaceSprites(Pokemon mon) {
             int id = GetFaceSpriteID(mon);
-            using(var stream = new FileStream(MakeFaceSpritePath(id), FileMode.Open, 
+            using (var stream = new FileStream(MakeFaceSpritePath(id), FileMode.Open,
                                               FileAccess.Read)) {
                 return Image.FromStream(stream);
             }
@@ -133,9 +133,9 @@ namespace PBRHex.Tables
             // The game simply calculates the offset; I want to work in terms of dex #s
             // though, and I think this will work fine as long as the order of entries in
             // common 8 is the same as in common 16. Time will tell though ;)
-            for(int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++) {
                 int offset = start + i * 8;
-                if(Common16.ReadShort(offset + 2) == dex)
+                if (Common16.ReadShort(offset + 2) == dex)
                     return Common16.ReadShort(offset + 4);
             }
             throw new ArgumentException();
@@ -145,9 +145,9 @@ namespace PBRHex.Tables
             int start = Common15.ReadInt(0x10),
                 count = Common15.ReadInt(0);
             // see above
-            for(int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++) {
                 int offset = start + i * 0xc;
-                if(Common15.ReadShort(offset + 2) == dex)
+                if (Common15.ReadShort(offset + 2) == dex)
                     return Common15.ReadShort(offset + 4);
             }
             throw new ArgumentException();
@@ -182,11 +182,11 @@ namespace PBRHex.Tables
             FileUtils.CreateDirectory(Program.SpritesDir, true);
             FileUtils.CreateDirectory($@"{Program.SpritesDir}\faces", true);
             FileUtils.CreateDirectory($@"{Program.SpritesDir}\bodies", true);
-            foreach(GTX texture in MenuFace.Files) {
+            foreach (GTX texture in MenuFace.Files) {
                 var img = ImageUtils.DecodeTexture(texture);
                 img.Save(MakeFaceSpritePath(texture.ID));
             }
-            foreach(GTX texture in MenuPokemon.Files) {
+            foreach (GTX texture in MenuPokemon.Files) {
                 var img = ImageUtils.DecodeTexture(texture);
                 img.Save(MakeBodySpritePath(texture.ID));
             }

@@ -20,6 +20,7 @@ namespace PBRHex
     public interface IFsysEditor
     {
         void AddFile(FileBuffer file);
+        void ReplaceFile(FileBuffer oldFile, FileBuffer newFile);
         void RemoveFile(FileBuffer file);
     }
 

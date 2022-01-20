@@ -20,7 +20,7 @@ namespace PBRHex.Tables
         private static FSYS MenuBPass2 => FSYSTable.GetFile("menu_bpass2");
         private static FSYS MenuName2 => FSYSTable.GetFile("menu_name2");
         private static FSYS MenuBTutorial => FSYSTable.GetFile("menu_btutorial");
-        private static FileBuffer[] Files => new FileBuffer[] 
+        private static FileBuffer[] Files => new FileBuffer[]
         {
             MESCommon.Files[1], MenuBPass2.Files[3], MenuName2.Files[1], MenuBTutorial.Files[1]
         };
@@ -28,7 +28,7 @@ namespace PBRHex.Tables
         private static FileBuffer MESCommon1 => MESCommon.Files[1];
 
         public static GameString GetString(int id) {
-            if(id < 1 || id > Count)
+            if (id < 1 || id > Count)
                 throw new ArgumentOutOfRangeException();
             int fileIdx = Common5B.ReadShort(id * 4 + 4) - 1,
                 stringIdx = Common5B.ReadShort(id * 4 + 6) - 1;
@@ -38,12 +38,12 @@ namespace PBRHex.Tables
             var sb = new StringBuilder();
             var gameString = new GameString(id);
             int next;
-            while(file.ReadInt(offset) != -1) {
+            while (file.ReadInt(offset) != -1) {
                 next = (ushort)file.ReadShort(offset);
-                if(next == 0xffff) {
-                    switch(file.ReadByte(offset + 2)) {
+                if (next == 0xffff) {
+                    switch (file.ReadByte(offset + 2)) {
                         case 0:
-                            switch(file.ReadByte(offset + 3)) {
+                            switch (file.ReadByte(offset + 3)) {
                                 case 0x2:
                                     // I think this represents a pause, but I'm not sure it's actually honored by PBR
                                     sb.Append($"[..{file.ReadShort(offset + 4)}]");
@@ -75,7 +75,7 @@ namespace PBRHex.Tables
                             break;
                         case 0xff:
                             int code = file.ReadInt(offset);
-                            switch(code) {
+                            switch (code) {
                                 case -0x2:
                                     sb.Append(" \n");
                                     break;
@@ -102,9 +102,8 @@ namespace PBRHex.Tables
                             break;
                     }
                     offset += 4;
-                }
-                else {
-                    switch(next) {
+                } else {
+                    switch (next) {
                         case 0x3328:
                             sb.Append('\u2642');
                             break;
@@ -150,7 +149,7 @@ namespace PBRHex.Tables
             var bytes = s.ToBytes();
             int count = file.ReadInt(4),
                 delta = bytes.Length - (end - offset + 4);
-            for(int i = stringIdx + 1; i < count; i++) {
+            for (int i = stringIdx + 1; i < count; i++) {
                 int oldOffset = file.ReadInt(i * 4 + 0x10);
                 file.WriteInt(i * 4 + 0x10, oldOffset + delta);
             }
@@ -166,7 +165,7 @@ namespace PBRHex.Tables
 
         public static int AddString(string s) {
             int count = MESCommon1.ReadInt(4);
-            for(int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++) {
                 int oldOffset = MESCommon1.ReadInt(i * 4 + 0x10);
                 MESCommon1.WriteInt(i * 4 + 0x10, oldOffset + 4);
             }
@@ -234,45 +233,41 @@ namespace PBRHex.Tables
             var sb = new StringBuilder();
             sb.Append($"fffff0{HexUtils.IntToHex(Size, 2)}");
             sb.Append($"fffff1{HexUtils.IntToHex(Spacing, 2)}");
-            if(VertOffset != 0)
+            if (VertOffset != 0)
                 sb.Append($"ffff8011{HexUtils.IntToHex(VertOffset)}fffffffe");
-            if(Alignment != 0)
+            if (Alignment != 0)
                 sb.Append($"ffff0003{HexUtils.IntToHex(Alignment, 4)}");
-            if(Color != 0)
+            if (Color != 0)
                 sb.Append($"ffff0005{HexUtils.IntToHex(Color, 4)}");
-            for(int i = 0; i < Text.Length; i++) {
-                if(Text[i] == '[' && Text.IndexOf(']', i) != -1) {
+            for (int i = 0; i < Text.Length; i++) {
+                if (Text[i] == '[' && Text.IndexOf(']', i) != -1) {
                     int len = Text.IndexOf(']', i) - i - 1;
                     string substr = Text.Substring(i + 1, len);
-                    if(substr == "\"No.\"")
+                    if (substr == "\"No.\"")
                         sb.Append("fffffffc");
-                    else if(substr == "\"Lv.\"")
+                    else if (substr == "\"Lv.\"")
                         sb.Append("fffffffb");
-                    else if(substr == "\"HP\"")
+                    else if (substr == "\"HP\"")
                         sb.Append("fffffffa");
-                    else if(substr == "\"PP\"")
+                    else if (substr == "\"PP\"")
                         sb.Append("fffffff9");
-                    else if(substr.StartsWith("-")) {
+                    else if (substr.StartsWith("-")) {
                         // hacky way of converting signed hex to normal hex
                         int code = HexUtils.HexToInt(substr);
                         sb.Append(HexUtils.IntToHex(code));
-                    }
-                    else if(substr.StartsWith("..")) {
+                    } else if (substr.StartsWith("..")) {
                         int t = int.Parse(substr.Substring(2));
                         sb.Append($"ffff0002{HexUtils.IntToHex(t, 2)}");
-                    }
-                    else {
+                    } else {
                         int code = HexUtils.HexToInt(substr);
                         sb.Append($"ffff00{HexUtils.IntToHex(code, 2)}");
                     }
                     i += len + 1;
-                }
-                else if(Text[i] == '\n') {
+                } else if (Text[i] == '\n') {
                     // remove preceding space
                     sb.Remove(sb.Length - 4, 4);
                     sb.Append("fffffffe");
-                }
-                else
+                } else
                     sb.Append(HexUtils.IntToHex(Text[i], 4));
             }
             sb.Append("ffffffff");

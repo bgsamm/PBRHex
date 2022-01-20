@@ -22,7 +22,7 @@ namespace PBRHex.Tables
             mon.HeldItem = item;
             mon.Ability = DexTable.GetAbility(mon, ab_slot);
             int[] moves = new int[4];
-            for(int i = 0; i < moves.Length; i++) {
+            for (int i = 0; i < moves.Length; i++) {
                 moves[i] = GetPassMemberMove(passIndex, passSlot, i);
             }
             mon.Moves = moves;

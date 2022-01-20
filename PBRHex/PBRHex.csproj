@@ -125,6 +125,7 @@
     </Compile>
     <Compile Include="Command.cs" />
     <Compile Include="Commands\DexCommands\SetAbilityCommand.cs" />
+    <Compile Include="Commands\FsysCommands\ReplaceFileCommand.cs" />
     <Compile Include="Commands\PassCommands\SetPassSlotAbilityCommand.cs" />
     <Compile Include="Commands\PassCommands\SetPassSlotHeldItemCommand.cs" />
     <Compile Include="Commands\PassCommands\SetPassSlotMoveCommand.cs" />

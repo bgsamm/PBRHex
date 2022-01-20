@@ -12,9 +12,9 @@ namespace PBRHex.Tables
 
         public static int GetRange() {
             int max = 0;
-            for(int i = 0; i < Count; i++) {
+            for (int i = 0; i < Count; i++) {
                 int dex = GetDexNum(i);
-                if(dex > max)
+                if (dex > max)
                     max = dex;
             }
             return max;
@@ -27,8 +27,8 @@ namespace PBRHex.Tables
         /// This is the number used by the game to identify Pokemon.
         /// </returns>
         public static int GetIndex(Pokemon mon) {
-            for(int i = 0; i < Count; i++) {
-                if(GetDexNum(i) == mon.DexNo && GetFormIndex(i) == mon.FormID)
+            for (int i = 0; i < Count; i++) {
+                if (GetDexNum(i) == mon.DexNo && GetFormIndex(i) == mon.FormID)
                     return i;
             }
             throw new ArgumentOutOfRangeException();
@@ -51,7 +51,7 @@ namespace PBRHex.Tables
 
         public static string GetFormName(Pokemon mon) {
             int nameID = GetFormNameID(mon);
-            if(nameID == 0)
+            if (nameID == 0)
                 return StringTable.GetString(0xa).Text; // "-----"
             return StringTable.GetString(nameID).Text;
         }
@@ -61,30 +61,30 @@ namespace PBRHex.Tables
         }
 
         public static int GetTyping(Pokemon mon, int slot) {
-            if(slot > 1)
+            if (slot > 1)
                 throw new ArgumentOutOfRangeException();
             return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x24 + slot);
         }
 
         public static int GetAbility(Pokemon mon, int slot) {
-            if(slot > 1)
+            if (slot > 1)
                 throw new ArgumentOutOfRangeException();
             return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x30 + slot);
         }
 
         public static int GetStat(Pokemon mon, int stat) {
-            if(stat > 5)
+            if (stat > 5)
                 throw new ArgumentOutOfRangeException();
             return Common8.ReadByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x1e + stat);
         }
 
         public static int GetFormCount(int dex) {
             int count = 0;
-            for(int i = 0; i < Count; i++) {
-                if(dex == GetDexNum(i))
+            for (int i = 0; i < Count; i++) {
+                if (dex == GetDexNum(i))
                     count++;
             }
-            if(count == 0)
+            if (count == 0)
                 throw new ArgumentException();
             return count;
         }
@@ -95,25 +95,25 @@ namespace PBRHex.Tables
 
         private static void SetNameID(int dex, int id) {
             // formes should keep the same base name
-            for(int i = 0; i < GetFormCount(dex); i++) {
+            for (int i = 0; i < GetFormCount(dex); i++) {
                 Common8.WriteShort(GetTableOffset(dex, i) + 0x18, (short)id);
             }
         }
 
         public static void SetTyping(Pokemon mon, int slot, int type) {
-            if(slot > 1)
+            if (slot > 1)
                 throw new ArgumentOutOfRangeException();
             Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x24 + slot, (byte)type);
         }
 
         public static void SetAbility(Pokemon mon, int slot, int ability) {
-            if(slot > 1)
+            if (slot > 1)
                 throw new ArgumentOutOfRangeException();
             Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x30 + slot, (byte)ability);
         }
 
         public static void SetStat(Pokemon mon, int stat, int value) {
-            if(stat > 5)
+            if (stat > 5)
                 throw new ArgumentOutOfRangeException();
             Common8.WriteByte(GetTableOffset(mon.DexNo, mon.FormID) + 0x1e + stat, (byte)value);
         }
@@ -131,8 +131,8 @@ namespace PBRHex.Tables
         }
 
         private static int GetTableOffset(int dex, int form) {
-            for(int i = 0; i < Count; i++) {
-                if(GetDexNum(i) == dex && GetFormIndex(i) == form)
+            for (int i = 0; i < Count; i++) {
+                if (GetDexNum(i) == dex && GetFormIndex(i) == form)
                     return GetTableOffset(i);
             }
             throw new ArgumentOutOfRangeException();
@@ -170,7 +170,7 @@ namespace PBRHex.Tables
         }
 
         public static void PatchDex() {
-            for(short i = 1; i <= 493; i++) {
+            for (short i = 1; i <= 493; i++) {
                 int offset = GetTableOffset(i);
                 // replace wild held item columns w/ dex & form indices
                 Common8.WriteShort(offset + 0x10, i);
@@ -179,35 +179,35 @@ namespace PBRHex.Tables
                 // (not 100% sure the kana string is unused but I'll
                 // cross that bridge when I come to it)
                 int idx = 0;
-                if(i == 386)
+                if (i == 386)
                     idx = StringTable.AddString("Normal Forme");
-                else if(i == 413)
+                else if (i == 413)
                     idx = StringTable.AddString("Plant Cloak");
                 Common8.WriteShort(offset + 0x1a, (short)idx);
             }
             // Deoxys forms
-            for(short i = 1; i <= 3; i++) {
+            for (short i = 1; i <= 3; i++) {
                 int offset = GetTableOffset(495 + i);
                 Common8.WriteShort(offset + 0x10, 386);
                 Common8.WriteShort(offset + 0x12, i);
                 int idx = 0;
-                if(i == 1)
+                if (i == 1)
                     idx = StringTable.AddString("Attack Forme");
-                else if(i == 2)
+                else if (i == 2)
                     idx = StringTable.AddString("Defense Forme");
-                else if(i == 3)
+                else if (i == 3)
                     idx = StringTable.AddString("Speed Forme");
                 Common8.WriteShort(offset + 0x1a, (short)idx);
             }
             // Wormadam forms
-            for(short i = 1; i <= 2; i++) {
+            for (short i = 1; i <= 2; i++) {
                 int offset = GetTableOffset(498 + i);
                 Common8.WriteShort(offset + 0x10, 413);
                 Common8.WriteShort(offset + 0x12, i);
                 int idx = 0;
-                if(i == 1)
+                if (i == 1)
                     idx = StringTable.AddString("Sandy Cloak");
-                else if(i == 2)
+                else if (i == 2)
                     idx = StringTable.AddString("Trash Cloak");
                 Common8.WriteShort(offset + 0x1a, (short)idx);
             }
@@ -227,12 +227,12 @@ namespace PBRHex.Tables
             Write();
 
             // temporary fix to string ID calculation for added mons
-            if(MainWindow.ISORegion == GameRegion.NTSCU) {
+            if (MainWindow.ISORegion == GameRegion.NTSCU) {
                 uint op1 = AssemblyUtils.Assemble($"b 801cae4c", 0x803e3478),
                     op2 = AssemblyUtils.Assemble($"b 801cae98", 0x801cae80);
                 DOL.WriteInstruction(0x803e3478, op1);
                 DOL.WriteInstruction(0x801cae80, op2);
-            } else if(MainWindow.ISORegion == GameRegion.PAL) {
+            } else if (MainWindow.ISORegion == GameRegion.PAL) {
                 uint op1 = AssemblyUtils.Assemble($"b 801c6210", 0x803dfe48),
                     op2 = AssemblyUtils.Assemble($"b 801c625c", 0x801c6244);
                 DOL.WriteInstruction(0x803dfe48, op1);
@@ -252,12 +252,12 @@ namespace PBRHex.Tables
                 delta = 0x20;
             CommonD.WriteInt(0, count1 + 1);
             CommonD.WriteInt(0x14, length + 0x2c);
-            if(addr1 - length - 0x1500 < 0xc)
+            if (addr1 - length - 0x1500 < 0xc)
                 delta += 0x10;
             CommonD.WriteInt(0x18, addr2 + delta);
             CommonD.WriteInt(0x20, addr1 + delta);
             CommonD.InsertRange(addr1, delta);
-            for(int i = 0; i < count2; i++) {
+            for (int i = 0; i < count2; i++) {
                 int offset = addr2 + delta + 4 * i,
                     newAddr = CommonD.ReadInt(offset) + delta;
                 CommonD.WriteInt(offset, newAddr);
@@ -268,7 +268,7 @@ namespace PBRHex.Tables
             uint op = AssemblyUtils.Assemble($"subi r0, r31, 0x{Count:X}"),
                 op1 = AssemblyUtils.Assemble($"cmplwi r0, 0x{Count - 1:X}"),
                 op2 = AssemblyUtils.Assemble($"cmplwi r4, 0x{Count - 1:X}");
-            if(MainWindow.ISORegion == GameRegion.NTSCU) {
+            if (MainWindow.ISORegion == GameRegion.NTSCU) {
                 DOL.WriteInstruction(0x80058c6c, op1);
                 DOL.WriteInstruction(0x80058ce4, op1);
                 DOL.WriteInstruction(0x8005d1f4, op2);
@@ -277,7 +277,7 @@ namespace PBRHex.Tables
                 DOL.WriteInstruction(0x8005de38, op2);
                 // fixes opposing AI constantly switching
                 //DOL.WriteInstruction(0x801cae90, op);
-            } else if(MainWindow.ISORegion == GameRegion.NTSCJ) {
+            } else if (MainWindow.ISORegion == GameRegion.NTSCJ) {
                 DOL.WriteInstruction(0x8005614c, op1);
                 DOL.WriteInstruction(0x800561c4, op1);
                 DOL.WriteInstruction(0x80059888, op2);
@@ -285,7 +285,7 @@ namespace PBRHex.Tables
                 DOL.WriteInstruction(0x8005a1d4, op2);
                 DOL.WriteInstruction(0x8005a480, op2);
                 //DOL.WriteInstruction(0x801bbfbc, op);
-            } else if(MainWindow.ISORegion == GameRegion.PAL) {
+            } else if (MainWindow.ISORegion == GameRegion.PAL) {
                 DOL.WriteInstruction(0x80056c0c, op1);
                 DOL.WriteInstruction(0x80056c84, op1);
                 DOL.WriteInstruction(0x8005b704, op2);

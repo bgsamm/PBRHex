@@ -14,8 +14,8 @@ namespace PBRHex.Files
         }
 
         public FileBuffer GetFile(int id) {
-            foreach(var file in Files) {
-                if(file.ID == id)
+            foreach (var file in Files) {
+                if (file.ID == id)
                     return file;
             }
             return null;
@@ -35,14 +35,34 @@ namespace PBRHex.Files
         /// </summary>
         public FileBuffer AddFile(FileBuffer file) {
             string path = $@"{WorkingDir}\files\(null)_{Files.Count:x8}";
-            FileUtils.CreateFile(path, file.GetBufferCopy());
+            FileUtils.CreateFile(path, file.GetBytes());
             var newFile = new FileBuffer(path, $@"{WorkingDir}\files");
-            if(file.ID != 0)
+            if (file.ID != 0)
                 newFile.ID = file.ID;
             else
                 newFile.ID = FileUtils.GenerateFileID(this, newFile);
             Files.Add(newFile);
             return newFile;
+        }
+
+        /// <returns>The newly added file</returns>
+        public FileBuffer ReplaceFile(int id, string path) {
+            for (int i = 0; i < Files.Count; i++) {
+                if (Files[i].ID == id) {
+                    var oldFile = Files[i];
+                    FileUtils.DeleteFile(oldFile.Path);
+                    string ext = System.IO.Path.GetExtension(path),
+                        newPath = $@"{oldFile.WorkingDir}\{oldFile.NameNoExt}{ext}";
+                    FileUtils.CopyFile(path, newPath);
+                    var newFile = new FileBuffer(newPath, oldFile.WorkingDir)
+                    {
+                        ID = (int)(id & 0xffff0000) + ((int)FileUtils.TypeFromExtension(ext) << 9)
+                    };
+                    Files[i] = newFile;
+                    return newFile;
+                }
+            }
+            return null;
         }
 
         public void RemoveFile(int id) {

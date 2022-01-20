@@ -13,11 +13,11 @@ namespace PBRHex
 #else
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\PBRHex";
 #endif
-        public static readonly string ISODir = $@"{DataDir}\.pbr";
-        public static readonly string TempDir = $@"{DataDir}\temp";
-        public static readonly string UserDir = $@"{DataDir}\user";
-        public static readonly string SpritesDir = $@"{DataDir}\sprites";
-        public static readonly string BackupsDir = $@"{UserDir}\backups";
+        public static readonly string ISODir = $@"{DataDir}.pbr";
+        public static readonly string TempDir = $@"{DataDir}temp";
+        public static readonly string UserDir = $@"{DataDir}user";
+        public static readonly string SpritesDir = $@"{DataDir}sprites";
+        public static readonly string BackupsDir = $@"{UserDir}backups";
 
         private static int WaitingCount;
         private static readonly object LoggerLock = new object();

@@ -58,15 +58,15 @@ namespace PBRHex
         protected override void OnLoad(EventArgs e) {
             base.OnLoad(e);
 
-            if(Directory.Exists(Program.ISODir)) {
+            if (Directory.Exists(Program.ISODir)) {
                 // provides backwards compatibility with old versions of PBRHex
-                if(Directory.Exists($@"{Program.ISODir}\DATA"))
+                if (Directory.Exists($@"{Program.ISODir}\DATA"))
                     FlattenISODir();
                 messageLabel.Visible = false;
                 FSYSTable.Initialize();
                 DOL.Initialize();
                 int gameCodeSize = DOL.GetSectionSize(1);
-                switch(gameCodeSize) {
+                switch (gameCodeSize) {
                     case 0x3DEB20:
                         ISORegion = GameRegion.NTSCU;
                         break;
@@ -107,7 +107,7 @@ namespace PBRHex
         private void BuildFileTreeLoop(string dir, TreeNode parentNode = null) {
             TreeNode node;
 
-            if(parentNode == null) {
+            if (parentNode == null) {
                 string rootName = ISORegion.ToString().Replace("NTSC", "NTSC-");
                 node = new TreeNode(rootName)
                 {
@@ -117,9 +117,8 @@ namespace PBRHex
                 };
                 //node.NodeFont = new Font(FontFamily.GenericSansSerif, 9, FontStyle.Bold);
                 fileTreeView.Nodes.Add(node);
-            }
-            else {
-                node = new TreeNode(Path.GetFileName(dir)) 
+            } else {
+                node = new TreeNode(Path.GetFileName(dir))
                 {
                     ImageIndex = 1,
                     SelectedImageIndex = 1,
@@ -129,14 +128,14 @@ namespace PBRHex
             }
             node.ContextMenuStrip = fileTreeContextMenu;
 
-            foreach(var subdir in Directory.GetDirectories(dir)) {
+            foreach (var subdir in Directory.GetDirectories(dir)) {
                 BuildFileTreeLoop(subdir, node);
             }
-            foreach(var fpath in Directory.GetFiles(dir)) {
+            foreach (var fpath in Directory.GetFiles(dir)) {
                 string name = Path.GetFileName(fpath);
                 int idx = FileUtils.HasBackup(name) ? 3 : 2;
-                var child = new TreeNode(name) 
-                { 
+                var child = new TreeNode(name)
+                {
                     ImageIndex = idx,
                     SelectedImageIndex = idx,
                     Tag = fpath,
@@ -148,54 +147,45 @@ namespace PBRHex
 
         private void OpenHexEditor(FileBuffer file) {
             HexEditorWindow hexEditor;
-            
-            foreach(Form form in Application.OpenForms) {
-                if(form is HexEditorWindow editor) {
-                    if((file is FSYS && editor.Name == $"{file.Name}_unpacked") ||
-                       (!(file is FSYS) && editor.Name == file.Name)) {
-                        form.BringToFront();
-                        return;
-                    } 
-                    //else if((file is FSYS && editor.Name == file.Name) ||
-                    //          (!(file is FSYS) && editor.Name == $"{file.Name}_unpacked")) {
-                    //    new AlertDialog(
-                    //        "This file is already open in another editor."
-                    //    ).ShowDialog();
-                    //    return;
-                    //}
-                }
+
+            Form form = GetOpenHexEditor(file.Name);
+            if (form == null && file is FSYS)
+                form = GetOpenHexEditor($"{file.Name}_unpacked");
+            if (form != null) {
+                form.BringToFront();
+                return;
             }
 
-            if(file is FSYS fsys) {
+            if (file is FSYS fsys) {
                 var files = new List<FileBuffer>();
-                foreach(var f in fsys.Files) {
+                foreach (var f in fsys.Files) {
                     files.Add(f);
                 }
-                hexEditor = new HexEditorWindow(files.ToArray(), fsys)
+                hexEditor = new HexEditorWindow(files.ToArray(), fsys.Name)
                 {
                     Name = $"{file.Name}_unpacked",
                     Text = $"{file.Name} (unpacked)"
                 };
-            }
-            else {
-                if(file.Extension == ".fsys") {
+            } else {
+                if (file.Extension == ".fsys") {
                     var confirm = new ConfirmDialog(
                         "Modifying .fsys files directly is not recommended.\n" +
                         "Are you sure you wish to continue?"
                     );
                     var result = confirm.ShowDialog();
-                    if(result != DialogResult.Yes) 
+                    if (result != DialogResult.Yes)
                         return;
                 }
-                hexEditor = new HexEditorWindow(new FileBuffer[] { file }) 
+                hexEditor = new HexEditorWindow(new FileBuffer[] { file })
                 {
                     Name = file.Name,
-                    Text = file.Name 
+                    Text = file.Name
                 };
             }
             var node = FileTree.SelectedNode;
-            hexEditor.FormClosed += (sender, e) => {
-                if(FileUtils.HasBackup(node.Text)) {
+            hexEditor.FormClosed += (sender, e) =>
+            {
+                if (FileUtils.HasBackup(node.Text)) {
                     node.ImageIndex = 3;
                     node.SelectedImageIndex = 3;
                 }
@@ -204,27 +194,40 @@ namespace PBRHex
         }
 
         private Form GetOpenForm(Type t) {
-            foreach(Form form in Application.OpenForms) {
-                if(form.GetType() == t) {
-                    form.BringToFront();
+            foreach (Form form in Application.OpenForms) {
+                if (form.GetType() == t)
                     return form;
-                }
+            }
+            return null;
+        }
+
+        private Form GetOpenHexEditor(string name) {
+            foreach (Form form in Application.OpenForms) {
+                if (form is HexEditorWindow editor && editor.Name == name)
+                    return form;
+                //else if((file is FSYS && editor.Name == file.Name) ||
+                //          (!(file is FSYS) && editor.Name == $"{file.Name}_unpacked")) {
+                //    new AlertDialog(
+                //        "This file is already open in another editor."
+                //    ).ShowDialog();
+                //    return;
+                //}
             }
             return null;
         }
 
         private void CloseForms() {
-            for(int i = Application.OpenForms.Count - 1; i >= 0; i--) {
+            for (int i = Application.OpenForms.Count - 1; i >= 0; i--) {
                 var form = Application.OpenForms[i];
-                if(!(form is MainWindow))
+                if (!(form is MainWindow))
                     form.Close();
             }
         }
 
         private void EnableMenuItems() {
             // enable all menu items; assumes no sub-menus
-            foreach(ToolStripMenuItem tab in headerMenuStrip.Items) {
-                foreach(ToolStripMenuItem item in tab.DropDownItems) {
+            foreach (ToolStripMenuItem tab in headerMenuStrip.Items) {
+                foreach (ToolStripMenuItem item in tab.DropDownItems) {
                     item.Enabled = true;
                 }
             }
@@ -244,24 +247,24 @@ namespace PBRHex
         }
 
         private void UnpackISOButton_Click(object sender, EventArgs e) {
-            if(openISODialog.ShowDialog() == DialogResult.OK) {
+            if (openISODialog.ShowDialog() == DialogResult.OK) {
                 string gameCode = ReadGameCode(openISODialog.FileName);
                 // not as robust as I'd like but I'm not yet sure how else to detect an nkit
-                if(openISODialog.FileName.Contains(".nkit")) {
+                if (openISODialog.FileName.Contains(".nkit")) {
                     new AlertDialog("PBRHex cannot open NKit files.\n" +
                         "Please convert it to an ISO and try again.").ShowDialog();
                     return;
                 }
-                if(gameCode != "RPBE01" && gameCode != "RPBP01") {
+                if (gameCode != "RPBE01" && gameCode != "RPBP01") {
                     new AlertDialog("This ISO is not supported by PBRHex.").ShowDialog();
                     return;
                 }
 
-                if(gameCode == "RPBJ01")
+                if (gameCode == "RPBJ01")
                     ISORegion = GameRegion.NTSCJ;
-                else if(gameCode == "RPBE01")
+                else if (gameCode == "RPBE01")
                     ISORegion = GameRegion.NTSCU;
-                else if(gameCode == "RPBP01")
+                else if (gameCode == "RPBP01")
                     ISORegion = GameRegion.PAL;
                 CloseForms();
                 Program.Log("Unpacking ISO...");
@@ -281,7 +284,7 @@ namespace PBRHex
                 DexTable.PatchDex();
                 // disable anti-modification function
                 uint address = 0;
-                switch(ISORegion) {
+                switch (ISORegion) {
                     case GameRegion.NTSCJ:
                         address = 0x8021de60;
                         break;
@@ -302,11 +305,10 @@ namespace PBRHex
         }
 
         private void RebuildISOButton_Click(object sender, EventArgs e) {
-            if(saveISODialog.ShowDialog() == DialogResult.OK) {
+            if (saveISODialog.ShowDialog() == DialogResult.OK) {
                 try {
                     CommandUtils.BuildISO(saveISODialog.FileName);
-                }
-                catch(SecurityException ex) {
+                } catch (SecurityException ex) {
                     MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +
                     $"Details:\n\n{ex.StackTrace}");
                 }
@@ -325,70 +327,63 @@ namespace PBRHex
                 };
                 dolphinMenuItem.Enabled = false;
             } catch {
-                new AlertDialog( "Could not launch Dolphin. Please ensure that Dolphin is on the PATH." ).ShowDialog();
+                new AlertDialog("Could not launch Dolphin. Please ensure that Dolphin is on the PATH.").ShowDialog();
             }
         }
 
         private void FileTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e) {
             FileTree.SelectedNode = e.Node;
-            if(e.Button == MouseButtons.Right) {
+            if (e.Button == MouseButtons.Right) {
                 fileTreeContextMenu.Show(e.Location);
             }
         }
 
         private void FileTreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e) {
             string path = (string)FileTree.SelectedNode.Tag;
-            if(e.Button == MouseButtons.Left && !File.GetAttributes(path).HasFlag(FileAttributes.Directory))
+            if (e.Button == MouseButtons.Left && !File.GetAttributes(path).HasFlag(FileAttributes.Directory))
                 OpenHexEditor(new FileBuffer(path));
         }
 
         private void FileTreeContextMenu_Opening(object sender, CancelEventArgs e) {
-            folderLocationMenuItem.Visible = false;
-            fileLocationMenuItem.Visible = false;
-            hexEditorMenuItem.Visible = false;
-            decompressFSYSMenuItem.Visible = false;
-            restoreMenuItem.Visible = false;
-
-            if(File.GetAttributes(SelectedFilePath).HasFlag(FileAttributes.Directory)) {
-                folderLocationMenuItem.Visible = true;
+            foreach (ToolStripItem item in fileTreeContextMenu.Items) {
+                item.Visible = false;
             }
-            else {
+
+            if (File.GetAttributes(SelectedFilePath).HasFlag(FileAttributes.Directory)) {
+                folderLocationMenuItem.Visible = true;
+            } else {
                 fileLocationMenuItem.Visible = true;
                 hexEditorMenuItem.Visible = true;
-                if(Path.GetExtension(SelectedFilePath) == ".fsys")
+                if (Path.GetExtension(SelectedFilePath) == ".fsys") {
                     decompressFSYSMenuItem.Visible = true;
-                if(FileUtils.HasBackup(Path.GetFileName(SelectedFilePath)))
+                    removeFileMenuItem.Visible = true;
+                }
+                if (FileUtils.HasBackup(Path.GetFileName(SelectedFilePath)))
                     restoreMenuItem.Visible = true;
             }
         }
 
-        private void FolderLocationMenuItem_Click(object sender, EventArgs e) {
-            // open in file explorer
-            Process.Start(SelectedFilePath);
-        }
-
-        private void FileLocationMenuItem_Click(object sender, EventArgs e) {
-            // open in file explorer
-            Process.Start(SelectedFilePath);
+        private void OpenLocationMenuItem_Click(object sender, EventArgs e) {
+            CommandUtils.OpenFileExplorer(Path.GetDirectoryName(SelectedFilePath));
         }
 
         // Edit //
 
         private void NewFSYSMenuItem_Click(object sender, EventArgs e) {
             var input = new InputDialog("Name:");
-            if(input.ShowDialog() == DialogResult.OK) {
+            if (input.ShowDialog() == DialogResult.OK) {
                 string name = input.Response;
-                if(FSYSTable.ContainsFile(name)) {
+                if (FSYSTable.ContainsFile(name)) {
                     new AlertDialog("A file already exists with that name.").ShowDialog();
                     return;
                 }
-                if(selectFilesDialog.ShowDialog() == DialogResult.OK) {
+                if (selectFilesDialog.ShowDialog() == DialogResult.OK) {
                     FSYSTable.AddFile(name);
                     string path = FSYSTable.MakePath(name);
                     FileUtils.CreateFSYS(path);
 
                     var fsys = new FSYS(path);
-                    for(int i = 0; i < selectFilesDialog.FileNames.Length; i++) {
+                    for (int i = 0; i < selectFilesDialog.FileNames.Length; i++) {
                         fsys.AddFile(selectFilesDialog.FileNames[i]);
                     }
                     var temp = FileUtils.CompressFSYS(fsys);
@@ -410,9 +405,23 @@ namespace PBRHex
             OpenHexEditor(FSYSTable.GetFile(name));
         }
 
+        private void RemoveFileMenuItem_Click(object sender, EventArgs e) {
+            string name = Path.GetFileName(SelectedFilePath);
+            if (GetOpenHexEditor(name) != null || GetOpenHexEditor($"{name}_unpacked") != null) {
+                new AlertDialog("This file is open in one or more editors and cannot be removed.").ShowDialog();
+                return;
+            }
+            var dialog = new ConfirmDialog("This action cannot be undone.\nAre you sure you wish to continue?");
+            if (dialog.ShowDialog() == DialogResult.Yes) {
+                FSYSTable.RemoveFile(name);
+                FileUtils.DeleteFile(SelectedFilePath);
+                BuildFileTree();
+            }
+        }
+
         private void RestoreMenuItem_Click(object sender, EventArgs e) {
             FileUtils.RestoreFile(SelectedFilePath);
-            if(Path.GetExtension(SelectedFilePath) == ".fsys")
+            if (Path.GetExtension(SelectedFilePath) == ".fsys")
                 FSYSTable.CloseFile(Path.GetFileName(SelectedFilePath));
             FileTree.SelectedNode.ImageIndex = 2;
             FileTree.SelectedNode.SelectedImageIndex = 2;
@@ -420,22 +429,22 @@ namespace PBRHex
 
         private void CodeEditorMenuItem_Click(object sender, EventArgs e) {
             var form = GetOpenForm(typeof(CodeEditor));
-            if(form != null) {
+            if (form != null) {
                 form.BringToFront();
                 return;
             }
             var dialog = new ConfirmDialog(
                 "Note: This feature is still under development\n" +
                 "and may not always work as intended.\n" +
-                "Do you still wish to continue?" 
+                "Do you still wish to continue?"
             );
-            if(dialog.ShowDialog() == DialogResult.Yes)
+            if (dialog.ShowDialog() == DialogResult.Yes)
                 new CodeEditor().Show();
         }
 
         private void StringEditorMenuItem_Click(object sender, EventArgs e) {
             var form = GetOpenForm(typeof(StringEditor));
-            if(form != null)
+            if (form != null)
                 form.BringToFront();
             else
                 new StringEditor().Show();
@@ -443,7 +452,7 @@ namespace PBRHex
 
         private void DexEditorMenuItem_Click(object sender, EventArgs e) {
             var form = GetOpenForm(typeof(DexEditor));
-            if(form != null)
+            if (form != null)
                 form.BringToFront();
             else
                 new DexEditor().Show();
@@ -451,7 +460,7 @@ namespace PBRHex
 
         private void RentalPassEditorMenuItem_Click(object sender, EventArgs e) {
             var form = GetOpenForm(typeof(PassEditor));
-            if(form != null)
+            if (form != null)
                 form.BringToFront();
             else
                 new PassEditor().Show();

@@ -74,7 +74,7 @@ namespace PBRHex.Tables
             var file = GetModel(mon);
             int skeleAddr = file.ReadInt(file.ReadInt(8)),
                 boneCount = file.ReadShort(skeleAddr + 6);
-            if(index > boneCount - 1)
+            if (index > boneCount - 1)
                 throw new IndexOutOfRangeException();
             int rootBone = file.ReadInt(skeleAddr + 0x10),
                 boneAddr = BoneSearch(file, index, rootBone),
@@ -85,14 +85,14 @@ namespace PBRHex.Tables
         public static string[] GetBoneNames(Pokemon mon) {
             int count = GetBoneCount(mon);
             string[] names = new string[count];
-            for(int i = 0; i < names.Length; i++) {
+            for (int i = 0; i < names.Length; i++) {
                 names[i] = GetBoneName(mon, i);
             }
             return names;
         }
 
         public static int GetBoneSlot(Pokemon mon, int slot) {
-            if(slot > 0x18)
+            if (slot > 0x18)
                 throw new IndexOutOfRangeException();
             int offset = GetModelTableOffset(mon);
             return Common6.ReadByte(offset + 0x19 + slot);
@@ -108,7 +108,7 @@ namespace PBRHex.Tables
             var file = GetModel(mon);
             int skeleAddr = file.ReadInt(file.ReadInt(8)),
                 numActions = file.ReadShort(skeleAddr + 8);
-            if(index > numActions - 1)
+            if (index > numActions - 1)
                 throw new IndexOutOfRangeException();
             int actionsList = file.ReadInt(skeleAddr + 0xc),
                 nameAddr = file.ReadInt(actionsList + 0x30 * index);
@@ -118,21 +118,21 @@ namespace PBRHex.Tables
         public static string[] GetAnimNames(Pokemon mon) {
             int count = GetAnimCount(mon);
             string[] names = new string[count];
-            for(int i = 0; i < names.Length; i++) {
+            for (int i = 0; i < names.Length; i++) {
                 names[i] = GetAnimName(mon, i);
             }
             return names;
         }
 
         public static int GetAnimSlot(Pokemon mon, int slot) {
-            if(slot > 0x15)
+            if (slot > 0x15)
                 throw new IndexOutOfRangeException();
             int offset = GetModelTableOffset(mon);
             return Common6.ReadByte(offset + 0x32 + slot);
         }
 
         public static void SetBoneSlot(Pokemon mon, int slot, int bone) {
-            if(slot > 0x18)
+            if (slot > 0x18)
                 throw new IndexOutOfRangeException();
             int offset = GetModelTableOffset(mon);
             Common6.WriteByte(offset + 0x19 + slot, (byte)bone);
@@ -141,8 +141,8 @@ namespace PBRHex.Tables
         /// <returns>The index of the bone with the given name, or -1 if no match found.</returns>
         public static int FindBone(Pokemon mon, string name) {
             var numBones = GetBoneCount(mon);
-            for(int i = 0; i < numBones; i++) {
-                if(name == GetBoneName(mon, i))
+            for (int i = 0; i < numBones; i++) {
+                if (name == GetBoneName(mon, i))
                     return i;
             }
             return -1;
@@ -151,33 +151,33 @@ namespace PBRHex.Tables
         /// <returns>The index of the animation with the given name, or -1 if no match found.</returns>
         public static int FindAnim(Pokemon mon, string name) {
             var numAnims = GetAnimCount(mon);
-            for(int i = 0; i < numAnims; i++) {
-                if(name == GetAnimName(mon, i))
+            for (int i = 0; i < numAnims; i++) {
+                if (name == GetAnimName(mon, i))
                     return i;
             }
             return -1;
         }
 
         public static void SetAnimSlot(Pokemon mon, int slot, int anim) {
-            if(slot > 0x15)
+            if (slot > 0x15)
                 throw new IndexOutOfRangeException();
             int offset = GetModelTableOffset(mon);
             Common6.WriteByte(offset + 0x32 + slot, (byte)anim);
         }
 
         private static int BoneSearch(FileBuffer file, int index, int boneAddr) {
-            if(file.ReadShort(boneAddr + 8) == index)
+            if (file.ReadShort(boneAddr + 8) == index)
                 return boneAddr;
             int childAddr = file.ReadInt(boneAddr + 0x24);
-            if(childAddr > 0) {
+            if (childAddr > 0) {
                 int addr = BoneSearch(file, index, childAddr);
-                if(addr > -1)
+                if (addr > -1)
                     return addr;
             }
             int nextAddr = file.ReadInt(boneAddr + 0x28);
-            if(nextAddr > 0) {
+            if (nextAddr > 0) {
                 int addr = BoneSearch(file, index, nextAddr);
-                if(addr > -1)
+                if (addr > -1)
                     return addr;
             }
             return -1;
@@ -214,16 +214,16 @@ namespace PBRHex.Tables
                 stride = Common6.ReadInt(4),
                 dexID = DexTable.GetIndex(mon);
             int idx = -1;
-            for(int i = 0; i < rows; i++) {
+            for (int i = 0; i < rows; i++) {
                 int offset = start + stride * i;
-                if(dexID == Common6.ReadShort(offset + 0x14) && mon.FormID == Common6.ReadByte(offset + 0x18)) {
+                if (dexID == Common6.ReadShort(offset + 0x14) && mon.FormID == Common6.ReadByte(offset + 0x18)) {
                     idx = i;
                     int flags = Common6.ReadInt(offset);
-                    if(((flags >> 26) & 1) == mon.Gender)
+                    if (((flags >> 26) & 1) == mon.Gender)
                         break;
                 }
             }
-            if(idx == -1)
+            if (idx == -1)
                 throw new ArgumentException();
             return idx;
         }

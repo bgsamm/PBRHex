@@ -37,6 +37,7 @@ namespace PBRHex
             this.folderLocationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.decompressFSYSMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.restoreMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveISODialog = new System.Windows.Forms.SaveFileDialog();
             this.headerMenuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -94,26 +95,27 @@ namespace PBRHex
             this.fileLocationMenuItem.Name = "fileLocationMenuItem";
             this.fileLocationMenuItem.Size = new System.Drawing.Size(216, 24);
             this.fileLocationMenuItem.Text = "Open file location";
-            this.fileLocationMenuItem.Click += new System.EventHandler(this.FileLocationMenuItem_Click);
+            this.fileLocationMenuItem.Click += new System.EventHandler(this.OpenLocationMenuItem_Click);
             // 
             // hexEditorMenuItem
             // 
             this.hexEditorMenuItem.Name = "hexEditorMenuItem";
             this.hexEditorMenuItem.Size = new System.Drawing.Size(216, 24);
-            this.hexEditorMenuItem.Text = "Open in hex editor";
+            this.hexEditorMenuItem.Text = "Edit";
             this.hexEditorMenuItem.Click += new System.EventHandler(this.HexEditorMenuItem_Click);
             // 
             // fileTreeContextMenu
             // 
             this.fileTreeContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.fileTreeContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.folderLocationMenuItem,
-            this.fileLocationMenuItem,
             this.hexEditorMenuItem,
             this.decompressFSYSMenuItem,
-            this.restoreMenuItem});
+            this.restoreMenuItem,
+            this.removeFileMenuItem,
+            this.folderLocationMenuItem,
+            this.fileLocationMenuItem});
             this.fileTreeContextMenu.Name = "fileTreeContextMenu";
-            this.fileTreeContextMenu.Size = new System.Drawing.Size(217, 124);
+            this.fileTreeContextMenu.Size = new System.Drawing.Size(217, 176);
             this.fileTreeContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.FileTreeContextMenu_Opening);
             // 
             // folderLocationMenuItem
@@ -121,7 +123,7 @@ namespace PBRHex
             this.folderLocationMenuItem.Name = "folderLocationMenuItem";
             this.folderLocationMenuItem.Size = new System.Drawing.Size(216, 24);
             this.folderLocationMenuItem.Text = "Open folder location";
-            this.folderLocationMenuItem.Click += new System.EventHandler(this.FolderLocationMenuItem_Click);
+            this.folderLocationMenuItem.Click += new System.EventHandler(this.OpenLocationMenuItem_Click);
             // 
             // decompressFSYSMenuItem
             // 
@@ -136,6 +138,13 @@ namespace PBRHex
             this.restoreMenuItem.Size = new System.Drawing.Size(216, 24);
             this.restoreMenuItem.Text = "Restore";
             this.restoreMenuItem.Click += new System.EventHandler(this.RestoreMenuItem_Click);
+            // 
+            // removeFileMenuItem
+            // 
+            this.removeFileMenuItem.Name = "removeFileMenuItem";
+            this.removeFileMenuItem.Size = new System.Drawing.Size(216, 24);
+            this.removeFileMenuItem.Text = "Remove";
+            this.removeFileMenuItem.Click += new System.EventHandler(this.RemoveFileMenuItem_Click);
             // 
             // saveISODialog
             // 
@@ -193,7 +202,7 @@ namespace PBRHex
             // newFSYSMenuItem
             // 
             this.newFSYSMenuItem.Name = "newFSYSMenuItem";
-            this.newFSYSMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.newFSYSMenuItem.Size = new System.Drawing.Size(157, 26);
             this.newFSYSMenuItem.Text = "New FSYS";
             this.newFSYSMenuItem.Click += new System.EventHandler(this.NewFSYSMenuItem_Click);
             // 
@@ -343,6 +352,7 @@ namespace PBRHex
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newFSYSMenuItem;
         private System.Windows.Forms.OpenFileDialog selectFilesDialog;
+        private System.Windows.Forms.ToolStripMenuItem removeFileMenuItem;
     }
 }
 

@@ -16,12 +16,16 @@ namespace PBRHex.Utils
 #endif
         //private static readonly string dolphinDir = @"C:\Program Files\Dolphin\Dolphin-x64";
 
+        public static void OpenFileExplorer(string path) {
+            RunProcess("explorer", path);
+        }
+
         public static void RunPythonScript(string path) {
             RunProcess("python", path);
         }
 
         public static void ExtractFSYS(string inpath, string outdir) {
-            RunProcess($@"{quickbmsDir}\quickbms.exe", 
+            RunProcess($@"{quickbmsDir}\quickbms.exe",
                 "-K \"fsys extract and decompress script.txt\" " +
                 $"\"{inpath}\" \"{outdir}\"");
         }
@@ -73,7 +77,7 @@ namespace PBRHex.Utils
                 process.Start();
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
-                if(wait)
+                if (wait)
                     process.WaitForExit();
             } finally {
                 Program.NotifyDone();

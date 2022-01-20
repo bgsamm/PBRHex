@@ -13,24 +13,24 @@ namespace PBRHex.Utils
         //private static readonly object AccessLock = new object();
 
         public static void CreateDirectory(string path, bool overwrite) {
-            if(!overwrite && Directory.Exists(path))
+            if (!overwrite && Directory.Exists(path))
                 return;
-            if(overwrite)
+            if (overwrite)
                 DeleteDirectory(path);
             Directory.CreateDirectory(path);
         }
 
         public static void DeleteDirectory(string path) {
-            if(Directory.Exists(path))
+            if (Directory.Exists(path))
                 Directory.Delete(path, true);
         }
 
         public static void MoveContents(string inpath, string outpath, bool deleteSourceDir) {
             CreateDirectory(outpath, false);
-            foreach(var path in Directory.EnumerateFileSystemEntries(inpath)) {
+            foreach (var path in Directory.EnumerateFileSystemEntries(inpath)) {
                 Directory.Move(path, $@"{outpath}\{Path.GetFileName(path)}");
             }
-            if(deleteSourceDir)
+            if (deleteSourceDir)
                 DeleteDirectory(inpath);
         }
 
@@ -64,7 +64,7 @@ namespace PBRHex.Utils
         }
 
         public static void CopyFile(string inpath, string outpath) {
-            if(inpath == outpath)
+            if (inpath == outpath)
                 return;
             File.Copy(inpath, outpath, true);
         }
@@ -85,7 +85,7 @@ namespace PBRHex.Utils
                 workspace = $@"{Program.TempDir}\{fname}";
             CreateDirectory(workspace, true);
             CopyFile(inpath, $@"{workspace}\{fname}");
-            if(Path.GetExtension(inpath) == ".fsys") {
+            if (Path.GetExtension(inpath) == ".fsys") {
                 CreateDirectory($@"{workspace}\files", true);
                 CreateDirectory($@"{workspace}\lzss", true);
             }
@@ -103,8 +103,8 @@ namespace PBRHex.Utils
 
         public static bool HasBackup(string name) {
             var paths = Directory.GetFiles(Program.BackupsDir);
-            foreach(string p in paths) {
-                if(Path.GetFileName(p) == name)
+            foreach (string p in paths) {
+                if (Path.GetFileName(p) == name)
                     return true;
             }
             return false;
@@ -115,19 +115,19 @@ namespace PBRHex.Utils
         }
 
         public static FileType TypeFromExtension(string ext) {
-            if(ext.Length == 0)
+            if (ext.Length == 0)
                 return FileType.NONE;
             return (FileType)Enum.Parse(typeof(FileType), ext.Substring(1).ToUpper());
         }
 
         public static string ExtensionFromType(FileType type) {
-            if(type == FileType.NONE)
+            if (type == FileType.NONE)
                 return "";
             return $".{type.ToString().ToLower()}";
         }
 
         public static void WriteToISO(FileBuffer file) {
-            if(!HasBackup(file))
+            if (!HasBackup(file))
                 CreateBackup(file);
             file.Save();
             CopyFile(file.WorkingPath, file.Path);
@@ -141,32 +141,31 @@ namespace PBRHex.Utils
             var fsys = new FileBuffer(fsysPath);
             string indir = $@"{ fsys.WorkingDir}\files",
                 outdir = $@"{fsys.WorkingDir}\lzss";
-            CreateFile($@"{indir}\{file.Name}", file.GetBufferCopy());
+            CreateFile($@"{indir}\{file.Name}", file.GetBytes());
             CommandUtils.CompressLZSSFiles(indir, outdir);
             int count = fsys.ReadInt(0xc),
                 lzssAddrList = fsys.ReadInt(fsys.ReadInt(0x18)),
                 index = -1, lzssHeaderAddr = 0;
-            for(int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++) {
                 int address = fsys.ReadInt(lzssAddrList + 4 * i);
-                if(fsys.ReadInt(address) == file.ID) {
+                if (fsys.ReadInt(address) == file.ID) {
                     lzssHeaderAddr = address;
                     index = i;
                     break;
                 }
             }
-            if(index == -1)
+            if (index == -1)
                 // might not technically be the right exception but it is fitting
                 throw new FileNotFoundException();
             byte[] lzssData = File.ReadAllBytes(Directory.GetFiles(outdir)[0]);
             int lzssDataAddr = fsys.ReadInt(lzssHeaderAddr + 4),
                 newSize = (lzssData.Length + 0x1f) / 0x10 * 0x10,
                 oldSize;
-            if(index < count - 1) {
+            if (index < count - 1) {
                 int nextHeader = fsys.ReadInt(lzssAddrList + 4 * (index + 1)),
                     nextDataAddr = fsys.ReadInt(nextHeader + 4);
                 oldSize = nextDataAddr - lzssDataAddr;
-            }
-            else {
+            } else {
                 oldSize = (fsys.ReadInt(lzssHeaderAddr + 0x14) + 0xf) / 0x10 * 0x10;
             }
             fsys.WriteInt(lzssHeaderAddr + 8, file.Size);
@@ -177,11 +176,11 @@ namespace PBRHex.Utils
             fsys.WriteString(lzssDataAddr, "LZSS");
             fsys.WriteInt(lzssDataAddr + 4, file.Size);
             fsys.WriteInt(lzssDataAddr + 8, lzssData.Length + 0x10);
-            uint crc32 = Crc32Algorithm.Compute(file.GetBufferCopy());
+            uint crc32 = Crc32Algorithm.Compute(file.GetBytes());
             fsys.WriteInt(lzssDataAddr + 0xc, crc32);
             fsys.SetRange(lzssDataAddr + 0x10, lzssData);
             // update existing pointers
-            for(int i = index + 1; i < count; i++) {
+            for (int i = index + 1; i < count; i++) {
                 lzssHeaderAddr = fsys.ReadInt(lzssAddrList + 4 * i);
                 int oldAddr = fsys.ReadInt(lzssHeaderAddr + 4);
                 fsys.WriteInt(lzssHeaderAddr + 4, oldAddr + newSize - oldSize);
@@ -202,14 +201,14 @@ namespace PBRHex.Utils
             var fsys = new FileBuffer(fsysPath);
             string indir = $@"{fsys.WorkingDir}\files",
                 outdir = $@"{fsys.WorkingDir}\lzss";
-            CreateFile($@"{indir}\{file.Name}", file.GetBufferCopy());
+            CreateFile($@"{indir}\{file.Name}", file.GetBytes());
             CommandUtils.CompressLZSSFiles(indir, outdir);
             var lzss = File.ReadAllBytes(Directory.GetFiles(outdir)[0]);
             int count = fsys.ReadInt(0xc);
             // add row before file names if no room for new pointer
             int fnamesAddr = fsys.ReadInt(0x44),
                 fnamesDelta = 0;
-            if(count % 4 == 0) {
+            if (count % 4 == 0) {
                 fsys.InsertRange(fnamesAddr, 0x10);
                 fsys.WriteInt(0x44, fnamesAddr + 0x10);
                 fnamesAddr += 0x10;
@@ -219,7 +218,7 @@ namespace PBRHex.Utils
             int lzssAddrList = fsys.ReadInt(fsys.ReadInt(0x18)),
                 firstHeaderAddr = fsys.ReadInt(lzssAddrList) + fnamesDelta,
                 headersDelta = 0;
-            if((count * 7) % 0x10 == 0 || (count * 7) % 0x10 > 9) {
+            if ((count * 7) % 0x10 == 0 || (count * 7) % 0x10 > 9) {
                 fsys.InsertRange(firstHeaderAddr, 0x10);
                 firstHeaderAddr += 0x10;
                 headersDelta = 0x10;
@@ -236,7 +235,7 @@ namespace PBRHex.Utils
             int lzssDataStart = fsys.ReadInt(0x1c),
                 delta = fnamesDelta + headersDelta,
                 dataDelta = delta + 0x70;
-            if(delta != 0x10) {
+            if (delta != 0x10) {
                 // TODO: ends up accumulating a bunch of empty rows. If able, should actually DELETE range instead of inserting.
                 fsys.InsertRange(lzssDataStart, 0x10);
                 dataDelta += 0x10;
@@ -244,7 +243,7 @@ namespace PBRHex.Utils
             fsys.WriteInt(0x1c, lzssDataStart + dataDelta);
             fsys.WriteInt(0x48, lzssDataStart + dataDelta);
             // update header addresses + name and data pointers
-            for(int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++) {
                 int offset = lzssAddrList + i * 4,
                     newHeaderAddr = fsys.ReadInt(offset) + delta,
                     newNameAddr = fsys.ReadInt(newHeaderAddr + 0x24) + fnamesDelta,
@@ -273,7 +272,7 @@ namespace PBRHex.Utils
             fsys.WriteString(dataAddr, "LZSS");
             fsys.WriteInt(dataAddr + 4, file.Size);
             fsys.WriteInt(dataAddr + 8, lzss.Length);
-            uint crc32 = Crc32Algorithm.Compute(file.GetBufferCopy());
+            uint crc32 = Crc32Algorithm.Compute(file.GetBytes());
             fsys.WriteInt(dataAddr + 0xc, crc32);
             fsys.SetRange(dataAddr + 0x10, lzss);
             // update count
@@ -288,9 +287,9 @@ namespace PBRHex.Utils
             int count = fsys.ReadInt(0xc),
                 lzssListAddr = fsys.ReadInt(fsys.ReadInt(0x18)),
                 id = rand.Next(1, 0xffff);
-            for(int i = 0; i < count; i++) {
+            for (int i = 0; i < count; i++) {
                 int offset = fsys.ReadInt(lzssListAddr + i * 4);
-                if(id == fsys.ReadShort(offset)) {
+                if (id == fsys.ReadShort(offset)) {
                     id = rand.Next(1, 0xffff);
                     i = -1;
                 }
@@ -311,7 +310,7 @@ namespace PBRHex.Utils
             var file = File.OpenRead(path);
             var files = new FileBuffer[paths.Count];
 
-            for(int i = 0; i < paths.Count; i++) {
+            for (int i = 0; i < paths.Count; i++) {
                 file.Seek(0x60 + 4 * i, SeekOrigin.Begin);
                 file.Read(word, 0, 4);
 
@@ -324,7 +323,7 @@ namespace PBRHex.Utils
                 file.Read(word, 0, 4);
                 int ftype = HexUtils.BytesToInt(word);
 
-                if(!Enum.IsDefined(typeof(FileType), ftype))
+                if (!Enum.IsDefined(typeof(FileType), ftype))
                     Console.WriteLine($"Unknown file type: {ftype}");
                 string withExt = $"{paths[i]}{ExtensionFromType((FileType)ftype)}";
                 File.Move(paths[i], withExt);
@@ -345,7 +344,7 @@ namespace PBRHex.Utils
             string[] paths = Directory.GetFiles(outdir);
             // would probably be a good idea NOT to hold all of them in memory at the same time...
             var lzssData = new byte[paths.Length][];
-            for(int i = 0; i < paths.Length; i++) {
+            for (int i = 0; i < paths.Length; i++) {
                 lzssData[i] = File.ReadAllBytes(paths[i]);
             }
 
@@ -377,7 +376,7 @@ namespace PBRHex.Utils
 
             // file names
             outfile.Seek(offset1, SeekOrigin.Begin);
-            for(int i = 0; i < fsys.FileCount; i++) {
+            for (int i = 0; i < fsys.FileCount; i++) {
                 outfile.Write(Encoding.ASCII.GetBytes("(null)"), 0, 6);
                 outfile.Seek(1, SeekOrigin.Current);
             }
@@ -395,7 +394,7 @@ namespace PBRHex.Utils
             outfile.Write(HexUtils.IntToBytes(offset3), 0, 4);
 
             uint dataOffset = offset3;
-            for(int i = 0; i < fsys.FileCount; i++) {
+            for (int i = 0; i < fsys.FileCount; i++) {
                 var file = fsys.Files[i];
 
                 outfile.Seek(0x60 + i * 4, SeekOrigin.Begin);
@@ -435,7 +434,7 @@ namespace PBRHex.Utils
                 // packed size
                 outfile.Write(HexUtils.IntToBytes(lzssData[i].Length + 0x10), 0, 4);
                 // CRC-32 checksum
-                uint crc32 = Crc32Algorithm.Compute(file.GetBufferCopy());
+                uint crc32 = Crc32Algorithm.Compute(file.GetBytes());
                 outfile.Write(HexUtils.IntToBytes(crc32), 0, 4);
                 // data
                 outfile.Write(lzssData[i], 0, lzssData[i].Length);
