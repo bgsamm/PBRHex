@@ -56,7 +56,8 @@ namespace PBRHex.Tables
             FileUtils.DeleteFile(temp.Path);
         }
 
-        public static void AddSpriteSlots(int dex) {
+        // needs to handle adding new forms
+        public static void AddSpriteSlots(Pokemon mon) {
             int count = Common0.ReadInt(0),
                 start = Common0.ReadInt(0x10),
                 tableSize = Common0.ReadInt(0x14),
@@ -66,8 +67,8 @@ namespace PBRHex.Tables
             Common0.WriteInt(0x18, fileSize + 0x10);
             Common0.AddRange(0x10);
 
-            AddBodySpriteSlot(dex, count);
-            AddFaceSpriteSlot(dex, count);
+            AddBodySpriteSlot(mon, count);
+            AddFaceSpriteSlot(mon, count);
 
             string path = $@"{Program.TempDir}\temp.png";
 
@@ -88,34 +89,36 @@ namespace PBRHex.Tables
             FileUtils.DeleteFile(path);
         }
 
-        private static void AddBodySpriteSlot(int dex, int index) {
+        public static void AddBodySpriteSlot(Pokemon mon, int spriteTableIdx) {
             int count = Common15.ReadInt(0),
                 start = Common15.ReadInt(0x10),
                 tableSize = Common15.ReadInt(0x14),
-                fileSize = Common15.ReadInt(0x18);
+                fileSize = Common15.ReadInt(0x18),
+                rowSize = Common15.ReadInt(0x4);
             Common15.WriteInt(0, count + 1);
-            Common15.WriteInt(0x14, tableSize + 0xc);
-            Common15.WriteInt(0x18, fileSize + 0xc);
-            Common15.AddRange(0xc);
-            int offset = start + count * 0xc;
-            Common15.WriteShort(offset + 2, (short)dex);
-            Common15.WriteShort(offset + 4, (short)index);
-            Common15.WriteShort(offset + 6, 1); // form count
+            Common15.WriteInt(0x14, tableSize + rowSize);
+            Common15.WriteInt(0x18, fileSize + rowSize);
+            int offset = start + count * rowSize;
+            Common15.InsertRange(offset, rowSize);
+            Common15.WriteShort(offset, (short)mon.DexNum);
+            Common15.WriteShort(offset + 2, (short)mon.FormIndex);
+            Common15.WriteShort(offset + 4, (short)spriteTableIdx);
         }
 
-        private static void AddFaceSpriteSlot(int dex, int index) {
+        public static void AddFaceSpriteSlot(Pokemon mon, int spriteTableIdx) {
             int count = Common16.ReadInt(0),
                 start = Common16.ReadInt(0x10),
                 tableSize = Common16.ReadInt(0x14),
-                fileSize = Common16.ReadInt(0x18);
+                fileSize = Common16.ReadInt(0x18),
+                rowSize = Common16.ReadInt(0x4);
             Common16.WriteInt(0, count + 1);
-            Common16.WriteInt(0x14, tableSize + 8);
-            Common16.WriteInt(0x18, fileSize + 8);
-            Common16.AddRange(8);
-            int offset = start + count * 8;
-            Common16.WriteShort(offset + 2, (short)dex);
-            Common16.WriteShort(offset + 4, (short)index);
-            Common16.WriteShort(offset + 6, 2); // form count << 1
+            Common16.WriteInt(0x14, tableSize + rowSize);
+            Common16.WriteInt(0x18, fileSize + rowSize);
+            int offset = start + count * rowSize;
+            Common16.InsertRange(offset, rowSize);
+            Common16.WriteShort(offset, (short)mon.DexNum);
+            Common16.WriteShort(offset + 2, (short)mon.FormIndex);
+            Common16.WriteShort(offset + 4, (short)spriteTableIdx);
         }
 
         private static FileBuffer CreateGTX(string path, Image image) {
@@ -127,7 +130,7 @@ namespace PBRHex.Tables
             return new FileBuffer(gtxPath, Program.TempDir);
         }
 
-        private static int GetFaceSpriteIndex(int dex) {
+        private static int GetFaceSpriteIndex(Pokemon mon) {
             int start = Common16.ReadInt(0x10),
                 count = Common16.ReadInt(0);
             // The game simply calculates the offset; I want to work in terms of dex #s
@@ -135,19 +138,21 @@ namespace PBRHex.Tables
             // common 8 is the same as in common 16. Time will tell though ;)
             for (int i = 0; i < count; i++) {
                 int offset = start + i * 8;
-                if (Common16.ReadShort(offset + 2) == dex)
+                if (Common16.ReadShort(offset) == mon.DexNum &&
+                    Common16.ReadShort(offset + 2) == mon.FormIndex)
                     return Common16.ReadShort(offset + 4);
             }
             throw new ArgumentException();
         }
 
-        private static int GetBodySpriteIndex(int dex) {
+        private static int GetBodySpriteIndex(Pokemon mon) {
             int start = Common15.ReadInt(0x10),
                 count = Common15.ReadInt(0);
             // see above
             for (int i = 0; i < count; i++) {
                 int offset = start + i * 0xc;
-                if (Common15.ReadShort(offset + 2) == dex)
+                if (Common15.ReadShort(offset) == mon.DexNum &&
+                    Common15.ReadShort(offset + 2) == mon.FormIndex)
                     return Common15.ReadShort(offset + 4);
             }
             throw new ArgumentException();
@@ -155,16 +160,16 @@ namespace PBRHex.Tables
 
         private static int GetFaceSpriteID(Pokemon mon) {
             int start = Common0.ReadInt(0x10),
-                idx = GetFaceSpriteIndex(mon.DexNo);
+                idx = GetFaceSpriteIndex(mon);
             // alternate form sprites need to be in consecutive rows
-            return Common0.ReadInt(start + (idx + mon.FormID) * 0x10 + 8 * mon.Gender);
+            return Common0.ReadInt(start + (idx + mon.FormIndex) * 0x10 + 8 * mon.Gender);
         }
 
         private static int GetBodySpriteID(Pokemon mon) {
             int start = Common0.ReadInt(0x10),
-                idx = GetBodySpriteIndex(mon.DexNo);
+                idx = GetBodySpriteIndex(mon);
             // alternate form sprites need to be in consecutive rows
-            return Common0.ReadInt(start + (idx + mon.FormID) * 0x10 + 8 * mon.Gender + 4);
+            return Common0.ReadInt(start + (idx + mon.FormIndex) * 0x10 + 8 * mon.Gender + 4);
         }
 
         private static string MakeFaceSpritePath(int id) {

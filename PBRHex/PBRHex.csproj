@@ -166,8 +166,10 @@
     <Compile Include="PassEditor.Designer.cs">
       <DependentUpon>PassEditor.cs</DependentUpon>
     </Compile>
+    <Compile Include="PatchManager.cs" />
     <Compile Include="Pokemon.cs" />
     <Compile Include="Tables\AbilityTable.cs" />
+    <Compile Include="Tables\AITable.cs" />
     <Compile Include="Tables\ItemTable.cs" />
     <Compile Include="Tables\MoveTable.cs" />
     <Compile Include="Tables\PassTable.cs" />

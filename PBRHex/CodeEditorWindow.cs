@@ -127,9 +127,8 @@ namespace PBRHex
                 return;
             }
             try {
-                uint address = RowToAddress(e.RowIndex),
-                    instruction = AssemblyUtils.Assemble(e.Value.ToString(), address);
-                DOL.WriteInstruction(address, instruction);
+                DOL.WriteInstruction(RowToAddress(e.RowIndex), e.Value.ToString());
+                codeView.InvalidateCell(codeView.Rows[e.RowIndex].Cells[0]);
             } catch {
                 new AlertDialog("Invalid instruction.").ShowDialog();
             }
@@ -140,9 +139,9 @@ namespace PBRHex
             if (!DOL.IsAddrInBounds(address))
                 return;
             if (e.ColumnIndex == 0)
-                e.Value = HexUtils.IntToHex(DOL.GetInstruction(address));
+                e.Value = HexUtils.IntToHex(DOL.ReadInstruction(address));
             else if (e.ColumnIndex == 1)
-                e.Value = AssemblyUtils.Disassemble(DOL.GetInstruction(address), RowToAddress(e.RowIndex));
+                e.Value = AssemblyUtils.Disassemble(DOL.ReadInstruction(address), RowToAddress(e.RowIndex));
             else if (e.ColumnIndex == 2)
                 e.Value = DOL.Comments.ContainsKey(address) ? DOL.Comments[address] : "";
         }

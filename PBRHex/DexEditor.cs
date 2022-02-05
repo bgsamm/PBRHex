@@ -47,7 +47,7 @@ namespace PBRHex
             attributesPage.Enabled = false;
             modelPage.Enabled = false;
 
-            for(int i = 1; i <= DexTable.GetRange(); i++) {
+            for(int i = 1; i <= DexTable.GetMaxDexNum(); i++) {
                 pokemonListBox.Items.Add(DexTable.GetSpeciesName(i));
             }
 
@@ -133,8 +133,8 @@ namespace PBRHex
         }
 
         private void GoTo(Pokemon mon, bool modelTab = false) {
-            pokemonListBox.SelectedIndex = mon.DexNo - 1;
-            formsComboBox.SelectedIndex = mon.FormID;
+            pokemonListBox.SelectedIndex = mon.DexNum - 1;
+            formsComboBox.SelectedIndex = mon.FormIndex;
             pokemonTabControl.SelectedIndex = modelTab ? 1 : 0;
         }
 
@@ -433,15 +433,9 @@ namespace PBRHex
 
         private void AddMonMenuItem_Click(object sender, EventArgs e) {
             int dex = DexTable.AddSlot();
+            Save();
             pokemonListBox.Items.Add(DexTable.GetSpeciesName(dex));
             pokemonListBox.SelectedIndex = pokemonListBox.Items.Count - 1;
-            //var input = new InputDialog() { Prompt = "Enter species name:" };
-            //if(input.ShowDialog() == DialogResult.OK) {
-            //    int index = DexTable.AddSlot();
-            //    string name = input.Response;
-            //    DexTable.SetName(index, name);
-            //    pokemonListBox.Items.Add(name);
-            //}
         }
     }
 }

@@ -204,19 +204,20 @@ namespace PBRHex.Tables
         private static int GetModelTableOffset(Pokemon mon) {
             int start = Common6.ReadInt(0x10),
                 stride = Common6.ReadInt(4),
-                idx = GetModelTableIndex(mon);
+                idx = SearchModelTable(mon);
             return start + stride * idx;
         }
 
-        private static int GetModelTableIndex(Pokemon mon) {
+        /// <returns>The index of the mon's entry in the table</returns>
+        private static int SearchModelTable(Pokemon mon) {
             int start = Common6.ReadInt(0x10),
                 rows = Common6.ReadInt(0),
-                stride = Common6.ReadInt(4),
-                dexID = DexTable.GetIndex(mon);
+                stride = Common6.ReadInt(4);
             int idx = -1;
             for (int i = 0; i < rows; i++) {
                 int offset = start + stride * i;
-                if (dexID == Common6.ReadShort(offset + 0x14) && mon.FormID == Common6.ReadByte(offset + 0x18)) {
+                if (Common6.ReadShort(offset + 0x14) == mon.DexNum 
+                    && Common6.ReadByte(offset + 0x18) == mon.FormIndex) {
                     idx = i;
                     int flags = Common6.ReadInt(offset);
                     if (((flags >> 26) & 1) == mon.Gender)
@@ -237,7 +238,7 @@ namespace PBRHex.Tables
         }
 
         public static void AddModelSlot(Pokemon mon) {
-            string fname = $"pkx_{mon.DexNo:D3}";
+            string fname = $"pkx_{mon.DexNum:D3}";
             FileUtils.CopyFile(FSYSTable.MakePath("pkx_sub"), FSYSTable.MakePath(fname));
             int fsysID = FSYSTable.AddFile(fname);
             var subModel = FSYSTable.GetFile("pkx_sub");
@@ -253,7 +254,8 @@ namespace PBRHex.Tables
             Common6.WriteInt(address + 8, subModel.Files[0].ID); // 0x97A0400 = Substitute doll's file ID
             Common6.WriteInt(address + 0xc, shinyID);
             Common6.WriteFloat(address + 0x10, 20.0); // run speed
-            Common6.WriteShort(address + 0x14, (short)DexTable.GetIndex(mon));
+            Common6.WriteShort(address + 0x14, (short)mon.DexNum);
+            Common6.WriteByte(address + 0x18, (byte)mon.FormIndex);
             // update count
             Common6.WriteInt(0, rows + 1);
         }

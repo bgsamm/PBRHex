@@ -45,8 +45,6 @@ namespace PBRHex
         [DllImport("user32.dll")]
         static extern Int32 FlashWindowEx(ref FLASHWINFO pwfi);
 
-        public static GameRegion ISORegion;
-
         private readonly TreeView FileTree;
         private string SelectedFilePath => (string)FileTree.SelectedNode.Tag;
 
@@ -68,13 +66,13 @@ namespace PBRHex
                 int gameCodeSize = DOL.GetSectionSize(1);
                 switch (gameCodeSize) {
                     case 0x3DEB20:
-                        ISORegion = GameRegion.NTSCU;
+                        Program.ISORegion = GameRegion.NTSCU;
                         break;
                     case 0x3C69E0:
-                        ISORegion = GameRegion.NTSCJ;
+                        Program.ISORegion = GameRegion.NTSCJ;
                         break;
                     case 0x3DB4E0:
-                        ISORegion = GameRegion.PAL;
+                        Program.ISORegion = GameRegion.PAL;
                         break;
                     default:
                         // shouldn't ever get here but in case it does just don't load the ISO
@@ -108,7 +106,7 @@ namespace PBRHex
             TreeNode node;
 
             if (parentNode == null) {
-                string rootName = ISORegion.ToString().Replace("NTSC", "NTSC-");
+                string rootName = Program.ISORegion.ToString().Replace("NTSC", "NTSC-");
                 node = new TreeNode(rootName)
                 {
                     ImageIndex = 0,
@@ -261,11 +259,11 @@ namespace PBRHex
                 }
 
                 if (gameCode == "RPBJ01")
-                    ISORegion = GameRegion.NTSCJ;
+                    Program.ISORegion = GameRegion.NTSCJ;
                 else if (gameCode == "RPBE01")
-                    ISORegion = GameRegion.NTSCU;
+                    Program.ISORegion = GameRegion.NTSCU;
                 else if (gameCode == "RPBP01")
-                    ISORegion = GameRegion.PAL;
+                    Program.ISORegion = GameRegion.PAL;
                 CloseForms();
                 Program.Log("Unpacking ISO...");
                 FileUtils.DeleteDirectory(Program.TempDir);
@@ -277,26 +275,12 @@ namespace PBRHex
                 messageLabel.Refresh();
                 CommandUtils.UnpackISO(openISODialog.FileName);
                 FSYSTable.Initialize();
-                FSYSTable.RenameFile("pkx_600", "pkx_egg");
-                FSYSTable.RenameFile("pkx_601", "pkx_sub");
                 SpriteTable.DecodeSprites();
                 DOL.Initialize();
-                DexTable.PatchDex();
-                // disable anti-modification function
-                uint address = 0;
-                switch (ISORegion) {
-                    case GameRegion.NTSCJ:
-                        address = 0x8021de60;
-                        break;
-                    case GameRegion.NTSCU:
-                        address = 0x8022e1e4;
-                        break;
-                    case GameRegion.PAL:
-                        address = 0x8022965c;
-                        break;
-                }
-                DOL.WriteInstruction(address, 0x48000108);
-                DOL.Write();
+                PatchManager.DisableAntiModification();
+                PatchManager.ClearDebugFunctions();
+                PatchManager.ExpandDOL();
+                PatchManager.PatchDex();
                 BuildFileTree();
                 FlashTaskbar();
                 messageLabel.Visible = false;
@@ -316,19 +300,18 @@ namespace PBRHex
         }
 
         private void DolphinButton_Click(object sender, EventArgs args) {
-            try {
-                CommandUtils.RunDolphin().Exited += (s, e) =>
-                {
-                    // must use Invoke to execute on the UI thread
-                    Invoke(new Action(() =>
-                    {
-                        dolphinMenuItem.Enabled = true;
-                    }));
-                };
-                dolphinMenuItem.Enabled = false;
-            } catch {
-                new AlertDialog("Could not launch Dolphin. Please ensure that Dolphin is on the PATH.").ShowDialog();
-            }
+            PatchManager.PatchDex();
+            //try {
+            //    CommandUtils.RunDolphin().Exited += (s, e) => {
+            //        // must use Invoke to execute on the UI thread
+            //        Invoke(new Action(() => {
+            //            dolphinMenuItem.Enabled = true;
+            //        }));
+            //    };
+            //    dolphinMenuItem.Enabled = false;
+            //} catch {
+            //    new AlertDialog("Could not launch Dolphin. Please ensure that Dolphin is on the PATH.").ShowDialog();
+            //}
         }
 
         private void FileTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e) {

@@ -17,19 +17,19 @@ namespace PBRHex.Commands.DexCommands
         }
 
         public override bool Execute() {
-            OldName = DexTable.GetSpeciesName(Pokemon.DexNo);
-            DexTable.SetSpeciesName(Pokemon.DexNo, NewName);
+            OldName = DexTable.GetSpeciesName(Pokemon.DexNum);
+            DexTable.SetSpeciesName(Pokemon.DexNum, NewName);
             Editor.SetSpeciesName(Pokemon, NewName);
             return true;
         }
 
         public override void Redo() {
-            DexTable.SetSpeciesName(Pokemon.DexNo, NewName);
+            DexTable.SetSpeciesName(Pokemon.DexNum, NewName);
             Editor.SetSpeciesName(Pokemon, NewName);
         }
 
         public override void Undo() {
-            DexTable.SetSpeciesName(Pokemon.DexNo, OldName);
+            DexTable.SetSpeciesName(Pokemon.DexNum, OldName);
             Editor.SetSpeciesName(Pokemon, OldName);
         }
     }

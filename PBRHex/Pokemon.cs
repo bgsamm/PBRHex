@@ -4,8 +4,8 @@ namespace PBRHex
 {
     public class Pokemon
     {
-        public readonly int DexNo;
-        public readonly int FormID;
+        public readonly int DexNum;
+        public readonly int FormIndex;
         public readonly int Gender;
         public readonly bool Shiny;
 
@@ -14,8 +14,8 @@ namespace PBRHex
         public int[] Moves;
 
         public Pokemon(int dex, int form, int gender = 0, bool shiny = false) {
-            DexNo = dex;
-            FormID = form;
+            DexNum = dex;
+            FormIndex = form;
             Gender = gender;
             Shiny = shiny;
         }

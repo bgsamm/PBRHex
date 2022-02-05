@@ -41,7 +41,7 @@ namespace PBRHex
         protected override void OnLoad(EventArgs e) {
             base.OnLoad(e);
 
-            for(int i = 1; i <= DexTable.GetRange(); i++) {
+            for(int i = 1; i <= DexTable.GetMaxDexNum(); i++) {
                 speciesComboBox.Items.Add(DexTable.GetSpeciesName(i));
             }
 
@@ -171,7 +171,7 @@ namespace PBRHex
                 abilityComboBox.Items.Add(AbilityTable.GetName(ab2));
 
             bodySpritePictureBox.Image = SpriteTable.GetBodySprites(mon);
-            speciesComboBox.SelectedIndex = mon.DexNo - 1;
+            speciesComboBox.SelectedIndex = mon.DexNum - 1;
             abilityComboBox.SelectedIndex = mon.Ability == ab1 ? 0 : 1;
             itemComboBox.SelectedIndex = mon.HeldItem;
             for(int i = 0; i < 4; i++) {
@@ -187,7 +187,7 @@ namespace PBRHex
             var pictureBox = controls.OfType<PictureBox>().First();
             var label = controls.OfType<Label>().First();
             pictureBox.Image = SpriteTable.GetFaceSprites(mon);
-            label.Text = DexTable.GetSpeciesName(mon.DexNo);
+            label.Text = DexTable.GetSpeciesName(mon.DexNum);
         }
 
         private void TrainerComboBox_SelectedIndexChanged(object sender, EventArgs e) {

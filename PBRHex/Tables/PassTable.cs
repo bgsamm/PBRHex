@@ -57,8 +57,7 @@ namespace PBRHex.Tables
             // we can just copy over the held item & move set
             byte type1 = (byte)DexTable.GetTyping(mon, 0),
                 type2 = (byte)DexTable.GetTyping(mon, 1);
-            int monID = DexTable.GetIndex(mon);
-            PokemonDeck.WriteShort(deckOffset + 6, (short)monID);
+            PokemonDeck.WriteShort(deckOffset + 6, (short)mon.DexNum);
             // the decks actually store the mon's types for use when building
             // AI teams; shouldn't actually matter here but why not update them?
             PokemonDeck.WriteByte(deckOffset + 8, type1);

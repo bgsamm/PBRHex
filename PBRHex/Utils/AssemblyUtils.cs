@@ -41,6 +41,8 @@ namespace PBRHex.Utils
                 case "subf": case "subf.": case "subfo": case "subfo.":
                 case "subfc": case "subfc.": case "subfco": case "subfco.":
                 case "subfe": case "subfe.": case "subfeo": case "subfeo.":
+                case "mullw": case "mullw.": case "mullwo": case "mullwo.":
+                case "divw": case "divw.": case "divwo": case "divwo.":
                     D = Convert.ToInt32(args[1]);
                     A = Convert.ToInt32(args[2]);
                     B = Convert.ToInt32(args[3]);
@@ -65,6 +67,12 @@ namespace PBRHex.Utils
                             break;
                         case "subfe": case "subfe.": case "subfeo": case "subfeo.":
                             bin += "010001000";
+                            break;
+                        case "mullw": case "mullw.": case "mullwo": case "mullwo.":
+                            bin += "011101011";
+                            break;
+                        case "divw": case "divw.": case "divwo": case "divwo.":
+                            bin += "111101011";
                             break;
                     }
                     bin += Rc;
@@ -140,22 +148,22 @@ namespace PBRHex.Utils
                     bin = $"010000";
                     switch(op) {
                         case "beq":
-                            bin += "01100 00010";
+                            bin += "0110000010";
                             break;
                         case "bgt":
-                            bin += "01100 00001";
+                            bin += "0110000001";
                             break;
                         case "ble":
-                            bin += "00100 00001";
+                            bin += "0010000001";
                             break;
                         case "blt":
-                            bin += "01100 00000";
+                            bin += "0110000000";
                             break;
                         case "bne":
-                            bin += "00100 00010";
+                            bin += "0010000010";
                             break;
                         case "bdnz":
-                            bin += "10000 00000";
+                            bin += "1000000000";
                             break;
                     }
                     bin += $"{Binary(BD, 14)}00";
@@ -232,13 +240,19 @@ namespace PBRHex.Utils
 
                     bin += $"{Binary(D, 3)}0{L}{Binary(A, 5)}{Binary(SIMM, 16)}";
                     break;
+                case "cmpd":
+                case "cmpw":
                 case "cmpld":
                 case "cmplw":
                     D = (args.Length == 4) ? Convert.ToInt32(args[1]) : 0;
                     A = Convert.ToInt32(args[args.Length - 2]);
                     B = Convert.ToInt32(args[args.Length - 1]);
-                    L = (op == "cmpld") ? 1 : 0;
-                    bin = $"011111{Binary(D, 3)}0{L}{Binary(A, 5)}{Binary(B, 5)}00001000000";
+                    L = (op == "cmpld" || op == "cmpd") ? 1 : 0;
+                    bin = $"011111{Binary(D, 3)}0{L}{Binary(A, 5)}{Binary(B, 5)}";
+                    if (op == "cmpd" || op == "cmpw")
+                        bin += "00000000000";
+                    else if (op == "cmpld" || op == "cmplw")
+                        bin += "00001000000";
                     break;
                 case "fadd":
                 case "fadd.":

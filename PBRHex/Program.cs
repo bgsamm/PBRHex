@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using PBRHex.Utils;
 
@@ -13,11 +15,13 @@ namespace PBRHex
 #else
             $@"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\PBRHex";
 #endif
-        public static readonly string ISODir = $@"{DataDir}.pbr";
-        public static readonly string TempDir = $@"{DataDir}temp";
-        public static readonly string UserDir = $@"{DataDir}user";
-        public static readonly string SpritesDir = $@"{DataDir}sprites";
-        public static readonly string BackupsDir = $@"{UserDir}backups";
+        public static readonly string ISODir = Path.Combine(DataDir, ".pbr");
+        public static readonly string TempDir = Path.Combine(DataDir, "temp");
+        public static readonly string UserDir = Path.Combine(DataDir, "user");
+        public static readonly string SpritesDir = Path.Combine(DataDir, "sprites");
+        public static readonly string BackupsDir = Path.Combine(UserDir, "backups");
+
+        public static GameRegion ISORegion;
 
         private static int WaitingCount;
         private static readonly object LoggerLock = new object();

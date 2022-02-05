@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -82,7 +83,6 @@ namespace PBRHex.Utils
             } finally {
                 Program.NotifyDone();
             }
-
             return process;
         }
     }

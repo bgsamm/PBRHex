@@ -59,7 +59,7 @@ namespace PBRHex.Files
             return Sections[index].Address;
         }
 
-        public static uint GetInstruction(uint memAddr) {
+        public static uint ReadInstruction(uint memAddr) {
             int fileOffset = MemAddrToFileOffset(memAddr);
             return (uint)Main.ReadInt(fileOffset);
         }
@@ -74,6 +74,11 @@ namespace PBRHex.Files
             int index = GetSectionIndex(memAddr);
             var section = Sections[index];
             DeleteRange(index, (int)(memAddr - section.Address), 4);
+        }
+
+        public static void WriteInstruction(uint memAddr, string instruction) {
+            uint op = AssemblyUtils.Assemble(instruction, memAddr);
+            WriteInstruction(memAddr, op);
         }
 
         public static void WriteInstruction(uint memAddr, uint instruction) {
