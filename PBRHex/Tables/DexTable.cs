@@ -20,20 +20,6 @@ namespace PBRHex.Tables
             return max;
         }
 
-        // I'd really like to do everything in dex #s, but b/c of how the
-        // game handles things, I'll have to wait until I can patch the DOL
-        /// <returns>
-        /// The index of the given Pokemon in the dex table.
-        /// This is the number used by the game to identify Pokemon.
-        /// </returns>
-        //public static int GetIndex(Pokemon mon) {
-        //    for (int i = 0; i < Count; i++) {
-        //        if (GetDexNum(i) == mon.DexNum && GetFormIndex(i) == mon.FormIndex)
-        //            return i;
-        //    }
-        //    throw new ArgumentOutOfRangeException();
-        //}
-
         public static Pokemon GetMonByIndex(int index) {
             int dexNo = GetDexNum(index),
                 formID = GetFormIndex(index);
