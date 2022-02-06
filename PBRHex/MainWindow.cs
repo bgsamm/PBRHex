@@ -300,18 +300,17 @@ namespace PBRHex
         }
 
         private void DolphinButton_Click(object sender, EventArgs args) {
-            PatchManager.PatchDex();
-            //try {
-            //    CommandUtils.RunDolphin().Exited += (s, e) => {
-            //        // must use Invoke to execute on the UI thread
-            //        Invoke(new Action(() => {
-            //            dolphinMenuItem.Enabled = true;
-            //        }));
-            //    };
-            //    dolphinMenuItem.Enabled = false;
-            //} catch {
-            //    new AlertDialog("Could not launch Dolphin. Please ensure that Dolphin is on the PATH.").ShowDialog();
-            //}
+            try {
+                CommandUtils.RunDolphin().Exited += (s, e) => {
+                    // must use Invoke to execute on the UI thread
+                    Invoke(new Action(() => {
+                        dolphinMenuItem.Enabled = true;
+                    }));
+                };
+                dolphinMenuItem.Enabled = false;
+            } catch {
+                new AlertDialog("Could not launch Dolphin. Please ensure that Dolphin is on the PATH.").ShowDialog();
+            }
         }
 
         private void FileTreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e) {
