@@ -191,6 +191,14 @@ namespace PBRHex
             IgnoreEvent = false;
         }
 
+        public void SetTier(Pokemon mon, SmogonTier tier) {
+            GoTo(mon);
+            IgnoreEvent = true;
+            int index = tierComboBox.Items.IndexOf(tier.ToString());
+            tierComboBox.SelectedIndex = index;
+            IgnoreEvent = false;
+        }
+
         public void SetModel(Pokemon mon, FileBuffer model) {
             GoTo(mon, true);
             UpdateModelPageComboBoxes();
@@ -286,6 +294,9 @@ namespace PBRHex
                 ability2 = DexTable.GetAbility(CurrentPokemon, 1);
             SetAbility(CurrentPokemon, 0, ability1);
             SetAbility(CurrentPokemon, 1, ability2);
+            // tier
+            var tier = DexTable.GetTier(CurrentPokemon);
+            SetTier(CurrentPokemon, tier);
             // sprites
             SetFaceSprites(CurrentPokemon, SpriteTable.GetFaceSprites(CurrentPokemon));
             SetBodySprites(CurrentPokemon, SpriteTable.GetBodySprites(CurrentPokemon));

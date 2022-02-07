@@ -39,6 +39,8 @@ namespace PBRHex
             this.openModelDialog = new System.Windows.Forms.OpenFileDialog();
             this.pokemonTabControl = new System.Windows.Forms.TabControl();
             this.attributesPage = new System.Windows.Forms.TabPage();
+            this.tierComboBox = new System.Windows.Forms.ComboBox();
+            this.label30 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.secondaryAbilityComboBox = new System.Windows.Forms.ComboBox();
             this.label25 = new System.Windows.Forms.Label();
@@ -295,6 +297,8 @@ namespace PBRHex
             // 
             // attributesPage
             // 
+            this.attributesPage.Controls.Add(this.tierComboBox);
+            this.attributesPage.Controls.Add(this.label30);
             this.attributesPage.Controls.Add(this.panel3);
             this.attributesPage.Controls.Add(this.label1);
             this.attributesPage.Controls.Add(this.formsComboBox);
@@ -318,6 +322,35 @@ namespace PBRHex
             this.attributesPage.TabIndex = 0;
             this.attributesPage.Text = "Attributes";
             this.attributesPage.UseVisualStyleBackColor = true;
+            // 
+            // tierComboBox
+            // 
+            this.tierComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tierComboBox.FormattingEnabled = true;
+            this.tierComboBox.Items.AddRange(new object[] {
+            "NFE",
+            "NU",
+            "NUBL",
+            "UU",
+            "UUBL",
+            "OU",
+            "OUBL",
+            "Uber"});
+            this.tierComboBox.Location = new System.Drawing.Point(309, 246);
+            this.tierComboBox.Margin = new System.Windows.Forms.Padding(4);
+            this.tierComboBox.Name = "tierComboBox";
+            this.tierComboBox.Size = new System.Drawing.Size(83, 24);
+            this.tierComboBox.TabIndex = 36;
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Location = new System.Drawing.Point(264, 250);
+            this.label30.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(37, 17);
+            this.label30.TabIndex = 35;
+            this.label30.Text = "Tier:";
             // 
             // panel3
             // 
@@ -2202,5 +2235,7 @@ namespace PBRHex
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.ComboBox primaryAbilityComboBox;
         private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.ComboBox tierComboBox;
+        private System.Windows.Forms.Label label30;
     }
 }

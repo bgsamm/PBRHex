@@ -64,6 +64,11 @@ namespace PBRHex.Tables
             return Common8.ReadByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x1e + stat);
         }
 
+        public static SmogonTier GetTier(Pokemon mon) {
+            byte tier = Common8.ReadByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x32);
+            return (SmogonTier)tier;
+        }
+
         public static int GetFormCount(int dex) {
             int count = 0;
             for (int i = 0; i < Count; i++) {

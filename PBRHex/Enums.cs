@@ -47,4 +47,20 @@ namespace PBRHex
     {
         RGB5A3 = 0x3
     }
+
+    public enum SmogonTier
+    {
+        NFE = 0,
+        PU = 4,
+        PUBL = 5,
+        NU = 6,
+        NUBL = 7,
+        RU = 8,
+        RUBL = 9,
+        UU = 10,
+        UUBL = 11,
+        OU = 12,
+        Uber = 14,
+        AG = 15
+    }
 }
