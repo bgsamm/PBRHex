@@ -43,25 +43,26 @@ namespace PBRHex.Tables
         }
 
         private static int GetFormNameID(Pokemon mon) {
-            return Common8.ReadShort(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x1a);
+            return Common8.ReadShort(GetTableOffset(mon) + 0x1a);
         }
 
-        public static int GetTyping(Pokemon mon, int slot) {
+        public static PokeType GetTyping(Pokemon mon, int slot) {
             if (slot > 1)
                 throw new ArgumentOutOfRangeException();
-            return Common8.ReadByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x24 + slot);
+            byte type = Common8.ReadByte(GetTableOffset(mon) + 0x24 + slot);
+            return (PokeType)type;
         }
 
         public static int GetAbility(Pokemon mon, int slot) {
             if (slot > 1)
                 throw new ArgumentOutOfRangeException();
-            return Common8.ReadByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x30 + slot);
+            return Common8.ReadByte(GetTableOffset(mon) + 0x30 + slot);
         }
 
         public static int GetStat(Pokemon mon, int stat) {
             if (stat > 5)
                 throw new ArgumentOutOfRangeException();
-            return Common8.ReadByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x1e + stat);
+            return Common8.ReadByte(GetTableOffset(mon) + 0x1e + stat);
         }
 
         public static int GetFormCount(int dex) {
@@ -86,22 +87,22 @@ namespace PBRHex.Tables
             }
         }
 
-        public static void SetTyping(Pokemon mon, int slot, int type) {
+        public static void SetTyping(Pokemon mon, int slot, PokeType type) {
             if (slot > 1)
                 throw new ArgumentOutOfRangeException();
-            Common8.WriteByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x24 + slot, (byte)type);
+            Common8.WriteByte(GetTableOffset(mon) + 0x24 + slot, (byte)type);
         }
 
         public static void SetAbility(Pokemon mon, int slot, int ability) {
             if (slot > 1)
                 throw new ArgumentOutOfRangeException();
-            Common8.WriteByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x30 + slot, (byte)ability);
+            Common8.WriteByte(GetTableOffset(mon) + 0x30 + slot, (byte)ability);
         }
 
         public static void SetStat(Pokemon mon, int stat, int value) {
             if (stat > 5)
                 throw new ArgumentOutOfRangeException();
-            Common8.WriteByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x1e + stat, (byte)value);
+            Common8.WriteByte(GetTableOffset(mon) + 0x1e + stat, (byte)value);
         }
 
         public static int GetDexNum(int index) {
@@ -123,6 +124,10 @@ namespace PBRHex.Tables
                 b = (byte)((numForms << 1) + (b & 1));
                 Common8.WriteByte(offset + 0x33, b);
             }
+        }
+
+        private static int GetTableOffset(Pokemon mon) {
+            return GetTableOffset(mon.DexNum, mon.FormIndex);
         }
 
         private static int GetTableOffset(int dex, int form) {

@@ -162,13 +162,11 @@ namespace PBRHex
             IgnoreEvent = false;
         }
 
-        public void SetTyping(Pokemon mon, int slot, int type) {
+        public void SetTyping(Pokemon mon, int slot, PokeType type) {
             GoTo(mon);
             IgnoreEvent = true;
-            if(slot == 0)
-                primaryTypeComboBox.SelectedIndex = type < 9 ? type : type - 1;
-            else
-                secondaryTypeComboBox.SelectedIndex = type < 9 ? type + 1 : type;
+            var comboBox = slot == 0 ? primaryTypeComboBox : secondaryTypeComboBox;
+            comboBox.SelectedItem = type.ToString();
             if(primaryTypeComboBox.SelectedIndex == secondaryTypeComboBox.SelectedIndex - 1)
                 secondaryTypeComboBox.SelectedIndex = 0;
             IgnoreEvent = false;
@@ -277,7 +275,7 @@ namespace PBRHex
                 SetBaseStat(CurrentPokemon, i, stat);
             }
             // types
-            int type1 = DexTable.GetTyping(CurrentPokemon, 0),
+            PokeType type1 = DexTable.GetTyping(CurrentPokemon, 0),
                 type2 = DexTable.GetTyping(CurrentPokemon, 1);
             SetTyping(CurrentPokemon, 0, type1);
             SetTyping(CurrentPokemon, 1, type2);
@@ -320,20 +318,21 @@ namespace PBRHex
         private void PrimaryTypeComboBox_SelectedIndexChanged(object sender, EventArgs e) {
             if(IgnoreEvent)
                 return;
-            int type = primaryTypeComboBox.SelectedIndex;
-            if(type >= 9)
-                type++;
+            string typeName = primaryTypeComboBox.SelectedItem.ToString();
+            var type = (PokeType)Enum.Parse(typeof(PokeType), typeName);
             ExecuteCommand(new SetTypingCommand(this, CurrentPokemon, 0, type));
         }
 
         private void SecondaryTypeComboBox_SelectedIndexChanged(object sender, EventArgs e) {
             if(IgnoreEvent)
                 return;
-            int type = secondaryTypeComboBox.SelectedIndex;
-            if(type == 0)
+            PokeType type;
+            if (secondaryTypeComboBox.SelectedIndex == 0)
                 type = DexTable.GetTyping(CurrentPokemon, 0);
-            else if(type <= 9)
-                type--;
+            else {
+                string typeName = secondaryTypeComboBox.SelectedItem.ToString();
+                type = (PokeType)Enum.Parse(typeof(PokeType), typeName);
+            }
             ExecuteCommand(new SetTypingCommand(this, CurrentPokemon, 1, type));
         }
 
