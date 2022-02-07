@@ -356,8 +356,9 @@ namespace PBRHex.HexEditor
             {
                 Default = "00"
             };
-            if(input.ShowDialog() == DialogResult.OK) {
-                if(input.Response < 0 || input.Response > 0xff) {
+            if(input.ShowDialog() == DialogResult.OK && input.Response != null) {
+                int value = (int)input.Response;
+                if(value < 0 || value > 0xff) {
                     new AlertDialog( "Invalid fill value." ).ShowDialog();
                     return false;
                 }
@@ -368,7 +369,7 @@ namespace PBRHex.HexEditor
                 bytes = new byte[size];
                 for(int i = 0; i < size; i++) {
                     if(IsCellSelected(address + i))
-                        bytes[i] = (byte)input.Response;
+                        bytes[i] = (byte)value;
                     else
                         bytes[i] = range[i];
                 }
@@ -385,8 +386,10 @@ namespace PBRHex.HexEditor
                     return true;
                 case Keys.Control | Keys.G:
                     var input = new HexInputDialog( "Enter address:" );
-                    if(input.ShowDialog() == DialogResult.OK)
-                        GoTo(input.Response, true);
+                    if (input.ShowDialog() == DialogResult.OK && input.Response != null) {
+                        int address = (int)input.Response;
+                        GoTo(address, true);
+                    }
                     return true;
                 case Keys.Control | Keys.S:
                     Save();

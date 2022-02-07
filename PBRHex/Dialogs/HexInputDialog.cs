@@ -9,12 +9,17 @@ namespace PBRHex.Dialogs
     {
         public readonly string Prompt;
         public string Default { get; set; }
-        public int Response
-        { 
+        public int? Response
+        {
             get {
-                if(decimalRadioButton.Checked)
-                    return int.Parse(textBox1.Text);
-                return HexUtils.HexToInt(textBox1.Text);
+                try {
+                    if (decimalRadioButton.Checked)
+                        return int.Parse(textBox1.Text);
+                    return HexUtils.HexToInt(textBox1.Text);
+                } catch {
+                    new AlertDialog("Invalid input.").ShowDialog();
+                    return null;
+                }
             } 
         }
 

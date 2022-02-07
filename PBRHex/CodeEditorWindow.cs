@@ -58,7 +58,7 @@ namespace PBRHex
             switch (keyData) {
                 case Keys.Control | Keys.G:
                     var input = new HexInputDialog("Enter address:");
-                    if (input.ShowDialog() == DialogResult.OK) {
+                    if (input.ShowDialog() == DialogResult.OK && input.Response != null) {
                         uint addr = (uint)input.Response;
                         if (!IsAddressInbounds(addr))
                             new AlertDialog("Address out of bounds.").ShowDialog();

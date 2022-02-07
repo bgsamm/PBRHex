@@ -54,8 +54,8 @@ namespace PBRHex
             switch(keyData) {
                 case Keys.Control | Keys.G:
                     var input = new HexInputDialog("Enter string ID:");
-                    if(input.ShowDialog() == DialogResult.OK)
-                        GoTo(input.Response);
+                    if(input.ShowDialog() == DialogResult.OK && input.Response != null)
+                        GoTo((int)input.Response);
                     return true;
                 case Keys.Control | Keys.S:
                     Save();
