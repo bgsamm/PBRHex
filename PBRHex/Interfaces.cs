@@ -42,6 +42,7 @@ namespace PBRHex
         void SetTyping(Pokemon mon, int slot, PokeType type);
         void SetAbility(Pokemon mon, int slot, int ability);
         void SetBaseStat(Pokemon mon, int stat, int value);
+        void SetTier(Pokemon mon, SmogonTier tier);
     }
 
     public interface IModelEditor

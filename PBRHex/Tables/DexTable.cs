@@ -66,7 +66,7 @@ namespace PBRHex.Tables
         }
 
         public static SmogonTier GetTier(Pokemon mon) {
-            byte tier = Common8.ReadByte(GetTableOffset(mon.DexNum, mon.FormIndex) + 0x32);
+            byte tier = Common8.ReadByte(GetTableOffset(mon) + 0x32);
             return (SmogonTier)tier;
         }
 
@@ -110,7 +110,11 @@ namespace PBRHex.Tables
             Common8.WriteByte(GetTableOffset(mon) + 0x1e + stat, (byte)value);
         }
 
-        public static int GetDexNum(int index) {
+        public static void SetTier(Pokemon mon, SmogonTier tier) {
+            Common8.WriteByte(GetTableOffset(mon) + 0x32, (byte)tier);
+        }
+
+        private static int GetDexNum(int index) {
             return Common8.ReadShort(RowToTableOffset(index) + 0x10);
         }
 

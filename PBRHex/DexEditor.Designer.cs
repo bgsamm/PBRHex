@@ -341,6 +341,7 @@ namespace PBRHex
             this.tierComboBox.Name = "tierComboBox";
             this.tierComboBox.Size = new System.Drawing.Size(83, 24);
             this.tierComboBox.TabIndex = 36;
+            this.tierComboBox.SelectedIndexChanged += new System.EventHandler(this.TierComboBox_SelectedIndexChanged);
             // 
             // label30
             // 

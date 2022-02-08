@@ -359,6 +359,14 @@ namespace PBRHex
             ExecuteCommand(new SetAbilityCommand(this, CurrentPokemon, 1, secondaryAbilityComboBox.SelectedIndex));
         }
 
+        private void TierComboBox_SelectedIndexChanged(object sender, EventArgs e) {
+            if (IgnoreEvent)
+                return;
+            string tierName = tierComboBox.SelectedItem.ToString();
+            var tier = (SmogonTier)Enum.Parse(typeof(SmogonTier), tierName);
+            ExecuteCommand(new SetTierCommand(this, CurrentPokemon, tier));
+        }
+
         private void BoneComboBox_SelectedIndexChanged(object sender, EventArgs e) {
             if(IgnoreEvent)
                 return;
