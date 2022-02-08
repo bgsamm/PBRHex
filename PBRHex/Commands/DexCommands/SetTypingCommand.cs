@@ -8,10 +8,10 @@ namespace PBRHex.Commands.DexCommands
         private readonly IDexEditor Editor;
         private readonly Pokemon Pokemon;
         private readonly int Slot;
-        private readonly int NewType;
-        private int OldType1, OldType2;
+        private readonly PokeType NewType;
+        private PokeType OldType1, OldType2;
 
-        public SetTypingCommand(IDexEditor editor, Pokemon mon, int slot, int type) {
+        public SetTypingCommand(IDexEditor editor, Pokemon mon, int slot, PokeType type) {
             Editor = editor;
             Pokemon = mon;
             Slot = slot;
