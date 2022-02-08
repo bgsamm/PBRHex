@@ -258,6 +258,7 @@ namespace PBRHex.Files
 
         public virtual void Save() {
             File.WriteAllBytes(WorkingPath, Buffer);
+            SaveHead = EditHistory.Position;
 
             if (LabelDict.Count > 0 || Notes != "") {
                 if (!Metadata.ContainsKey(Key))
@@ -275,7 +276,6 @@ namespace PBRHex.Files
             } else {
                 Metadata.Remove(Key);
             }
-
             SaveMetadata();
         }
 
