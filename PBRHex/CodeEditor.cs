@@ -195,5 +195,10 @@ namespace PBRHex
                 Program.NotifyDone();
             }
         }
+
+        private void SaveMenuItem_Click(object sender, EventArgs e) {
+            Save();
+            new AlertDialog("Saved successfully.").ShowDialog();
+        }
     }
 }
