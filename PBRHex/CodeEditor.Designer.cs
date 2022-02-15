@@ -67,14 +67,14 @@ namespace PBRHex
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.codeView.DefaultCellStyle = dataGridViewCellStyle2;
-            this.codeView.Location = new System.Drawing.Point(28, 58);
-            this.codeView.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.codeView.Location = new System.Drawing.Point(37, 71);
+            this.codeView.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.codeView.MultiSelect = false;
             this.codeView.Name = "codeView";
             this.codeView.RowHeadersWidth = 69;
             this.codeView.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.codeView.RowTemplate.Height = 24;
-            this.codeView.Size = new System.Drawing.Size(550, 309);
+            this.codeView.Size = new System.Drawing.Size(733, 380);
             this.codeView.TabIndex = 2;
             this.codeView.VirtualMode = true;
             this.codeView.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.CodeView_CellMouseClick);
@@ -114,10 +114,10 @@ namespace PBRHex
             this.newSectionButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.newSectionButton.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDarkDark;
             this.newSectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.newSectionButton.Location = new System.Drawing.Point(558, 31);
-            this.newSectionButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.newSectionButton.Location = new System.Drawing.Point(744, 38);
+            this.newSectionButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.newSectionButton.Name = "newSectionButton";
-            this.newSectionButton.Size = new System.Drawing.Size(20, 21);
+            this.newSectionButton.Size = new System.Drawing.Size(27, 26);
             this.newSectionButton.TabIndex = 4;
             this.newSectionButton.UseVisualStyleBackColor = false;
             this.newSectionButton.Click += new System.EventHandler(this.NewSectionButton_Click);
@@ -129,19 +129,19 @@ namespace PBRHex
             this.insertInstructionMenuItem,
             this.deleteInstructionMenuItem});
             this.codeViewContextMenu.Name = "codeViewContextMenu";
-            this.codeViewContextMenu.Size = new System.Drawing.Size(168, 48);
+            this.codeViewContextMenu.Size = new System.Drawing.Size(196, 52);
             // 
             // insertInstructionMenuItem
             // 
             this.insertInstructionMenuItem.Name = "insertInstructionMenuItem";
-            this.insertInstructionMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.insertInstructionMenuItem.Size = new System.Drawing.Size(195, 24);
             this.insertInstructionMenuItem.Text = "Insert instruction";
             this.insertInstructionMenuItem.Click += new System.EventHandler(this.InsertInstructionMenuItem_Click);
             // 
             // deleteInstructionMenuItem
             // 
             this.deleteInstructionMenuItem.Name = "deleteInstructionMenuItem";
-            this.deleteInstructionMenuItem.Size = new System.Drawing.Size(167, 22);
+            this.deleteInstructionMenuItem.Size = new System.Drawing.Size(195, 24);
             this.deleteInstructionMenuItem.Text = "Delete instruction";
             this.deleteInstructionMenuItem.Click += new System.EventHandler(this.DeleteInstructionMenuItem_Click);
             // 
@@ -151,19 +151,19 @@ namespace PBRHex
             this.sectionSelectDropdown.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.sectionSelectDropdown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.sectionSelectDropdown.FormattingEnabled = true;
-            this.sectionSelectDropdown.Location = new System.Drawing.Point(460, 31);
-            this.sectionSelectDropdown.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.sectionSelectDropdown.Location = new System.Drawing.Point(613, 38);
+            this.sectionSelectDropdown.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.sectionSelectDropdown.Name = "sectionSelectDropdown";
-            this.sectionSelectDropdown.Size = new System.Drawing.Size(96, 21);
+            this.sectionSelectDropdown.Size = new System.Drawing.Size(127, 23);
             this.sectionSelectDropdown.TabIndex = 3;
             this.sectionSelectDropdown.SelectedIndexChanged += new System.EventHandler(this.SectionSelectDropdown_SelectedIndexChanged);
             // 
             // loadButton
             // 
-            this.loadButton.Location = new System.Drawing.Point(28, 32);
-            this.loadButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.loadButton.Location = new System.Drawing.Point(37, 39);
+            this.loadButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.loadButton.Name = "loadButton";
-            this.loadButton.Size = new System.Drawing.Size(94, 22);
+            this.loadButton.Size = new System.Drawing.Size(125, 27);
             this.loadButton.TabIndex = 5;
             this.loadButton.Text = "Load from file";
             this.loadButton.UseVisualStyleBackColor = true;
@@ -180,8 +180,8 @@ namespace PBRHex
             this.saveMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(608, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(811, 24);
             this.menuStrip1.TabIndex = 6;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -191,15 +191,15 @@ namespace PBRHex
             this.saveMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveMenuItem.Image")));
             this.saveMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.saveMenuItem.Name = "saveMenuItem";
-            this.saveMenuItem.Size = new System.Drawing.Size(26, 20);
+            this.saveMenuItem.Size = new System.Drawing.Size(28, 20);
             this.saveMenuItem.Click += new System.EventHandler(this.SaveMenuItem_Click);
             // 
             // CodeEditor
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.RoyalBlue;
-            this.ClientSize = new System.Drawing.Size(608, 383);
+            this.ClientSize = new System.Drawing.Size(811, 471);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.loadButton);
             this.Controls.Add(this.newSectionButton);
@@ -208,10 +208,10 @@ namespace PBRHex
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
             this.Name = "CodeEditor";
-            this.Text = "CodeEditor";
+            this.Text = "Code Editor";
             ((System.ComponentModel.ISupportInitialize)(this.codeView)).EndInit();
             this.codeViewContextMenu.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
