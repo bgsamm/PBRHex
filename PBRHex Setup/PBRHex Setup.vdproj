@@ -3141,15 +3141,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:PBRHex"
-        "ProductCode" = "8:{D34F3B6D-8EB0-46F0-8DAE-4F4D73C5BCAD}"
-        "PackageCode" = "8:{6C8B60FD-8849-47DA-ABB5-EE8281838E8A}"
+        "ProductCode" = "8:{66CD1B27-3839-4494-8DEB-68D9A034CF36}"
+        "PackageCode" = "8:{F9B1A83E-DE91-4220-9F21-1361BBCD14DD}"
         "UpgradeCode" = "8:{D48A0932-A217-4C66-91CB-5BF77D165DBB}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.1"
+        "ProductVersion" = "8:1.1.2"
         "Manufacturer" = "8:PBRHex"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -3629,7 +3629,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_FFFCF4EE22884D0D8F8380EC9CCA4EDD"
             {
-            "SourcePath" = "8:"
+            "SourcePath" = "8:..\\PBRHex\\obj\\Release\\PBRHex.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_5092C41DA61F4D24B1B9ADB71B4CCD91"

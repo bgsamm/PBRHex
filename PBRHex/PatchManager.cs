@@ -18,6 +18,10 @@ namespace PBRHex
                     freeSpaceStart = 0x801d9474;
                     freeSpaceEnd = 0x801df670;
                     break;
+                case GameRegion.PAL:
+                    freeSpaceStart = 0x801d4838;
+                    freeSpaceEnd = 0x801daa30;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -27,9 +31,8 @@ namespace PBRHex
                 if (DOL.ReadInstruction(addr) == 0)
                     break;
             }
-            if (addr == freeSpaceEnd)
+            if (addr >= freeSpaceEnd)
                 throw new Exception("No free space available in main.dol");
-            //nextFreeAddr = addr;
             NextFreeAddr = freeSpaceStart;
         }
 
@@ -61,11 +64,16 @@ namespace PBRHex
                     call2 = 0x80006278;
                     call3 = 0x8026da80;
                     break;
+                case GameRegion.PAL:
+                    call1 = 0x800061b8;
+                    call2 = 0x80006278;
+                    call3 = 0x802690d8;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
             // check if already cleared
-            if (DOL.ReadInstruction(call1) == 0xDEADC0DE)
+            if (DOL.ReadInstruction(call1) == 0xfee15bad)
                 return;
             // replace calls to debug functions w/ invalid
             // instructions in case they *are* ever reached
@@ -82,23 +90,26 @@ namespace PBRHex
         }
 
         public static void ExpandDOL() {
-            uint address;
-            switch (Program.ISORegion) {
-                case GameRegion.NTSCU:
-                    address = 0x80275b5c;
-                    break;
-                default:
-                    throw new NotImplementedException();
+            // reserves 0xdf00 bytes of space
+            if (Program.ISORegion == GameRegion.NTSCU) {
+                DOL.WriteInstruction(0x80275b5c, "lis r5, -0x7f9c");
+                DOL.WriteInstruction(0x80275b5c + 0xc, "subi r5, r5, 0x6e50"); // 806391B0
+                DOL.AddSection(0x8062b2b0);
+            } else if (Program.ISORegion == GameRegion.PAL) {
+                DOL.WriteInstruction(0x802710e4, "lis r5, -0x7f9b");
+                DOL.WriteInstruction(0x802710e4 + 0xc, "addi r5, r5, 0xf50"); // 80650F50
+                DOL.AddSection(0x80643050);
+            } else {
+                throw new NotImplementedException();
             }
-            DOL.WriteInstruction(address, "lis r5, -0x7f9c");
-            DOL.WriteInstruction(address + 0xc, "subi r5, r5, 0x6d50");
-            DOL.AddSection(0x8062b2b0);
             DOL.Write();
         }
 
         public static void PatchDex() {
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
+                    break;
+                case GameRegion.PAL:
                     break;
                 default:
                     throw new NotImplementedException();
@@ -176,6 +187,22 @@ namespace PBRHex
                     formCmp1 = 0x8005d250; formCmp2 = 0x8005d52c; formCmp3 = 0x8005d85c;
                     formCmp4 = 0x8005dbe8; formCmp5 = 0x8005debc; formCmp6 = 0x8005e198;
                     break;
+                case GameRegion.PAL:
+                    eggLoad1 = 0x8005ca90; eggLoad2 = 0x8005cbdc; eggLoad3 = 0x8005cd80;
+                    eggLoad4 = 0x803db0b0; eggLoad5 = 0x803db0d8;
+                    badEggLoad1 = 0x803db2c4; badEggLoad2 = 0x803db320;
+                    eggCmp1 = 0x8005ca94; eggCmp2 = 0x8005cc0c; eggCmp3 = 0x8005cdb4;
+                    eggCmp4 = 0x803d4a68; eggCmp5 = 0x803d4b64;
+                    eggCompares = new uint[] {
+                        0x803b0328, 0x803b0474, 0x803b0578, 0x803b065c, 0x803b28c8,
+                        0x803b2990, 0x803b2a70, 0x803b5a08, 0x803b5b00, 0x803b7cc8,
+                        0x803b98b0, 0x803b99ac, 0x803b9a18, 0x803b9af4, 0x803d2394,
+                        0x803d256c, 0x803d29f4, 0x803d6160, 0x803d61f0, 0x803d6290,
+                        0x803d6d1c, 0x803d6df0, 0x803dbe28, 0x803dce5c
+                    };
+                    formCmp1 = 0x8005b760; formCmp2 = 0x8005ba3c; formCmp3 = 0x8005bd6c;
+                    formCmp4 = 0x8005c0f8; formCmp5 = 0x8005c3cc; formCmp6 = 0x8005c6a8;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -228,6 +255,9 @@ namespace PBRHex
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
                     getKanjiCall = 0x8018125c;
+                    break;
+                case GameRegion.PAL:
+                    getKanjiCall = 0x8017c91c;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -383,7 +413,12 @@ namespace PBRHex
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
                     calls = new uint[] {
-                        0x8005e8c0, 0x8005e5a0, 0x8005e718
+                        0x8005e5a0, 0x8005e718, 0x8005e8c0
+                    };
+                    break;
+                case GameRegion.PAL:
+                    calls = new uint[] {
+                       0x8005cab0, 0x8005cc28, 0x8005cdd0
                     };
                     break;
                 default:
@@ -406,6 +441,10 @@ namespace PBRHex
                 case GameRegion.NTSCU:
                     call1 = 0x8008eef0;
                     call2 = 0x800da490;
+                    break;
+                case GameRegion.PAL:
+                    call1 = 0x8008d6c4;
+                    call2 = 0x800d782c;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -444,16 +483,21 @@ namespace PBRHex
 
         private static void PatchCommon0D() {
             uint addr1, addr2, addr3, addr4, addr5,
-                getEntryAddrFunc, unkFunc;
+                addr4Reg1, addr4Reg2, getEntryAddrFunc;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
-                    addr1 = 0x80182554;
-                    addr2 = 0x8018390c;
-                    addr3 = 0x801843a4;
-                    addr4 = 0x8018502c;
-                    addr5 = 0x8018726c;
+                    addr1 = 0x80182554; addr2 = 0x8018390c; addr3 = 0x801843a4;
+                    addr4 = 0x8018502c; addr5 = 0x8018726c;
+                    addr4Reg1 = 25;
+                    addr4Reg2 = 28;
                     getEntryAddrFunc = 0x8039d068;
-                    unkFunc = 0x801c8774;
+                    break;
+                case GameRegion.PAL:
+                    addr1 = 0x8017dc58; addr2 = 0x8017f000; addr3 = 0x8017faa8;
+                    addr4 = 0x801806f8; addr5 = 0x801828ec;
+                    addr4Reg1 = 28;
+                    addr4Reg2 = 31;
+                    getEntryAddrFunc = 0x803994f0;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -521,8 +565,8 @@ namespace PBRHex
             asm = new string[] {
                 "rlwinm r0, r23, 0x2, 0xe, 0x1d",
                 "lwzx r3, r26, r0",
-                $"bl 0x{unkFunc:x08}",
-                "lbz r5, 0xc(r3)", // form index
+                "lwz r3, 0x8(r3)",
+                "lbz r5, 0x10(r3)", // form index
                 "addi r3, r29, 0x74"
             };
             InsertAssembly(asm, addr2);
@@ -535,8 +579,8 @@ namespace PBRHex
             InsertAssembly(asm, addr3);
             // add form index as param to call
             asm = new string[] {
-                "lbz r5, 0xc(r25)",
-                "addi r3, r28, 0x74"
+                $"lbz r5, 0xc(r{addr4Reg1})",
+                $"addi r3, r{addr4Reg2}, 0x74"
             };
             InsertAssembly(asm, addr4);
             // add form index as param to call
@@ -614,12 +658,14 @@ namespace PBRHex
                 getEntryAddr;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
-                    call1 = 0x8005db9c;
-                    call2 = 0x8005dbc0;
-                    call3 = 0x8005de70;
-                    call4 = 0x8005de94;
-                    call5 = 0x8005e188;
+                    call1 = 0x8005db9c; call2 = 0x8005dbc0; call3 = 0x8005de70;
+                    call4 = 0x8005de94; call5 = 0x8005e188;
                     getEntryAddr = 0x8039a570;
+                    break;
+                case GameRegion.PAL:
+                    call1 = 0x8005c0ac; call2 = 0x8005c0d0; call3 = 0x8005c380;
+                    call4 = 0x8005c3a4; call5 = 0x8005c698;
+                    getEntryAddr = 0x803969f8;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -752,12 +798,14 @@ namespace PBRHex
                 getEntryAddr;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
-                    call1 = 0x8005d204;
-                    call2 = 0x8005d228;
-                    call3 = 0x8005d4e0;
-                    call4 = 0x8005d504;
-                    call5 = 0x8005d84c;
+                    call1 = 0x8005d204; call2 = 0x8005d228; call3 = 0x8005d4e0;
+                    call4 = 0x8005d504; call5 = 0x8005d84c;
                     getEntryAddr = 0x80395600;
+                    break;
+                case GameRegion.PAL:
+                    call1 = 0x8005b714; call2 = 0x8005b738; call3 = 0x8005b9f0;
+                    call4 = 0x8005ba14; call5 = 0x8005bd5c;
+                    getEntryAddr = 0x803908e8;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -847,6 +895,11 @@ namespace PBRHex
                             "lis r3, -0x7f9e",
                             "addi r3, r3, 0x5184"
                         };
+                    case GameRegion.PAL:
+                        return new string[] {
+                            "lis r3, -0x7f9c",
+                            "subi r3, r3, 0x31bc"
+                        };
                     default:
                         throw new NotImplementedException();
                 }
@@ -859,6 +912,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803de52c;
+                    case GameRegion.PAL:
+                        return 0x803daefc;
                     default:
                         throw new NotImplementedException();
                 }
@@ -870,6 +925,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803e100c;
+                    case GameRegion.PAL:
+                        return 0x803dd9dc;
                     default:
                         throw new NotImplementedException();
                 }
@@ -881,6 +938,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803e0f0c;
+                    case GameRegion.PAL:
+                        return 0x803dd8dc;
                     default:
                         throw new NotImplementedException();
                 }
@@ -892,6 +951,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x80058f70;
+                    case GameRegion.PAL:
+                        return 0x80056f68;
                     default:
                         throw new NotImplementedException();
                 }
@@ -903,6 +964,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x8039653c;
+                    case GameRegion.PAL:
+                        return 0x803919c4;
                     default:
                         throw new NotImplementedException();
                 }
@@ -914,6 +977,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x80396570;
+                    case GameRegion.PAL:
+                        return 0x803919f8;
                     default:
                         throw new NotImplementedException();
                 }
@@ -925,6 +990,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803969cc;
+                    case GameRegion.PAL:
+                        return 0x80391e54;
                     default:
                         throw new NotImplementedException();
                 }
@@ -936,6 +1003,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x80396a04;
+                    case GameRegion.PAL:
+                        return 0x80391e8c;
                     default:
                         throw new NotImplementedException();
                 }
