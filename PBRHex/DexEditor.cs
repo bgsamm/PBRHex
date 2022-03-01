@@ -256,7 +256,7 @@ namespace PBRHex
             nameTextBox.Text = DexTable.GetSpeciesName(CurrentSpecies);
             // formes
             formsComboBox.Items.Clear();
-            int numForms = DexTable.GetFormCount(CurrentSpecies);
+            int numForms = DexTable.GetNumForms(CurrentSpecies);
             for(int i = 0; i < numForms; i++) {
                 string formName = DexTable.GetFormName(new Pokemon(CurrentSpecies, i));
                 formsComboBox.Items.Add(formName);
@@ -426,15 +426,27 @@ namespace PBRHex
             }
         }
 
-        private void SaveMenuItem_Click(object sender, EventArgs e) {
-            Save();
-        }
-
         private void AddMonMenuItem_Click(object sender, EventArgs e) {
             int dex = DexTable.AddSlot();
             Save();
             pokemonListBox.Items.Add(DexTable.GetSpeciesName(dex));
             pokemonListBox.SelectedIndex = pokemonListBox.Items.Count - 1;
+        }
+
+        private void AddFormButton_Click(object sender, EventArgs e) {
+            var input = new InputDialog("Enter form name");
+            if (input.ShowDialog() == DialogResult.OK) {
+                string name = input.Response;
+                int form = DexTable.AddForm(CurrentSpecies, name);
+                Save();
+                formsComboBox.Items.Add(name);
+                formsComboBox.SelectedIndex = form;
+                formsComboBox.Enabled = true;
+            }
+        }
+
+        private void SaveMenuItem_Click(object sender, EventArgs e) {
+            Save();
         }
     }
 }

@@ -65,7 +65,7 @@ namespace PBRHex.Tables
             return Common8.ReadByte(GetTableOffset(mon) + 0x1e + stat);
         }
 
-        public static int GetFormCount(int dex) {
+        public static int GetNumForms(int dex) {
             int count = 0;
             for (int i = 0; i < Count; i++) {
                 if (dex == GetDexNum(i))
@@ -80,11 +80,15 @@ namespace PBRHex.Tables
             StringTable.SetStringProperty(GetNameID(dex), "Text", name);
         }
 
-        private static void SetNameID(int dex, int id) {
+        private static void SetSpeciesNameID(int dex, int id) {
             // forms should keep the same base name
-            for (int i = 0; i < GetFormCount(dex); i++) {
+            for (int i = 0; i < GetNumForms(dex); i++) {
                 Common8.WriteShort(GetTableOffset(dex, i) + 0x18, (short)id);
             }
+        }
+
+        private static void SetFormNameID(int dex, int form, int id) {
+            Common8.WriteShort(GetTableOffset(dex, form) + 0x1a, (short)id);
         }
 
         public static void SetTyping(Pokemon mon, int slot, PokeType type) {
@@ -117,8 +121,12 @@ namespace PBRHex.Tables
             Common8.WriteShort(RowToTableOffset(index) + 0x10, (short)dex);
         }
 
+        private static void SetFormIndex(int index, int form) {
+            Common8.WriteShort(RowToTableOffset(index) + 0x12, (short)form);
+        }
+
         private static void SetFormCount(int dex, int numForms) {
-            for (int i = 0; i < GetFormCount(dex); i++) {
+            for (int i = 0; i < GetNumForms(dex); i++) {
                 int offset = GetTableOffset(dex, i);
                 byte b = Common8.ReadByte(offset + 0x33);
                 b = (byte)((numForms << 1) + (b & 1));
@@ -147,20 +155,21 @@ namespace PBRHex.Tables
         /// <returns>dex # of newly added slot</returns>
         public static int AddSlot() {
             int rowSize = Common8.ReadInt(4),
-                dex = GetMaxDexNum() + 1;
+                dex = GetMaxDexNum() + 1,
+                index = dex; // insert new mons in dex order
             // add empty row
-            Common8.InsertRange(RowToTableOffset(dex), rowSize);
+            Common8.InsertRange(RowToTableOffset(index), rowSize);
             // update row count
             Common8.WriteInt(0, Count + 1);
             // dex
-            SetDexNum(dex, dex); // insert new mons in dex order
+            SetDexNum(index, dex);
             SetFormCount(dex, 1);
             PatchManager.SetMaxDexNum(dex);
             // name
             int nameID = StringTable.AddString("???");
             StringTable.SetStringProperty(nameID, "Size", 1);
             StringTable.SetStringProperty(nameID, "Spacing", 1);
-            SetNameID(dex, nameID);
+            SetSpeciesNameID(dex, nameID);
             var mon = new Pokemon(dex, 0);
             // sprites
             SpriteTable.AddSpriteSlots(mon);
@@ -169,6 +178,31 @@ namespace PBRHex.Tables
             // ai
             AITable.AddMonToLookupTable(mon);
             return dex;
+        }
+
+        public static int AddForm(int dex, string formName) {
+            int rowSize = Common8.ReadInt(4),
+                form = GetNumForms(dex),
+                index = Count; // append new forms to end of table
+            // add empty row
+            Common8.InsertRange(RowToTableOffset(index), rowSize);
+            // update row count
+            Common8.WriteInt(0, Count + 1);
+            // dex
+            SetDexNum(index, dex);
+            SetFormIndex(index, form);
+            SetFormCount(dex, form + 1);
+            // name
+            int id = StringTable.AddString(formName);
+            SetFormNameID(dex, form, id);
+            var mon = new Pokemon(dex, form);
+            // sprites
+            SpriteTable.AddSpriteSlots(mon);
+            // model
+            ModelTable.AddModelSlot(mon);
+            // ai
+            AITable.AddMonToLookupTable(mon);
+            return form;
         }
 
         public static void Write() {
