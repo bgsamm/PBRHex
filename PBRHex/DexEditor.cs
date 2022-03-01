@@ -162,6 +162,13 @@ namespace PBRHex
             IgnoreEvent = false;
         }
 
+        public void SetFormName(Pokemon mon, string name) {
+            GoTo(mon);
+            IgnoreEvent = true;
+            formsComboBox.Items[CurrentForm] = name;
+            IgnoreEvent = false;
+        }
+
         public void SetTyping(Pokemon mon, int slot, PokeType type) {
             GoTo(mon);
             IgnoreEvent = true;
@@ -434,7 +441,7 @@ namespace PBRHex
         }
 
         private void AddFormButton_Click(object sender, EventArgs e) {
-            var input = new InputDialog("Enter form name");
+            var input = new InputDialog("Enter new name");
             if (input.ShowDialog() == DialogResult.OK) {
                 string name = input.Response;
                 int form = DexTable.AddForm(CurrentSpecies, name);
@@ -443,6 +450,12 @@ namespace PBRHex
                 formsComboBox.SelectedIndex = form;
                 formsComboBox.Enabled = true;
             }
+        }
+
+        private void EditFormNameButton_Click(object sender, EventArgs e) {
+            var input = new InputDialog("Enter form name");
+            if (input.ShowDialog() == DialogResult.OK)
+                ExecuteCommand(new SetFormNameCommand(this, CurrentPokemon, input.Response));
         }
 
         private void SaveMenuItem_Click(object sender, EventArgs e) {

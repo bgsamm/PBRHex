@@ -39,6 +39,7 @@ namespace PBRHex
             this.openModelDialog = new System.Windows.Forms.OpenFileDialog();
             this.pokemonTabControl = new System.Windows.Forms.TabControl();
             this.attributesPage = new System.Windows.Forms.TabPage();
+            this.editFormNameButton = new System.Windows.Forms.Button();
             this.addFormButton = new System.Windows.Forms.Button();
             this.panel3 = new System.Windows.Forms.Panel();
             this.secondaryAbilityComboBox = new System.Windows.Forms.ComboBox();
@@ -296,6 +297,7 @@ namespace PBRHex
             // 
             // attributesPage
             // 
+            this.attributesPage.Controls.Add(this.editFormNameButton);
             this.attributesPage.Controls.Add(this.addFormButton);
             this.attributesPage.Controls.Add(this.panel3);
             this.attributesPage.Controls.Add(this.label1);
@@ -321,10 +323,21 @@ namespace PBRHex
             this.attributesPage.Text = "Attributes";
             this.attributesPage.UseVisualStyleBackColor = true;
             // 
+            // editFormNameButton
+            // 
+            this.editFormNameButton.Image = ((System.Drawing.Image)(resources.GetObject("editFormNameButton.Image")));
+            this.editFormNameButton.Location = new System.Drawing.Point(176, 34);
+            this.editFormNameButton.Margin = new System.Windows.Forms.Padding(4);
+            this.editFormNameButton.Name = "editFormNameButton";
+            this.editFormNameButton.Size = new System.Drawing.Size(32, 28);
+            this.editFormNameButton.TabIndex = 36;
+            this.editFormNameButton.UseVisualStyleBackColor = true;
+            this.editFormNameButton.Click += new System.EventHandler(this.EditFormNameButton_Click);
+            // 
             // addFormButton
             // 
             this.addFormButton.Image = ((System.Drawing.Image)(resources.GetObject("addFormButton.Image")));
-            this.addFormButton.Location = new System.Drawing.Point(185, 34);
+            this.addFormButton.Location = new System.Drawing.Point(208, 34);
             this.addFormButton.Margin = new System.Windows.Forms.Padding(4);
             this.addFormButton.Name = "addFormButton";
             this.addFormButton.Size = new System.Drawing.Size(32, 28);
@@ -404,7 +417,7 @@ namespace PBRHex
             this.formsComboBox.Location = new System.Drawing.Point(53, 36);
             this.formsComboBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.formsComboBox.Name = "formsComboBox";
-            this.formsComboBox.Size = new System.Drawing.Size(127, 24);
+            this.formsComboBox.Size = new System.Drawing.Size(120, 24);
             this.formsComboBox.TabIndex = 1;
             this.formsComboBox.SelectedIndexChanged += new System.EventHandler(this.FormesComboBox_SelectedIndexChanged);
             // 
@@ -742,7 +755,7 @@ namespace PBRHex
             this.nameTextBox.Location = new System.Drawing.Point(53, 9);
             this.nameTextBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.nameTextBox.Name = "nameTextBox";
-            this.nameTextBox.Size = new System.Drawing.Size(161, 22);
+            this.nameTextBox.Size = new System.Drawing.Size(184, 22);
             this.nameTextBox.TabIndex = 0;
             this.nameTextBox.Leave += new System.EventHandler(this.NameTextBox_Leave);
             // 
@@ -2216,5 +2229,6 @@ namespace PBRHex
         private System.Windows.Forms.ComboBox primaryAbilityComboBox;
         private System.Windows.Forms.Label label28;
         private System.Windows.Forms.Button addFormButton;
+        private System.Windows.Forms.Button editFormNameButton;
     }
 }

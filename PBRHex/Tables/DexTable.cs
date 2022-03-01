@@ -27,11 +27,11 @@ namespace PBRHex.Tables
         }
 
         public static string GetSpeciesName(int dex) {
-            int nameID = GetNameID(dex);
+            int nameID = GetSpeciesNameID(dex);
             return StringTable.GetString(nameID).Text;
         }
 
-        private static int GetNameID(int dex) {
+        private static int GetSpeciesNameID(int dex) {
             return Common8.ReadShort(GetTableOffset(dex, 0) + 0x18);
         }
 
@@ -77,7 +77,8 @@ namespace PBRHex.Tables
         }
 
         public static void SetSpeciesName(int dex, string name) {
-            StringTable.SetStringProperty(GetNameID(dex), "Text", name);
+            int stringID = GetSpeciesNameID(dex);
+            StringTable.SetStringProperty(stringID, "Text", name);
         }
 
         private static void SetSpeciesNameID(int dex, int id) {
@@ -87,8 +88,18 @@ namespace PBRHex.Tables
             }
         }
 
-        private static void SetFormNameID(int dex, int form, int id) {
-            Common8.WriteShort(GetTableOffset(dex, form) + 0x1a, (short)id);
+        public static void SetFormName(Pokemon mon, string name) {
+            int stringID = GetFormNameID(mon);
+            if (stringID == 0) {
+                stringID = StringTable.AddString(name);
+                SetFormNameID(mon, stringID);
+            } else {
+                StringTable.SetStringProperty(stringID, "Text", name);
+            }
+        }
+
+        private static void SetFormNameID(Pokemon mon, int id) {
+            Common8.WriteShort(GetTableOffset(mon) + 0x1a, (short)id);
         }
 
         public static void SetTyping(Pokemon mon, int slot, PokeType type) {
@@ -192,10 +203,10 @@ namespace PBRHex.Tables
             SetDexNum(index, dex);
             SetFormIndex(index, form);
             SetFormCount(dex, form + 1);
+            var mon = new Pokemon(dex, form);
             // name
             int id = StringTable.AddString(formName);
-            SetFormNameID(dex, form, id);
-            var mon = new Pokemon(dex, form);
+            SetFormNameID(mon, id);
             // sprites
             SpriteTable.AddSpriteSlots(mon);
             // model
