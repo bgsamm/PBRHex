@@ -8,6 +8,11 @@ namespace PBRHex
     public static class PatchManager
     {
         private static FSYS Common => FSYSTable.GetFile("common.fsys");
+        private static FileBuffer Common6 => Common.Files[0x6];
+        private static FileBuffer Common8 => Common.Files[0x8];
+        private static FileBuffer CommonD => Common.Files[0xd];
+        private static FileBuffer Common15 => Common.Files[0x15];
+        private static FileBuffer Common16 => Common.Files[0x16];
 
         public static uint NextFreeAddr { get; private set; }
         private static readonly uint freeSpaceStart, freeSpaceEnd;
@@ -239,9 +244,9 @@ namespace PBRHex
             DOL.WriteInstruction(formCmp6 + 0xc, $"b 0x{formCmp6 + 0xac:x08}");
 
             // update egg ID in common:06, common:15, and common:16
-            Common.Files[0x6].WriteShort(0xb564, -0x1);
-            Common.Files[0x15].WriteInt(0x1758, -0x1);
-            Common.Files[0x16].WriteInt(0xfa0, -0x1);
+            Common6.WriteShort(0xb564, -0x1);
+            Common15.WriteInt(0x1758, -0x1);
+            Common16.WriteInt(0xfa0, -0x1);
         }
 
         /// <summary>
@@ -262,65 +267,167 @@ namespace PBRHex
                 default:
                     throw new NotImplementedException();
             }
-            var common08 = Common.Files[0x8];
-            var common16 = Common.Files[0x16];
-            int common8start = common08.ReadInt(0x10),
-                common8stride = common08.ReadInt(4),
-                common16start = common16.ReadInt(0x10),
-                common16stride = common16.ReadInt(4);
-            int offset;
+            int start = Common8.ReadInt(0x10),
+                rowSize = Common8.ReadInt(4),
+                common16start = Common16.ReadInt(0x10),
+                common16stride = Common16.ReadInt(4);
+            int offset, sid;
             for (short i = 1; i <= 493; i++) {
-                offset = common8start + i * common8stride;
+                offset = start + i * rowSize;
                 // replace wild held item columns w/ dex & form indices
-                common08.WriteShort(offset + 0x10, i);
-                common08.WriteShort(offset + 0x12, 0);
+                Common8.WriteShort(offset + 0x10, i);
+                Common8.WriteShort(offset + 0x12, 0);
                 // replace kana string index w/ form string index
-                // (not 100% sure the kanji string is unused)
-                int idx = 0;
-                if (i == 386)
-                    idx = StringTable.AddString("Normal Forme");
-                else if (i == 413)
-                    idx = StringTable.AddString("Plant Cloak");
-                common08.WriteShort(offset + 0x1a, (short)idx);
+                // (not 100% sure the kanji string is unused tbh)
+                if (i == 201)
+                    sid = StringTable.AddString("A");
+                else if (i == 351)
+                    sid = StringTable.AddString("Normal");
+                else if (i == 386)
+                    sid = StringTable.AddString("Normal Forme");
+                else if (i == 412 || i == 413)
+                    sid = StringTable.AddString("Plant Cloak");
+                else if (i == 421)
+                    sid = StringTable.AddString("Overcast Form");
+                else if (i == 422 || i == 423)
+                    sid = StringTable.AddString("West Sea");
+                else if (i == 493)
+                    sid = StringTable.AddString("Normal-type");
+                else
+                    sid = 0;
+                Common8.WriteShort(offset + 0x1a, (short)sid);
                 // replace color + flip with form count + unevolved flag (copied from common:16)
-                short forms = common16.ReadShort(common16start + common16stride * i + 0x6);
-                common08.WriteByte(offset + 0x33, (byte)forms);
+                short forms = Common16.ReadShort(common16start + common16stride * i + 0x6);
+                Common8.WriteByte(offset + 0x33, (byte)forms);
             }
             // Deoxys forms
-            for (short i = 1; i <= 3; i++) {
-                offset = common8start + (495 + i) * common8stride;
-                common08.WriteShort(offset + 0x10, 386);
-                common08.WriteShort(offset + 0x12, i);
-                int idx;
+            for (short i = 1; i < 4; i++) {
+                offset = start + (495 + i) * rowSize;
+                Common8.WriteShort(offset + 0x10, 386);
+                Common8.WriteShort(offset + 0x12, i);
                 if (i == 1)
-                    idx = StringTable.AddString("Attack Forme");
+                    sid = StringTable.AddString("Attack Forme");
                 else if (i == 2)
-                    idx = StringTable.AddString("Defense Forme");
+                    sid = StringTable.AddString("Defense Forme");
                 else
-                    idx = StringTable.AddString("Speed Forme");
-                common08.WriteShort(offset + 0x1a, (short)idx);
-                common08.WriteByte(offset + 0x33, 8);
+                    sid = StringTable.AddString("Speed Forme");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x33, 4 << 1);
             }
             // Wormadam forms
-            for (short i = 1; i <= 2; i++) {
-                offset = common8start + (498 + i) * common8stride;
-                common08.WriteShort(offset + 0x10, 413);
-                common08.WriteShort(offset + 0x12, i);
-                int idx;
+            for (short i = 1; i < 3; i++) {
+                offset = start + (498 + i) * rowSize;
+                Common8.WriteShort(offset + 0x10, 413);
+                Common8.WriteShort(offset + 0x12, i);
                 if (i == 1)
-                    idx = StringTable.AddString("Sandy Cloak");
+                    sid = StringTable.AddString("Sandy Cloak");
                 else
-                    idx = StringTable.AddString("Trash Cloak");
-                common08.WriteShort(offset + 0x1a, (short)idx);
-                common08.WriteByte(offset + 0x33, 6);
+                    sid = StringTable.AddString("Trash Cloak");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x33, 3 << 1);
             }
             // Eggs
-            offset = common8start + 494 * common8stride;
-            common08.WriteShort(offset + 0x10, -1);
-            common08.WriteByte(offset + 0x33, 4);
-            offset = common8start + 495 * common8stride;
-            common08.WriteShort(offset + 0x10, -2);
-            common08.WriteByte(offset + 0x33, 2);
+            offset = start + 494 * rowSize;
+            Common8.WriteShort(offset + 0x10, -1);
+            Common8.WriteByte(offset + 0x33, 4);
+            offset = start + 495 * rowSize;
+            Common8.WriteShort(offset + 0x10, -2);
+            Common8.WriteByte(offset + 0x33, 2);
+            
+            int index = 496;
+            // Unown
+            var bytes = Common8.GetRange(start + 201 * rowSize, rowSize);
+            for (short i = 1; i < 28; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i); // form index
+                if (i == 26)
+                    sid = StringTable.AddString("!");
+                else if (i == 27)
+                    sid = StringTable.AddString("?");
+                else
+                    sid = StringTable.AddString(((char)(i + 65)).ToString());
+                Common8.WriteShort(offset + 0x1a, (short)sid); // form name string ID
+            }
+            // Castform
+            bytes = Common8.GetRange(start + 351 * rowSize, rowSize);
+            for (short i = 1; i < 4; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i);
+                PokeType type;
+                if (i == 1) {
+                    sid = StringTable.AddString("Sunny Form");
+                    type = PokeType.Fire;
+                } else if (i == 2) {
+                    sid = StringTable.AddString("Snowy Form");
+                    type = PokeType.Ice;
+                } else {
+                    sid = StringTable.AddString("Rainy Form");
+                    type = PokeType.Water;
+                }
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x24, (byte)type);
+                Common8.WriteByte(offset + 0x25, (byte)type);
+            }
+            // Deoxys
+            index += 3;
+            // Burmy
+            bytes = Common8.GetRange(start + 412 * rowSize, rowSize);
+            for (short i = 1; i < 3; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i);
+                if (i == 1)
+                    sid = StringTable.AddString("Sandy Cloak");
+                else
+                    sid = StringTable.AddString("Trash Cloak");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+            }
+            // Wormadam
+            index += 2;
+            // Cherrim
+            bytes = Common8.GetRange(start + 421 * rowSize, rowSize);
+            offset = start + index++ * rowSize;
+            Common8.InsertRange(offset, bytes);
+            Common8.WriteShort(offset + 0x12, 1);
+            sid = StringTable.AddString("Sunshine Form");
+            Common8.WriteShort(offset + 0x1a, (short)sid);
+            // Shellos
+            bytes = Common8.GetRange(start + 422 * rowSize, rowSize);
+            offset = start + index++ * rowSize;
+            Common8.InsertRange(offset, bytes);
+            Common8.WriteShort(offset + 0x12, 1);
+            sid = StringTable.AddString("East Sea");
+            Common8.WriteShort(offset + 0x1a, (short)sid);
+            // Gastrodon
+            bytes = Common8.GetRange(start + 423 * rowSize, rowSize);
+            offset = start + index++ * rowSize;
+            Common8.InsertRange(offset, bytes);
+            Common8.WriteShort(offset + 0x12, 1);
+            sid = StringTable.AddString("East Sea");
+            Common8.WriteShort(offset + 0x1a, (short)sid);
+            // Arceus
+            bytes = Common8.GetRange(start + 493 * rowSize, rowSize);
+            for (short i = 1; i < 18; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i);
+                if (i == 9)
+                    sid = StringTable.AddString("???-type");
+                else
+                    sid = StringTable.AddString($"{(PokeType)i}-type");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x24, (byte)i);
+                Common8.WriteByte(offset + 0x25, (byte)i);
+            }
+
+            Common8.WriteInt(0, index);
+            //// Arceus
+            //spriteIdx = Common16.ReadShort(start + 493 * rowSize + 4);
+            //for (short i = 1; i < 18; i++) {
+            //    SpriteTable.AddFaceSpriteSlot(new Pokemon(493, i), (short)(spriteIdx + i));
+            //}
 
             // replace call to GET_KANJI_STR_NUM w/ invalid
             // instruction in case it ever *does* get reached
@@ -503,24 +610,23 @@ namespace PBRHex
                     throw new NotImplementedException();
             }
             // adjust pointers to point at rows instead of names
-            var common0D = Common.Files[0xd];
-            int tableStart = common0D.ReadInt(0x10),
-                rowSize = common0D.ReadInt(0x4),
-                count = common0D.ReadInt(0x1c),
-                mappingAddr = common0D.ReadInt(0x20);
-            common0D.WriteInt(0x8, tableStart);
+            int tableStart = CommonD.ReadInt(0x10),
+                rowSize = CommonD.ReadInt(0x4),
+                count = CommonD.ReadInt(0x1c),
+                mappingAddr = CommonD.ReadInt(0x20);
+            CommonD.WriteInt(0x8, tableStart);
             int dexNo, offset;
             for (int i = 0; i < count; i++) {
                 offset = mappingAddr + 8 * i;
-                dexNo = common0D.ReadInt(offset + 4);
+                dexNo = CommonD.ReadInt(offset + 4);
                 if (dexNo > 493)
                     continue;
                 else if (dexNo > 413)
-                    common0D.WriteInt(offset, tableStart + (dexNo + 5) * rowSize);
+                    CommonD.WriteInt(offset, tableStart + (dexNo + 5) * rowSize);
                 else if (dexNo > 386)
-                    common0D.WriteInt(offset, tableStart + (dexNo + 3) * rowSize);
+                    CommonD.WriteInt(offset, tableStart + (dexNo + 3) * rowSize);
                 else
-                    common0D.WriteInt(offset, tableStart + dexNo * rowSize);
+                    CommonD.WriteInt(offset, tableStart + dexNo * rowSize);
             }
             // custom calculation of entry address
             string[] asm = {
@@ -593,59 +699,58 @@ namespace PBRHex
 
         private static void PatchCommon15() {
             // set leading unused bytes to dex + form
-            var common15 = Common.Files[0x15];
-            int start = common15.ReadInt(0x10),
-                rowSize = common15.ReadInt(0x4);
+            int start = Common15.ReadInt(0x10),
+                rowSize = Common15.ReadInt(0x4);
             int offset;
             for (short i = 1; i <= 493; i++) {
                 offset = start + i * rowSize;
-                common15.WriteShort(offset, i); // dex
-                common15.WriteShort(offset + 2, 0); // form
+                Common15.WriteShort(offset, i); // dex
+                Common15.WriteShort(offset + 2, 0); // form
             }
             // Add entries for all forms
             short spriteIdx;
             // Egg
             offset = start + 494 * rowSize;
-            common15.WriteShort(offset, -0x1); // dex
-            common15.WriteShort(offset + 2, 0); // form
-            spriteIdx = common15.ReadShort(offset + 4);
+            Common15.WriteShort(offset, -0x1); // dex
+            Common15.WriteShort(offset + 2, 0); // form
+            spriteIdx = Common15.ReadShort(offset + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(-0x1, 1), (short)(spriteIdx + 1));
             // Unown
-            spriteIdx = common15.ReadShort(start + 201 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 201 * rowSize + 4);
             for (short i = 1; i < 28; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(201, i), (short)(spriteIdx + i));
             }
             // Castform
-            spriteIdx = common15.ReadShort(start + 351 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 351 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(351, i), (short)(spriteIdx + i));
             }
             // Deoxys
-            spriteIdx = common15.ReadShort(start + 386 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 386 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(386, i), (short)(spriteIdx + i));
             }
             // Burmy
-            spriteIdx = common15.ReadShort(start + 412 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 412 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(412, i), (short)(spriteIdx + i));
             }
             // Wormadam
-            spriteIdx = common15.ReadShort(start + 413 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 413 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(413, i), (short)(spriteIdx + i));
             }
             // Cherrim
-            spriteIdx = common15.ReadShort(start + 421 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 421 * rowSize + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(421, 1), (short)(spriteIdx + 1));
             // Shellos
-            spriteIdx = common15.ReadShort(start + 422 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 422 * rowSize + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(422, 1), (short)(spriteIdx + 1));
             // Gastrodon
-            spriteIdx = common15.ReadShort(start + 423 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 423 * rowSize + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(423, 1), (short)(spriteIdx + 1));
             // Arceus
-            spriteIdx = common15.ReadShort(start + 493 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 493 * rowSize + 4);
             for (short i = 1; i < 18; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(493, i), (short)(spriteIdx + i));
             }
@@ -733,59 +838,58 @@ namespace PBRHex
         }
 
         private static void PatchCommon16() {
-            var common16 = Common.Files[0x16];
-            int start = common16.ReadInt(0x10),
-                rowSize = common16.ReadInt(0x4);
+            int start = Common16.ReadInt(0x10),
+                rowSize = Common16.ReadInt(0x4);
             int offset;
             for (short i = 1; i <= 493; i++) {
                 offset = start + i * rowSize;
                 // set leading unused bytes to dex + form
-                common16.WriteShort(offset, i);
-                common16.WriteShort(offset + 2, 0);
+                Common16.WriteShort(offset, i);
+                Common16.WriteShort(offset + 2, 0);
             }
             short spriteIdx;
             // Egg
             offset = start + 494 * rowSize;
-            common16.WriteShort(offset, -0x1); // dex
-            common16.WriteShort(offset + 2, 0); // form
-            spriteIdx = common16.ReadShort(offset + 4);
+            Common16.WriteShort(offset, -0x1); // dex
+            Common16.WriteShort(offset + 2, 0); // form
+            spriteIdx = Common16.ReadShort(offset + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(-0x1, 1), (short)(spriteIdx + 1));
             // Unown
-            spriteIdx = common16.ReadShort(start + 201 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 201 * rowSize + 4);
             for (short i = 1; i < 28; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(201, i), (short)(spriteIdx + i));
             }
             // Castform
-            spriteIdx = common16.ReadShort(start + 351 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 351 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(351, i), (short)(spriteIdx + i));
             }
             // Deoxys
-            spriteIdx = common16.ReadShort(start + 386 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 386 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(386, i), (short)(spriteIdx + i));
             }
             // Burmy
-            spriteIdx = common16.ReadShort(start + 412 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 412 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(412, i), (short)(spriteIdx + i));
             }
             // Wormadam
-            spriteIdx = common16.ReadShort(start + 413 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 413 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(413, i), (short)(spriteIdx + i));
             }
             // Cherrim
-            spriteIdx = common16.ReadShort(start + 421 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 421 * rowSize + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(421, 1), (short)(spriteIdx + 1));
             // Shellos
-            spriteIdx = common16.ReadShort(start + 422 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 422 * rowSize + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(422, 1), (short)(spriteIdx + 1));
             // Gastrodon
-            spriteIdx = common16.ReadShort(start + 423 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 423 * rowSize + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(423, 1), (short)(spriteIdx + 1));
             // Arceus
-            spriteIdx = common16.ReadShort(start + 493 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 493 * rowSize + 4);
             for (short i = 1; i < 18; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(493, i), (short)(spriteIdx + i));
             }
