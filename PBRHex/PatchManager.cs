@@ -423,11 +423,7 @@ namespace PBRHex
             }
 
             Common8.WriteInt(0, index);
-            //// Arceus
-            //spriteIdx = Common16.ReadShort(start + 493 * rowSize + 4);
-            //for (short i = 1; i < 18; i++) {
-            //    SpriteTable.AddFaceSpriteSlot(new Pokemon(493, i), (short)(spriteIdx + i));
-            //}
+            StringTable.Write();
 
             // replace call to GET_KANJI_STR_NUM w/ invalid
             // instruction in case it ever *does* get reached
