@@ -111,14 +111,20 @@ namespace PBRHex
         }
 
         public static void PatchDex() {
+            uint legalityCheck;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
+                    legalityCheck = 0x80154a14;
                     break;
                 case GameRegion.PAL:
+                    legalityCheck = 0x8014fea8;
                     break;
                 default:
                     throw new NotImplementedException();
             }
+            // disable legality check
+            DOL.WriteInstruction(legalityCheck, "li r3, 0x0");
+            DOL.WriteInstruction(legalityCheck + 4, "blr");
             // rename model files
             if (FSYSTable.ContainsFile("pkx_600"))
                 FSYSTable.RenameFile("pkx_600", "pkx_egg");
