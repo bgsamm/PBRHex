@@ -76,8 +76,12 @@ namespace PBRHex.Tables
         public static FSYS GetFile(int id) {
             lock (TableLock) {
                 string name = IDtoName[id];
-                if (!LoadedFiles.ContainsKey(id))
-                    LoadedFiles[id] = new FSYS(MakePath(name));
+                if (!LoadedFiles.ContainsKey(id)) {
+                    LoadedFiles[id] = new FSYS(MakePath(name)) 
+                    { 
+                        ID = id
+                    };
+                }
                 return LoadedFiles[id];
             }
         }

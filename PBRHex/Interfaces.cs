@@ -39,6 +39,7 @@ namespace PBRHex
     public interface IDexEditor
     {
         void SetSpeciesName(Pokemon mon, string name);
+        void SetFormName(Pokemon mon, string name);
         void SetTyping(Pokemon mon, int slot, PokeType type);
         void SetAbility(Pokemon mon, int slot, int ability);
         void SetBaseStat(Pokemon mon, int stat, int value);

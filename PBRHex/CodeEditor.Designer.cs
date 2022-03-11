@@ -41,8 +41,11 @@ namespace PBRHex
             this.sectionSelectDropdown = new PBRHex.HexEditor.Controls.FileSelectDropdown();
             this.loadButton = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.saveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.codeView)).BeginInit();
             this.codeViewContextMenu.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // codeView
@@ -64,7 +67,8 @@ namespace PBRHex
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.codeView.DefaultCellStyle = dataGridViewCellStyle2;
-            this.codeView.Location = new System.Drawing.Point(38, 62);
+            this.codeView.Location = new System.Drawing.Point(37, 71);
+            this.codeView.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.codeView.MultiSelect = false;
             this.codeView.Name = "codeView";
             this.codeView.RowHeadersWidth = 69;
@@ -110,9 +114,10 @@ namespace PBRHex
             this.newSectionButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.newSectionButton.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDarkDark;
             this.newSectionButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.newSectionButton.Location = new System.Drawing.Point(746, 29);
+            this.newSectionButton.Location = new System.Drawing.Point(744, 38);
+            this.newSectionButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.newSectionButton.Name = "newSectionButton";
-            this.newSectionButton.Size = new System.Drawing.Size(26, 26);
+            this.newSectionButton.Size = new System.Drawing.Size(27, 26);
             this.newSectionButton.TabIndex = 4;
             this.newSectionButton.UseVisualStyleBackColor = false;
             this.newSectionButton.Click += new System.EventHandler(this.NewSectionButton_Click);
@@ -146,7 +151,8 @@ namespace PBRHex
             this.sectionSelectDropdown.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
             this.sectionSelectDropdown.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.sectionSelectDropdown.FormattingEnabled = true;
-            this.sectionSelectDropdown.Location = new System.Drawing.Point(619, 29);
+            this.sectionSelectDropdown.Location = new System.Drawing.Point(613, 38);
+            this.sectionSelectDropdown.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.sectionSelectDropdown.Name = "sectionSelectDropdown";
             this.sectionSelectDropdown.Size = new System.Drawing.Size(127, 23);
             this.sectionSelectDropdown.TabIndex = 3;
@@ -154,7 +160,8 @@ namespace PBRHex
             // 
             // loadButton
             // 
-            this.loadButton.Location = new System.Drawing.Point(38, 29);
+            this.loadButton.Location = new System.Drawing.Point(37, 39);
+            this.loadButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.loadButton.Name = "loadButton";
             this.loadButton.Size = new System.Drawing.Size(125, 27);
             this.loadButton.TabIndex = 5;
@@ -166,24 +173,51 @@ namespace PBRHex
             // 
             this.openFileDialog.Filter = "Binary files|*.bin";
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(811, 24);
+            this.menuStrip1.TabIndex = 6;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // saveMenuItem
+            // 
+            this.saveMenuItem.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.saveMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveMenuItem.Image")));
+            this.saveMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
+            this.saveMenuItem.Name = "saveMenuItem";
+            this.saveMenuItem.Size = new System.Drawing.Size(28, 20);
+            this.saveMenuItem.Click += new System.EventHandler(this.SaveMenuItem_Click);
+            // 
             // CodeEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.RoyalBlue;
             this.ClientSize = new System.Drawing.Size(811, 471);
+            this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.loadButton);
             this.Controls.Add(this.newSectionButton);
             this.Controls.Add(this.sectionSelectDropdown);
             this.Controls.Add(this.codeView);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
             this.Name = "CodeEditor";
-            this.Text = "CodeEditor";
+            this.Text = "Code Editor";
             ((System.ComponentModel.ISupportInitialize)(this.codeView)).EndInit();
             this.codeViewContextMenu.ResumeLayout(false);
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -199,5 +233,7 @@ namespace PBRHex
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.Button loadButton;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem saveMenuItem;
     }
 }

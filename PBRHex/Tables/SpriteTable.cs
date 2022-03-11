@@ -161,15 +161,13 @@ namespace PBRHex.Tables
         private static int GetFaceSpriteID(Pokemon mon) {
             int start = Common0.ReadInt(0x10),
                 idx = GetFaceSpriteIndex(mon);
-            // alternate form sprites need to be in consecutive rows
-            return Common0.ReadInt(start + (idx + mon.FormIndex) * 0x10 + 8 * mon.Gender);
+            return Common0.ReadInt(start + idx * 0x10 + 8 * mon.Gender);
         }
 
         private static int GetBodySpriteID(Pokemon mon) {
             int start = Common0.ReadInt(0x10),
                 idx = GetBodySpriteIndex(mon);
-            // alternate form sprites need to be in consecutive rows
-            return Common0.ReadInt(start + (idx + mon.FormIndex) * 0x10 + 8 * mon.Gender + 4);
+            return Common0.ReadInt(start + idx * 0x10 + 8 * mon.Gender + 4);
         }
 
         private static string MakeFaceSpritePath(int id) {

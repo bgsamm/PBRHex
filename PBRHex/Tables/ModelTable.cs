@@ -239,10 +239,18 @@ namespace PBRHex.Tables
 
         public static void AddModelSlot(Pokemon mon) {
             string fname = $"pkx_{mon.DexNum:D3}";
-            FileUtils.CopyFile(FSYSTable.MakePath("pkx_sub"), FSYSTable.MakePath(fname));
-            int fsysID = FSYSTable.AddFile(fname);
+            int fsysID, normID, shinyID;
             var subModel = FSYSTable.GetFile("pkx_sub");
-            int shinyID = FileUtils.AddLZSS(fname, subModel.Files[0]);
+            if (FSYSTable.ContainsFile(fname)) {
+                fsysID = FSYSTable.GetFile(fname).ID;
+                normID = FileUtils.AddLZSS(fname, subModel.Files[0]);
+                shinyID = FileUtils.AddLZSS(fname, subModel.Files[0]);
+            } else {
+                FileUtils.CopyFile(FSYSTable.MakePath("pkx_sub"), FSYSTable.MakePath(fname));
+                fsysID = FSYSTable.AddFile(fname);
+                normID = subModel.Files[0].ID;
+                shinyID = FileUtils.AddLZSS(fname, subModel.Files[0]);
+            }
             // add new entry
             int start = Common6.ReadInt(0x10),
                 rows = Common6.ReadInt(0),
@@ -251,7 +259,7 @@ namespace PBRHex.Tables
             Common6.AddRange(stride);
             Common6.WriteInt(address, 0x60D0D0D0); // first byte dictates "spacing" in some sense
             Common6.WriteInt(address + 4, fsysID);
-            Common6.WriteInt(address + 8, subModel.Files[0].ID); // 0x97A0400 = Substitute doll's file ID
+            Common6.WriteInt(address + 8, normID); // 0x97A0400 = Substitute doll's file ID
             Common6.WriteInt(address + 0xc, shinyID);
             Common6.WriteFloat(address + 0x10, 20.0); // run speed
             Common6.WriteShort(address + 0x14, (short)mon.DexNum);

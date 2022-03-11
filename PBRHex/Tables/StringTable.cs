@@ -34,7 +34,6 @@ namespace PBRHex.Tables
                 stringIdx = Common5B.ReadShort(id * 4 + 6) - 1;
             var file = Files[fileIdx];
             int offset = file.ReadInt(stringIdx * 4 + 0x10);
-
             var sb = new StringBuilder();
             var gameString = new GameString(id);
             int next;

@@ -16,7 +16,6 @@ using PBRHex.Utils;
 /*
  * TODO:
  * -Implement "Find All" search command
- * -Detect file type from extension when adding from disk
  * -Undo/redo deleting + adding files (just need to figure out interacting with the ContainingArchive's edit history)
  * -Renumber filenames on delete
  * -Highlight full match when searching

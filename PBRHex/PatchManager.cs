@@ -8,6 +8,11 @@ namespace PBRHex
     public static class PatchManager
     {
         private static FSYS Common => FSYSTable.GetFile("common.fsys");
+        private static FileBuffer Common6 => Common.Files[0x6];
+        private static FileBuffer Common8 => Common.Files[0x8];
+        private static FileBuffer CommonD => Common.Files[0xd];
+        private static FileBuffer Common15 => Common.Files[0x15];
+        private static FileBuffer Common16 => Common.Files[0x16];
 
         public static uint NextFreeAddr { get; private set; }
         private static readonly uint freeSpaceStart, freeSpaceEnd;
@@ -18,6 +23,10 @@ namespace PBRHex
                     freeSpaceStart = 0x801d9474;
                     freeSpaceEnd = 0x801df670;
                     break;
+                case GameRegion.PAL:
+                    freeSpaceStart = 0x801d4838;
+                    freeSpaceEnd = 0x801daa30;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -27,9 +36,8 @@ namespace PBRHex
                 if (DOL.ReadInstruction(addr) == 0)
                     break;
             }
-            if (addr == freeSpaceEnd)
+            if (addr >= freeSpaceEnd)
                 throw new Exception("No free space available in main.dol");
-            //nextFreeAddr = addr;
             NextFreeAddr = freeSpaceStart;
         }
 
@@ -61,11 +69,16 @@ namespace PBRHex
                     call2 = 0x80006278;
                     call3 = 0x8026da80;
                     break;
+                case GameRegion.PAL:
+                    call1 = 0x800061b8;
+                    call2 = 0x80006278;
+                    call3 = 0x802690d8;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
             // check if already cleared
-            if (DOL.ReadInstruction(call1) == 0xDEADC0DE)
+            if (DOL.ReadInstruction(call1) == 0xfee15bad)
                 return;
             // replace calls to debug functions w/ invalid
             // instructions in case they *are* ever reached
@@ -82,27 +95,36 @@ namespace PBRHex
         }
 
         public static void ExpandDOL() {
-            uint address;
-            switch (Program.ISORegion) {
-                case GameRegion.NTSCU:
-                    address = 0x80275b5c;
-                    break;
-                default:
-                    throw new NotImplementedException();
+            // reserves 0xdf00 bytes of space
+            if (Program.ISORegion == GameRegion.NTSCU) {
+                DOL.WriteInstruction(0x80275b5c, "lis r5, -0x7f9c");
+                DOL.WriteInstruction(0x80275b5c + 0xc, "subi r5, r5, 0x6e50"); // 806391B0
+                DOL.AddSection(0x8062b2b0);
+            } else if (Program.ISORegion == GameRegion.PAL) {
+                DOL.WriteInstruction(0x802710e4, "lis r5, -0x7f9b");
+                DOL.WriteInstruction(0x802710e4 + 0xc, "addi r5, r5, 0xf50"); // 80650F50
+                DOL.AddSection(0x80643050);
+            } else {
+                throw new NotImplementedException();
             }
-            DOL.WriteInstruction(address, "lis r5, -0x7f9c");
-            DOL.WriteInstruction(address + 0xc, "subi r5, r5, 0x6d50");
-            DOL.AddSection(0x8062b2b0);
             DOL.Write();
         }
 
         public static void PatchDex() {
+            uint legalityCheck;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
+                    legalityCheck = 0x80154a14;
+                    break;
+                case GameRegion.PAL:
+                    legalityCheck = 0x8014fea8;
                     break;
                 default:
                     throw new NotImplementedException();
             }
+            // disable legality check
+            DOL.WriteInstruction(legalityCheck, "li r3, 0x0");
+            DOL.WriteInstruction(legalityCheck + 4, "blr");
             // rename model files
             if (FSYSTable.ContainsFile("pkx_600"))
                 FSYSTable.RenameFile("pkx_600", "pkx_egg");
@@ -176,6 +198,22 @@ namespace PBRHex
                     formCmp1 = 0x8005d250; formCmp2 = 0x8005d52c; formCmp3 = 0x8005d85c;
                     formCmp4 = 0x8005dbe8; formCmp5 = 0x8005debc; formCmp6 = 0x8005e198;
                     break;
+                case GameRegion.PAL:
+                    eggLoad1 = 0x8005ca90; eggLoad2 = 0x8005cbdc; eggLoad3 = 0x8005cd80;
+                    eggLoad4 = 0x803db0b0; eggLoad5 = 0x803db0d8;
+                    badEggLoad1 = 0x803db2c4; badEggLoad2 = 0x803db320;
+                    eggCmp1 = 0x8005ca94; eggCmp2 = 0x8005cc0c; eggCmp3 = 0x8005cdb4;
+                    eggCmp4 = 0x803d4a68; eggCmp5 = 0x803d4b64;
+                    eggCompares = new uint[] {
+                        0x803b0328, 0x803b0474, 0x803b0578, 0x803b065c, 0x803b28c8,
+                        0x803b2990, 0x803b2a70, 0x803b5a08, 0x803b5b00, 0x803b7cc8,
+                        0x803b98b0, 0x803b99ac, 0x803b9a18, 0x803b9af4, 0x803d2394,
+                        0x803d256c, 0x803d29f4, 0x803d6160, 0x803d61f0, 0x803d6290,
+                        0x803d6d1c, 0x803d6df0, 0x803dbe28, 0x803dce5c
+                    };
+                    formCmp1 = 0x8005b760; formCmp2 = 0x8005ba3c; formCmp3 = 0x8005bd6c;
+                    formCmp4 = 0x8005c0f8; formCmp5 = 0x8005c3cc; formCmp6 = 0x8005c6a8;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
@@ -212,9 +250,9 @@ namespace PBRHex
             DOL.WriteInstruction(formCmp6 + 0xc, $"b 0x{formCmp6 + 0xac:x08}");
 
             // update egg ID in common:06, common:15, and common:16
-            Common.Files[0x6].WriteShort(0xb564, -0x1);
-            Common.Files[0x15].WriteInt(0x1758, -0x1);
-            Common.Files[0x16].WriteInt(0xfa0, -0x1);
+            Common6.WriteShort(0xb564, -0x1);
+            Common15.WriteInt(0x1758, -0x1);
+            Common16.WriteInt(0xfa0, -0x1);
         }
 
         /// <summary>
@@ -229,68 +267,169 @@ namespace PBRHex
                 case GameRegion.NTSCU:
                     getKanjiCall = 0x8018125c;
                     break;
+                case GameRegion.PAL:
+                    getKanjiCall = 0x8017c91c;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
-            var common08 = Common.Files[0x8];
-            var common16 = Common.Files[0x16];
-            int common8start = common08.ReadInt(0x10),
-                common8stride = common08.ReadInt(4),
-                common16start = common16.ReadInt(0x10),
-                common16stride = common16.ReadInt(4);
-            int offset;
+            int start = Common8.ReadInt(0x10),
+                rowSize = Common8.ReadInt(4),
+                common16start = Common16.ReadInt(0x10),
+                common16stride = Common16.ReadInt(4);
+            int offset, sid;
             for (short i = 1; i <= 493; i++) {
-                offset = common8start + i * common8stride;
+                offset = start + i * rowSize;
                 // replace wild held item columns w/ dex & form indices
-                common08.WriteShort(offset + 0x10, i);
-                common08.WriteShort(offset + 0x12, 0);
+                Common8.WriteShort(offset + 0x10, i);
+                Common8.WriteShort(offset + 0x12, 0);
                 // replace kana string index w/ form string index
-                // (not 100% sure the kanji string is unused)
-                int idx = 0;
-                if (i == 386)
-                    idx = StringTable.AddString("Normal Forme");
-                else if (i == 413)
-                    idx = StringTable.AddString("Plant Cloak");
-                common08.WriteShort(offset + 0x1a, (short)idx);
+                // (not 100% sure the kanji string is unused tbh)
+                if (i == 201)
+                    sid = StringTable.AddString("A");
+                else if (i == 351)
+                    sid = StringTable.AddString("Normal");
+                else if (i == 386)
+                    sid = StringTable.AddString("Normal Forme");
+                else if (i == 412 || i == 413)
+                    sid = StringTable.AddString("Plant Cloak");
+                else if (i == 421)
+                    sid = StringTable.AddString("Overcast Form");
+                else if (i == 422 || i == 423)
+                    sid = StringTable.AddString("West Sea");
+                else if (i == 493)
+                    sid = StringTable.AddString("Normal-type");
+                else
+                    sid = 0;
+                Common8.WriteShort(offset + 0x1a, (short)sid);
                 // replace color + flip with form count + unevolved flag (copied from common:16)
-                short forms = common16.ReadShort(common16start + common16stride * i + 0x6);
-                common08.WriteByte(offset + 0x33, (byte)forms);
+                short forms = Common16.ReadShort(common16start + common16stride * i + 0x6);
+                Common8.WriteByte(offset + 0x33, (byte)forms);
             }
             // Deoxys forms
-            for (short i = 1; i <= 3; i++) {
-                offset = common8start + (495 + i) * common8stride;
-                common08.WriteShort(offset + 0x10, 386);
-                common08.WriteShort(offset + 0x12, i);
-                int idx;
+            for (short i = 1; i < 4; i++) {
+                offset = start + (495 + i) * rowSize;
+                Common8.WriteShort(offset + 0x10, 386);
+                Common8.WriteShort(offset + 0x12, i);
                 if (i == 1)
-                    idx = StringTable.AddString("Attack Forme");
+                    sid = StringTable.AddString("Attack Forme");
                 else if (i == 2)
-                    idx = StringTable.AddString("Defense Forme");
+                    sid = StringTable.AddString("Defense Forme");
                 else
-                    idx = StringTable.AddString("Speed Forme");
-                common08.WriteShort(offset + 0x1a, (short)idx);
-                common08.WriteByte(offset + 0x33, 8);
+                    sid = StringTable.AddString("Speed Forme");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x33, 4 << 1);
             }
             // Wormadam forms
-            for (short i = 1; i <= 2; i++) {
-                offset = common8start + (498 + i) * common8stride;
-                common08.WriteShort(offset + 0x10, 413);
-                common08.WriteShort(offset + 0x12, i);
-                int idx;
+            for (short i = 1; i < 3; i++) {
+                offset = start + (498 + i) * rowSize;
+                Common8.WriteShort(offset + 0x10, 413);
+                Common8.WriteShort(offset + 0x12, i);
                 if (i == 1)
-                    idx = StringTable.AddString("Sandy Cloak");
+                    sid = StringTable.AddString("Sandy Cloak");
                 else
-                    idx = StringTable.AddString("Trash Cloak");
-                common08.WriteShort(offset + 0x1a, (short)idx);
-                common08.WriteByte(offset + 0x33, 6);
+                    sid = StringTable.AddString("Trash Cloak");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x33, 3 << 1);
             }
             // Eggs
-            offset = common8start + 494 * common8stride;
-            common08.WriteShort(offset + 0x10, -1);
-            common08.WriteByte(offset + 0x33, 4);
-            offset = common8start + 495 * common8stride;
-            common08.WriteShort(offset + 0x10, -2);
-            common08.WriteByte(offset + 0x33, 2);
+            offset = start + 494 * rowSize;
+            Common8.WriteShort(offset + 0x10, -1);
+            Common8.WriteByte(offset + 0x33, 4);
+            offset = start + 495 * rowSize;
+            Common8.WriteShort(offset + 0x10, -2);
+            Common8.WriteByte(offset + 0x33, 2);
+            
+            int index = 496;
+            // Unown
+            var bytes = Common8.GetRange(start + 201 * rowSize, rowSize);
+            for (short i = 1; i < 28; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i); // form index
+                if (i == 26)
+                    sid = StringTable.AddString("!");
+                else if (i == 27)
+                    sid = StringTable.AddString("?");
+                else
+                    sid = StringTable.AddString(((char)(i + 65)).ToString());
+                Common8.WriteShort(offset + 0x1a, (short)sid); // form name string ID
+            }
+            // Castform
+            bytes = Common8.GetRange(start + 351 * rowSize, rowSize);
+            for (short i = 1; i < 4; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i);
+                PokeType type;
+                if (i == 1) {
+                    sid = StringTable.AddString("Sunny Form");
+                    type = PokeType.Fire;
+                } else if (i == 2) {
+                    sid = StringTable.AddString("Snowy Form");
+                    type = PokeType.Ice;
+                } else {
+                    sid = StringTable.AddString("Rainy Form");
+                    type = PokeType.Water;
+                }
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x24, (byte)type);
+                Common8.WriteByte(offset + 0x25, (byte)type);
+            }
+            // Deoxys
+            index += 3;
+            // Burmy
+            bytes = Common8.GetRange(start + 412 * rowSize, rowSize);
+            for (short i = 1; i < 3; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i);
+                if (i == 1)
+                    sid = StringTable.AddString("Sandy Cloak");
+                else
+                    sid = StringTable.AddString("Trash Cloak");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+            }
+            // Wormadam
+            index += 2;
+            // Cherrim
+            bytes = Common8.GetRange(start + 421 * rowSize, rowSize);
+            offset = start + index++ * rowSize;
+            Common8.InsertRange(offset, bytes);
+            Common8.WriteShort(offset + 0x12, 1);
+            sid = StringTable.AddString("Sunshine Form");
+            Common8.WriteShort(offset + 0x1a, (short)sid);
+            // Shellos
+            bytes = Common8.GetRange(start + 422 * rowSize, rowSize);
+            offset = start + index++ * rowSize;
+            Common8.InsertRange(offset, bytes);
+            Common8.WriteShort(offset + 0x12, 1);
+            sid = StringTable.AddString("East Sea");
+            Common8.WriteShort(offset + 0x1a, (short)sid);
+            // Gastrodon
+            bytes = Common8.GetRange(start + 423 * rowSize, rowSize);
+            offset = start + index++ * rowSize;
+            Common8.InsertRange(offset, bytes);
+            Common8.WriteShort(offset + 0x12, 1);
+            sid = StringTable.AddString("East Sea");
+            Common8.WriteShort(offset + 0x1a, (short)sid);
+            // Arceus
+            bytes = Common8.GetRange(start + 493 * rowSize, rowSize);
+            for (short i = 1; i < 18; i++, index++) {
+                offset = start + index * rowSize;
+                Common8.InsertRange(offset, bytes);
+                Common8.WriteShort(offset + 0x12, i);
+                if (i == 9)
+                    sid = StringTable.AddString("???-type");
+                else
+                    sid = StringTable.AddString($"{(PokeType)i}-type");
+                Common8.WriteShort(offset + 0x1a, (short)sid);
+                Common8.WriteByte(offset + 0x24, (byte)i);
+                Common8.WriteByte(offset + 0x25, (byte)i);
+            }
+
+            Common8.WriteInt(0, index);
+            StringTable.Write();
 
             // replace call to GET_KANJI_STR_NUM w/ invalid
             // instruction in case it ever *does* get reached
@@ -383,7 +522,12 @@ namespace PBRHex
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
                     calls = new uint[] {
-                        0x8005e8c0, 0x8005e5a0, 0x8005e718
+                        0x8005e5a0, 0x8005e718, 0x8005e8c0
+                    };
+                    break;
+                case GameRegion.PAL:
+                    calls = new uint[] {
+                       0x8005cab0, 0x8005cc28, 0x8005cdd0
                     };
                     break;
                 default:
@@ -406,6 +550,10 @@ namespace PBRHex
                 case GameRegion.NTSCU:
                     call1 = 0x8008eef0;
                     call2 = 0x800da490;
+                    break;
+                case GameRegion.PAL:
+                    call1 = 0x8008d6c4;
+                    call2 = 0x800d782c;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -444,39 +592,43 @@ namespace PBRHex
 
         private static void PatchCommon0D() {
             uint addr1, addr2, addr3, addr4, addr5,
-                getEntryAddrFunc, unkFunc;
+                addr4Reg1, addr4Reg2, getEntryAddrFunc;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
-                    addr1 = 0x80182554;
-                    addr2 = 0x8018390c;
-                    addr3 = 0x801843a4;
-                    addr4 = 0x8018502c;
-                    addr5 = 0x8018726c;
+                    addr1 = 0x80182554; addr2 = 0x8018390c; addr3 = 0x801843a4;
+                    addr4 = 0x8018502c; addr5 = 0x8018726c;
+                    addr4Reg1 = 25;
+                    addr4Reg2 = 28;
                     getEntryAddrFunc = 0x8039d068;
-                    unkFunc = 0x801c8774;
+                    break;
+                case GameRegion.PAL:
+                    addr1 = 0x8017dc58; addr2 = 0x8017f000; addr3 = 0x8017faa8;
+                    addr4 = 0x801806f8; addr5 = 0x801828ec;
+                    addr4Reg1 = 28;
+                    addr4Reg2 = 31;
+                    getEntryAddrFunc = 0x803994f0;
                     break;
                 default:
                     throw new NotImplementedException();
             }
             // adjust pointers to point at rows instead of names
-            var common0D = Common.Files[0xd];
-            int tableStart = common0D.ReadInt(0x10),
-                rowSize = common0D.ReadInt(0x4),
-                count = common0D.ReadInt(0x1c),
-                mappingAddr = common0D.ReadInt(0x20);
-            common0D.WriteInt(0x8, tableStart);
+            int tableStart = CommonD.ReadInt(0x10),
+                rowSize = CommonD.ReadInt(0x4),
+                count = CommonD.ReadInt(0x1c),
+                mappingAddr = CommonD.ReadInt(0x20);
+            CommonD.WriteInt(0x8, tableStart);
             int dexNo, offset;
             for (int i = 0; i < count; i++) {
                 offset = mappingAddr + 8 * i;
-                dexNo = common0D.ReadInt(offset + 4);
+                dexNo = CommonD.ReadInt(offset + 4);
                 if (dexNo > 493)
                     continue;
                 else if (dexNo > 413)
-                    common0D.WriteInt(offset, tableStart + (dexNo + 5) * rowSize);
+                    CommonD.WriteInt(offset, tableStart + (dexNo + 5) * rowSize);
                 else if (dexNo > 386)
-                    common0D.WriteInt(offset, tableStart + (dexNo + 3) * rowSize);
+                    CommonD.WriteInt(offset, tableStart + (dexNo + 3) * rowSize);
                 else
-                    common0D.WriteInt(offset, tableStart + dexNo * rowSize);
+                    CommonD.WriteInt(offset, tableStart + dexNo * rowSize);
             }
             // custom calculation of entry address
             string[] asm = {
@@ -521,8 +673,8 @@ namespace PBRHex
             asm = new string[] {
                 "rlwinm r0, r23, 0x2, 0xe, 0x1d",
                 "lwzx r3, r26, r0",
-                $"bl 0x{unkFunc:x08}",
-                "lbz r5, 0xc(r3)", // form index
+                "lwz r3, 0x8(r3)",
+                "lbz r5, 0x10(r3)", // form index
                 "addi r3, r29, 0x74"
             };
             InsertAssembly(asm, addr2);
@@ -535,8 +687,8 @@ namespace PBRHex
             InsertAssembly(asm, addr3);
             // add form index as param to call
             asm = new string[] {
-                "lbz r5, 0xc(r25)",
-                "addi r3, r28, 0x74"
+                $"lbz r5, 0xc(r{addr4Reg1})",
+                $"addi r3, r{addr4Reg2}, 0x74"
             };
             InsertAssembly(asm, addr4);
             // add form index as param to call
@@ -549,59 +701,58 @@ namespace PBRHex
 
         private static void PatchCommon15() {
             // set leading unused bytes to dex + form
-            var common15 = Common.Files[0x15];
-            int start = common15.ReadInt(0x10),
-                rowSize = common15.ReadInt(0x4);
+            int start = Common15.ReadInt(0x10),
+                rowSize = Common15.ReadInt(0x4);
             int offset;
             for (short i = 1; i <= 493; i++) {
                 offset = start + i * rowSize;
-                common15.WriteShort(offset, i); // dex
-                common15.WriteShort(offset + 2, 0); // form
+                Common15.WriteShort(offset, i); // dex
+                Common15.WriteShort(offset + 2, 0); // form
             }
             // Add entries for all forms
             short spriteIdx;
             // Egg
             offset = start + 494 * rowSize;
-            common15.WriteShort(offset, -0x1); // dex
-            common15.WriteShort(offset + 2, 0); // form
-            spriteIdx = common15.ReadShort(offset + 4);
+            Common15.WriteShort(offset, -0x1); // dex
+            Common15.WriteShort(offset + 2, 0); // form
+            spriteIdx = Common15.ReadShort(offset + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(-0x1, 1), (short)(spriteIdx + 1));
             // Unown
-            spriteIdx = common15.ReadShort(start + 201 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 201 * rowSize + 4);
             for (short i = 1; i < 28; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(201, i), (short)(spriteIdx + i));
             }
             // Castform
-            spriteIdx = common15.ReadShort(start + 351 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 351 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(351, i), (short)(spriteIdx + i));
             }
             // Deoxys
-            spriteIdx = common15.ReadShort(start + 386 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 386 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(386, i), (short)(spriteIdx + i));
             }
             // Burmy
-            spriteIdx = common15.ReadShort(start + 412 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 412 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(412, i), (short)(spriteIdx + i));
             }
             // Wormadam
-            spriteIdx = common15.ReadShort(start + 413 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 413 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(413, i), (short)(spriteIdx + i));
             }
             // Cherrim
-            spriteIdx = common15.ReadShort(start + 421 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 421 * rowSize + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(421, 1), (short)(spriteIdx + 1));
             // Shellos
-            spriteIdx = common15.ReadShort(start + 422 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 422 * rowSize + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(422, 1), (short)(spriteIdx + 1));
             // Gastrodon
-            spriteIdx = common15.ReadShort(start + 423 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 423 * rowSize + 4);
             SpriteTable.AddBodySpriteSlot(new Pokemon(423, 1), (short)(spriteIdx + 1));
             // Arceus
-            spriteIdx = common15.ReadShort(start + 493 * rowSize + 4);
+            spriteIdx = Common15.ReadShort(start + 493 * rowSize + 4);
             for (short i = 1; i < 18; i++) {
                 SpriteTable.AddBodySpriteSlot(new Pokemon(493, i), (short)(spriteIdx + i));
             }
@@ -614,12 +765,14 @@ namespace PBRHex
                 getEntryAddr;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
-                    call1 = 0x8005db9c;
-                    call2 = 0x8005dbc0;
-                    call3 = 0x8005de70;
-                    call4 = 0x8005de94;
-                    call5 = 0x8005e188;
+                    call1 = 0x8005db9c; call2 = 0x8005dbc0; call3 = 0x8005de70;
+                    call4 = 0x8005de94; call5 = 0x8005e188;
                     getEntryAddr = 0x8039a570;
+                    break;
+                case GameRegion.PAL:
+                    call1 = 0x8005c0ac; call2 = 0x8005c0d0; call3 = 0x8005c380;
+                    call4 = 0x8005c3a4; call5 = 0x8005c698;
+                    getEntryAddr = 0x803969f8;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -687,59 +840,58 @@ namespace PBRHex
         }
 
         private static void PatchCommon16() {
-            var common16 = Common.Files[0x16];
-            int start = common16.ReadInt(0x10),
-                rowSize = common16.ReadInt(0x4);
+            int start = Common16.ReadInt(0x10),
+                rowSize = Common16.ReadInt(0x4);
             int offset;
             for (short i = 1; i <= 493; i++) {
                 offset = start + i * rowSize;
                 // set leading unused bytes to dex + form
-                common16.WriteShort(offset, i);
-                common16.WriteShort(offset + 2, 0);
+                Common16.WriteShort(offset, i);
+                Common16.WriteShort(offset + 2, 0);
             }
             short spriteIdx;
             // Egg
             offset = start + 494 * rowSize;
-            common16.WriteShort(offset, -0x1); // dex
-            common16.WriteShort(offset + 2, 0); // form
-            spriteIdx = common16.ReadShort(offset + 4);
+            Common16.WriteShort(offset, -0x1); // dex
+            Common16.WriteShort(offset + 2, 0); // form
+            spriteIdx = Common16.ReadShort(offset + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(-0x1, 1), (short)(spriteIdx + 1));
             // Unown
-            spriteIdx = common16.ReadShort(start + 201 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 201 * rowSize + 4);
             for (short i = 1; i < 28; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(201, i), (short)(spriteIdx + i));
             }
             // Castform
-            spriteIdx = common16.ReadShort(start + 351 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 351 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(351, i), (short)(spriteIdx + i));
             }
             // Deoxys
-            spriteIdx = common16.ReadShort(start + 386 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 386 * rowSize + 4);
             for (short i = 1; i < 4; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(386, i), (short)(spriteIdx + i));
             }
             // Burmy
-            spriteIdx = common16.ReadShort(start + 412 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 412 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(412, i), (short)(spriteIdx + i));
             }
             // Wormadam
-            spriteIdx = common16.ReadShort(start + 413 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 413 * rowSize + 4);
             for (short i = 1; i < 3; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(413, i), (short)(spriteIdx + i));
             }
             // Cherrim
-            spriteIdx = common16.ReadShort(start + 421 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 421 * rowSize + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(421, 1), (short)(spriteIdx + 1));
             // Shellos
-            spriteIdx = common16.ReadShort(start + 422 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 422 * rowSize + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(422, 1), (short)(spriteIdx + 1));
             // Gastrodon
-            spriteIdx = common16.ReadShort(start + 423 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 423 * rowSize + 4);
             SpriteTable.AddFaceSpriteSlot(new Pokemon(423, 1), (short)(spriteIdx + 1));
             // Arceus
-            spriteIdx = common16.ReadShort(start + 493 * rowSize + 4);
+            spriteIdx = Common16.ReadShort(start + 493 * rowSize + 4);
             for (short i = 1; i < 18; i++) {
                 SpriteTable.AddFaceSpriteSlot(new Pokemon(493, i), (short)(spriteIdx + i));
             }
@@ -752,12 +904,14 @@ namespace PBRHex
                 getEntryAddr;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
-                    call1 = 0x8005d204;
-                    call2 = 0x8005d228;
-                    call3 = 0x8005d4e0;
-                    call4 = 0x8005d504;
-                    call5 = 0x8005d84c;
+                    call1 = 0x8005d204; call2 = 0x8005d228; call3 = 0x8005d4e0;
+                    call4 = 0x8005d504; call5 = 0x8005d84c;
                     getEntryAddr = 0x80395600;
+                    break;
+                case GameRegion.PAL:
+                    call1 = 0x8005b714; call2 = 0x8005b738; call3 = 0x8005b9f0;
+                    call4 = 0x8005ba14; call5 = 0x8005bd5c;
+                    getEntryAddr = 0x803908e8;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -847,6 +1001,11 @@ namespace PBRHex
                             "lis r3, -0x7f9e",
                             "addi r3, r3, 0x5184"
                         };
+                    case GameRegion.PAL:
+                        return new string[] {
+                            "lis r3, -0x7f9c",
+                            "subi r3, r3, 0x31bc"
+                        };
                     default:
                         throw new NotImplementedException();
                 }
@@ -859,6 +1018,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803de52c;
+                    case GameRegion.PAL:
+                        return 0x803daefc;
                     default:
                         throw new NotImplementedException();
                 }
@@ -870,6 +1031,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803e100c;
+                    case GameRegion.PAL:
+                        return 0x803dd9dc;
                     default:
                         throw new NotImplementedException();
                 }
@@ -881,6 +1044,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803e0f0c;
+                    case GameRegion.PAL:
+                        return 0x803dd8dc;
                     default:
                         throw new NotImplementedException();
                 }
@@ -892,6 +1057,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x80058f70;
+                    case GameRegion.PAL:
+                        return 0x80056f68;
                     default:
                         throw new NotImplementedException();
                 }
@@ -903,6 +1070,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x8039653c;
+                    case GameRegion.PAL:
+                        return 0x803919c4;
                     default:
                         throw new NotImplementedException();
                 }
@@ -914,6 +1083,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x80396570;
+                    case GameRegion.PAL:
+                        return 0x803919f8;
                     default:
                         throw new NotImplementedException();
                 }
@@ -925,6 +1096,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x803969cc;
+                    case GameRegion.PAL:
+                        return 0x80391e54;
                     default:
                         throw new NotImplementedException();
                 }
@@ -936,6 +1109,8 @@ namespace PBRHex
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
                         return 0x80396a04;
+                    case GameRegion.PAL:
+                        return 0x80391e8c;
                     default:
                         throw new NotImplementedException();
                 }
