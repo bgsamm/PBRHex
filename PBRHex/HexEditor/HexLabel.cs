@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Text;
-using System.Text.Json;
 
 namespace PBRHex.HexLabels
 {
@@ -39,43 +39,6 @@ namespace PBRHex.HexLabels
 
         public override string ToString() {
             return Name;
-        }
-
-        public static string Serialize(HexLabel label, int indent) {
-            StringBuilder sb = new StringBuilder();
-            string indentation = new string('\t', indent);
-            sb.Append("{\n");
-            sb.Append($"{indentation}\"Name\": \"{label.Name.Replace("\"", "\\\"")}\",\n");
-            sb.Append($"{indentation}\"Address\": {label.Address},\n");
-            sb.Append($"{indentation}\"Size\": {label.Size},\n");
-            sb.Append($"{indentation}\"Type\": \"{label.Type}\",\n");
-            sb.Append($"{new string('\t', indent - 1)}}}");
-            return sb.ToString();
-        }
-
-        public static HexLabel Deserialize(JsonElement json) {
-            LabelType type = LabelType.None;
-            int address = 0, size = 0;
-            string name = "";
-
-            // enumerate over label properties
-            foreach(var p2 in json.EnumerateObject()) {
-                switch(p2.Name) {
-                    case "Name":
-                        name = p2.Value.GetString();
-                        break;
-                    case "Address":
-                        address = p2.Value.GetInt32();
-                        break;
-                    case "Size":
-                        size = p2.Value.GetInt32();
-                        break;
-                    case "Type":
-                        type = (LabelType)Enum.Parse(typeof(LabelType), p2.Value.GetString(), false);
-                        break;
-                }
-            }
-            return new HexLabel(address, size, type, name);
         }
     }
 

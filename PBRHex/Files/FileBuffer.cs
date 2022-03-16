@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PBRHex.HexLabels;
 using PBRHex.Utils;
 
@@ -11,7 +12,7 @@ namespace PBRHex.Files
 {
     public class FileBuffer
     {
-        private static Dictionary<string, Dictionary<string, object>> Metadata { get; set; }
+        private static Dictionary<string, Dictionary<string, object>> Metadata;
 
         public LabelType[] LabelMap => MakeLabelMap();
         public ReadOnlyLabelDict Labels => new ReadOnlyLabelDict(LabelDict);
@@ -57,7 +58,6 @@ namespace PBRHex.Files
         public int Size => Buffer.Length;
 
         static FileBuffer() {
-            Metadata = new Dictionary<string, Dictionary<string, object>>();
             if (File.Exists($"{Program.UserDir}\\data.json"))
                 LoadMetadata();
         }
@@ -85,11 +85,10 @@ namespace PBRHex.Files
 
             LabelDict = new LabelDict();
             Notes = "";
-
             if (Metadata.ContainsKey(Key)) {
                 var data = Metadata[Key];
                 if (data.ContainsKey("Labels"))
-                    LabelDict = (LabelDict)data["Labels"];
+                    LabelDict = ((JObject)data["Labels"]).ToObject<LabelDict>();
                 if (data.ContainsKey("Notes"))
                     Notes = (string)data["Notes"];
             }
@@ -294,48 +293,14 @@ namespace PBRHex.Files
         }
 
         public static void SaveMetadata() {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("{\n");
-            foreach (var key in Metadata.Keys) {
-                var data = Metadata[key];
-                sb.Append($"\t\"{key}\": {{\n");
-                if (data.ContainsKey("Labels"))
-                    sb.Append($"\t\t\"Labels\": {LabelDict.Serialize((LabelDict)data["Labels"], 3)},\n");
-                if (data.ContainsKey("Notes")) {
-                    string notes = ((string)data["Notes"]).Replace("\r\n", @"\r\n").Replace("\n", @"\n");
-                    sb.Append($"\t\t\"Notes\": \"{notes}\",\n");
-                }
-                sb.Append("\t},\n");
-            }
-            sb.Append("}");
-
-            File.WriteAllText($@"{Program.UserDir}\data.json", sb.ToString());
+            string json = JsonConvert.SerializeObject(Metadata);
+            File.WriteAllText($@"{Program.UserDir}\data.json", json);
         }
 
         public static void LoadMetadata() {
             string raw = File.ReadAllText($@"{Program.UserDir}\data.json");
-            var options = new JsonSerializerOptions() { AllowTrailingCommas = true };
-            var json = JsonSerializer.Deserialize<JsonElement>(raw, options);
-            foreach (var file in json.EnumerateObject()) {
-                var labels = new LabelDict();
-                var notes = "";
-                foreach (var prop in file.Value.EnumerateObject()) {
-                    switch (prop.Name) {
-                        case "Labels":
-                            labels = LabelDict.Deserialize(prop.Value);
-                            break;
-                        case "Notes":
-                            notes = prop.Value.GetString();
-                            break;
-                    }
-                }
-                Metadata[file.Name] = new Dictionary<string, object>
-                {
-                    ["Labels"] = labels,
-                    ["Notes"] = notes
-                };
-            }
+            Metadata = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(raw) 
+                ?? new Dictionary<string, Dictionary<string, object>>();
         }
 
         public override string ToString() {
