@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PBRHex.HexLabels
 {
@@ -46,25 +48,6 @@ namespace PBRHex.HexLabels
 
         public int IndexOf(int address) {
             return Keys.ToList().IndexOf(address);
-        }
-
-        public static string Serialize(LabelDict dict, int indent) {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("[\n");
-            foreach(var label in dict.Values) {
-                sb.Append($"{new string('\t', indent)}{HexLabel.Serialize(label, indent + 1)},\n");
-            }
-            sb.Append($"{new string('\t', indent - 1)}]");
-            return sb.ToString();
-        }
-
-        public static LabelDict Deserialize(JsonElement json) {
-            LabelDict dict = new LabelDict();
-            // enumerate over labels
-            foreach(var elem in json.EnumerateArray()) {
-                dict.Add(HexLabel.Deserialize(elem));
-            }
-            return dict;
         }
     }
 }
