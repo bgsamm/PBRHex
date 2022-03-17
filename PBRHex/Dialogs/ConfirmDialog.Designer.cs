@@ -34,12 +34,11 @@ namespace PBRHex.Dialogs
             // 
             // messageLabel
             // 
-            this.messageLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.messageLabel.AutoSize = true;
+            this.messageLabel.Dock = System.Windows.Forms.DockStyle.Top;
             this.messageLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.messageLabel.Location = new System.Drawing.Point(101, 41);
+            this.messageLabel.Location = new System.Drawing.Point(0, 0);
             this.messageLabel.Name = "messageLabel";
-            this.messageLabel.Size = new System.Drawing.Size(77, 18);
+            this.messageLabel.Size = new System.Drawing.Size(274, 95);
             this.messageLabel.TabIndex = 0;
             this.messageLabel.Text = "[Message]";
             this.messageLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -84,7 +83,6 @@ namespace PBRHex.Dialogs
             this.Text = "ConfirmDialog";
             this.TopMost = true;
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
