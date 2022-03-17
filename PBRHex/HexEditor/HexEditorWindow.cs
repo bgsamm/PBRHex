@@ -43,10 +43,10 @@ namespace PBRHex.HexEditor
         private FSYS ContainingArchive => ArchiveName != null ? FSYSTable.GetFile(ArchiveName) : null;
         private readonly string ArchiveName;
 
-        public HexEditorWindow(FileBuffer[] files, string archive = null) {
+        public HexEditorWindow(FileBuffer[] files) {
             InitializeComponent();
             Files = new List<FileBuffer>(files);
-            ArchiveName = archive;
+            ArchiveName = files[0].ContainingArchive;
         }
 
         protected override void OnLoad(EventArgs e) {

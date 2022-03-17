@@ -183,7 +183,7 @@ namespace PBRHex
                 new AlertDialog("The current section is part of the game's core assembly and cannot be overwritten.").ShowDialog();
                 return;
             }
-            var dialog = new ConfirmDialog("This will overwrite all data in the current section.\n" +
+            var dialog = new ConfirmDialog("This will overwrite all data in the current section. " +
                 "Are you sure you wish to continue?");
             if (dialog.ShowDialog() != DialogResult.Yes)
                 return;

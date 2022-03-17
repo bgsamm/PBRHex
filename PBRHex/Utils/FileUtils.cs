@@ -328,7 +328,7 @@ namespace PBRHex.Utils
                 string withExt = $"{paths[i]}{ExtensionFromType((FileType)ftype)}";
                 File.Move(paths[i], withExt);
                 paths[i] = withExt;
-                files[i] = new FileBuffer(paths[i], outdir) { ID = id };
+                files[i] = new FileBuffer(paths[i], Path.GetFileName(path)) { ID = id };
             }
             file.Close();
             return files;
