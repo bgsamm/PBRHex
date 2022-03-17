@@ -71,7 +71,7 @@ namespace PBRHex.Files
         public FileBuffer(string path, string fsys) {
             Path = System.IO.Path.GetFullPath(path);
             fsys = System.IO.Path.GetFileNameWithoutExtension(fsys);
-            WorkingDir = $@"{Program.TempDir}\{fsys}\files";
+            WorkingDir = $@"{Program.TempDir}\{fsys}.fsys\files";
             ContainingArchive = fsys;
             Initialize();
         }
