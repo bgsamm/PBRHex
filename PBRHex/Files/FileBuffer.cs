@@ -27,28 +27,28 @@ namespace PBRHex.Files
 
         //public readonly FileType Type;
         /// <summary>
-        /// The file's identifier as assigned in-game
+        /// The file's identifier as assigned in-game (not all files have IDs)
         /// </summary>
         public int ID { get; set; }
         /// <summary>
-        /// The full path of the item.
+        /// The full path of the item
         /// </summary>
         public string Path { get; private set; }
         /// <summary>
-        /// The path to the containing directory of the item.
+        /// The path to the containing directory of the item
         /// </summary>
         public string Directory => System.IO.Path.GetDirectoryName(Path);
         public string Extension => System.IO.Path.GetExtension(Path);
         public string Name => System.IO.Path.GetFileName(Path);
         public string NameNoExt => System.IO.Path.GetFileNameWithoutExtension(Path);
         /// <summary>
-        /// The path to the file's working directory when editing.
+        /// The path to the file's working directory when editing
         /// </summary>
         public string WorkingDir { get; private set; }
         public string WorkingPath => $@"{WorkingDir}\{Name}";
+        public string ContainingArchive { get; private set; }
 
-        private string Key => Extension == "" ?
-            $"{new DirectoryInfo(Directory).Name}:{Name}" : Name;
+        private string Key => ContainingArchive != null ? $"{ContainingArchive}:{Name}" : Name;
 
         protected byte this[int i]
         {
@@ -58,7 +58,7 @@ namespace PBRHex.Files
         public int Size => Buffer.Length;
 
         static FileBuffer() {
-            if (File.Exists($"{Program.UserDir}\\data.json"))
+            if (File.Exists($@"{Program.UserDir}\data.json"))
                 LoadMetadata();
         }
 
@@ -68,9 +68,11 @@ namespace PBRHex.Files
             Initialize();
         }
 
-        public FileBuffer(string path, string workspace) {
+        public FileBuffer(string path, string fsys) {
             Path = System.IO.Path.GetFullPath(path);
-            WorkingDir = workspace;
+            fsys = System.IO.Path.GetFileNameWithoutExtension(fsys);
+            WorkingDir = $@"{Program.TempDir}\{fsys}\files";
+            ContainingArchive = fsys;
             Initialize();
         }
 

@@ -159,7 +159,7 @@ namespace PBRHex
                 foreach (var f in fsys.Files) {
                     files.Add(f);
                 }
-                hexEditor = new HexEditorWindow(files.ToArray(), fsys.Name)
+                hexEditor = new HexEditorWindow(files.ToArray())
                 {
                     Name = $"{file.Name}_unpacked",
                     Text = $"{file.Name} (unpacked)"
@@ -383,7 +383,7 @@ namespace PBRHex
         }
 
         private void DecompressFSYSMenuItem_Click(object sender, EventArgs e) {
-            string name = Path.GetFileNameWithoutExtension(SelectedFilePath);
+            string name = Path.GetFileName(SelectedFilePath);
             OpenHexEditor(FSYSTable.GetFile(name));
         }
 

@@ -11,6 +11,7 @@ namespace PBRHex.Utils
     public static class FileUtils
     {
         //private static readonly object AccessLock = new object();
+        private static readonly Random random = new Random();
 
         public static void CreateDirectory(string path, bool overwrite) {
             if (!overwrite && Directory.Exists(path))
@@ -283,14 +284,13 @@ namespace PBRHex.Utils
         }
 
         public static int GenerateFileID(FileBuffer fsys, FileBuffer file) {
-            var rand = new Random();
             int count = fsys.ReadInt(0xc),
                 lzssListAddr = fsys.ReadInt(fsys.ReadInt(0x18)),
-                id = rand.Next(1, 0xffff);
+                id = random.Next(1, 0xffff);
             for (int i = 0; i < count; i++) {
                 int offset = fsys.ReadInt(lzssListAddr + i * 4);
                 if (id == fsys.ReadShort(offset)) {
-                    id = rand.Next(1, 0xffff);
+                    id = random.Next(1, 0xffff);
                     i = -1;
                 }
             }
@@ -328,7 +328,7 @@ namespace PBRHex.Utils
                 string withExt = $"{paths[i]}{ExtensionFromType((FileType)ftype)}";
                 File.Move(paths[i], withExt);
                 paths[i] = withExt;
-                files[i] = new FileBuffer(paths[i], outdir) { ID = id };
+                files[i] = new FileBuffer(paths[i], Path.GetFileName(path)) { ID = id };
             }
             file.Close();
             return files;
