@@ -179,6 +179,10 @@ namespace PBRHex
         }
 
         private void LoadButton_Click(object sender, EventArgs e) {
+            if (CurrentSection == 0 || CurrentSection == 1) {
+                new AlertDialog("The current section is part of the game's core assembly and cannot be overwritten.").ShowDialog();
+                return;
+            }
             var dialog = new ConfirmDialog("This will overwrite all data in the current section.\n" +
                 "Are you sure you wish to continue?");
             if (dialog.ShowDialog() != DialogResult.Yes)
