@@ -24,7 +24,7 @@ namespace PBRHex.Files
         public FileBuffer AddFile(string inpath) {
             string outpath = $@"{WorkingDir}\files\(null)_{Files.Count:x8}{System.IO.Path.GetExtension(inpath)}";
             FileUtils.CopyFile(inpath, outpath);
-            var newFile = new FileBuffer(outpath, $@"{WorkingDir}\files");
+            var newFile = new FileBuffer(outpath, Name);
             newFile.ID = FileUtils.GenerateFileID(this, newFile);
             Files.Add(newFile);
             return newFile;
@@ -36,7 +36,7 @@ namespace PBRHex.Files
         public FileBuffer AddFile(FileBuffer file) {
             string path = $@"{WorkingDir}\files\(null)_{Files.Count:x8}";
             FileUtils.CreateFile(path, file.GetBytes());
-            var newFile = new FileBuffer(path, $@"{WorkingDir}\files");
+            var newFile = new FileBuffer(path, Name);
             if (file.ID != 0)
                 newFile.ID = file.ID;
             else
@@ -54,7 +54,7 @@ namespace PBRHex.Files
                     string ext = System.IO.Path.GetExtension(path),
                         newPath = $@"{oldFile.WorkingDir}\{oldFile.NameNoExt}{ext}";
                     FileUtils.CopyFile(path, newPath);
-                    var newFile = new FileBuffer(newPath, oldFile.WorkingDir)
+                    var newFile = new FileBuffer(newPath, Name)
                     {
                         ID = (int)(id & 0xffff0000) + ((int)FileUtils.TypeFromExtension(ext) << 9)
                     };

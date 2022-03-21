@@ -245,7 +245,7 @@
     <Compile Include="HexEditor\Controls\LabelsListBox.Designer.cs">
       <DependentUpon>LabelsListBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="HexEditor\LabelDict.cs" />
+    <Compile Include="HexEditor\HexLabelDict.cs" />
     <Compile Include="StringEditor.cs">
       <SubType>Form</SubType>
     </Compile>
