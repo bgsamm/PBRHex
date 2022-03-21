@@ -11,9 +11,9 @@ namespace PBRHex.HexLabels
 {
     public class ReadOnlyLabelDict : IEnumerable<HexLabel>
     {
-        private readonly LabelDict Dict;
+        private readonly HexLabelDict Dict;
 
-        public ReadOnlyLabelDict(LabelDict dict) {
+        public ReadOnlyLabelDict(HexLabelDict dict) {
             Dict = dict;
         }
 
@@ -34,7 +34,7 @@ namespace PBRHex.HexLabels
         }
     }
 
-    public class LabelDict : SortedDictionary<int, HexLabel>
+    public class HexLabelDict : SortedDictionary<int, HexLabel>
     {
         //public ReadOnlyCollection<HexLabel> List => new ReadOnlyCollection<HexLabel>(Values.ToList());
 

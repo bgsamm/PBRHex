@@ -22,7 +22,7 @@ namespace PBRHex.Files
         public int SaveHead;
 
         protected byte[] Buffer { get; set; }
-        protected LabelDict LabelDict { get; set; }
+        protected HexLabelDict LabelDict { get; set; }
         public string Notes { get; set; }
 
         //public readonly FileType Type;
@@ -85,12 +85,12 @@ namespace PBRHex.Files
             EditHistory.Insert(null); // null used to represent starting state
             SaveHead = 0;
 
-            LabelDict = new LabelDict();
+            LabelDict = new HexLabelDict();
             Notes = "";
             if (Metadata.ContainsKey(Key)) {
                 var data = Metadata[Key];
                 if (data.ContainsKey("Labels"))
-                    LabelDict = ((JObject)data["Labels"]).ToObject<LabelDict>();
+                    LabelDict = (HexLabelDict)data["Labels"];
                 if (data.ContainsKey("Notes"))
                     Notes = (string)data["Notes"];
             }
@@ -141,7 +141,7 @@ namespace PBRHex.Files
             buffer.InsertRange(offset, bytes);
             Buffer = buffer.ToArray();
 
-            var temp = new LabelDict();
+            var temp = new HexLabelDict();
             foreach (var label in LabelDict.Values) {
                 if (label.Address >= offset)
                     label.Address += bytes.Length;
@@ -169,7 +169,7 @@ namespace PBRHex.Files
             buffer.RemoveRange(offset, size);
             Buffer = buffer.ToArray();
 
-            var temp = new LabelDict();
+            var temp = new HexLabelDict();
             foreach (var label in LabelDict.Values) {
                 if (label.Address < offset || label.Address >= offset + size) {
                     if (label.Address >= offset + size)
@@ -303,6 +303,10 @@ namespace PBRHex.Files
             string raw = File.ReadAllText($@"{Program.UserDir}\data.json");
             Metadata = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, object>>>(raw) 
                 ?? new Dictionary<string, Dictionary<string, object>>();
+            foreach (string key in Metadata.Keys) {
+                if (Metadata[key].ContainsKey("Labels"))
+                    Metadata[key]["Labels"] = ((JObject)Metadata[key]["Labels"]).ToObject<HexLabelDict>();
+            }
         }
 
         public override string ToString() {
