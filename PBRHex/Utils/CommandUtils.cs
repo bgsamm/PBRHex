@@ -32,6 +32,7 @@ namespace PBRHex.Utils
         }
 
         public static void CompressLZSSFiles(string indir, string outdir) {
+            FileUtils.CreateDirectory(outdir, true);
             RunProcess($@"{quickbmsDir}\quickbms.exe",
                 "-K \"pokemon lzss recompress script.txt\" " +
                 $"\"{indir}\\{{}}\" \"{outdir}\"");
