@@ -256,7 +256,6 @@ namespace PBRHex.Tables
                 var temp = FileUtils.CompressFSYS(fsys);
                 fsys.Overwrite(temp.GetBytes());
                 FileUtils.WriteToISO(fsys);
-                LoadedFiles.Remove(id);
                 Program.NotifyDone();
             }
         }
