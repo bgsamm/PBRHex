@@ -111,13 +111,15 @@ namespace PBRHex
         }
 
         public static void PatchDex() {
-            uint legalityCheck;
+            uint legalityCheck, calcSpecStrID;
             switch (Program.ISORegion) {
                 case GameRegion.NTSCU:
                     legalityCheck = 0x80154a14;
+                    calcSpecStrID = 0x803e3478;
                     break;
                 case GameRegion.PAL:
                     legalityCheck = 0x8014fea8;
+                    calcSpecStrID = 0x803dfe48;
                     break;
                 default:
                     throw new NotImplementedException();
@@ -130,6 +132,13 @@ namespace PBRHex
                 FSYSTable.RenameFile("pkx_600", "pkx_egg");
             if (FSYSTable.ContainsFile("pkx_601"))
                 FSYSTable.RenameFile("pkx_601", "pkx_sub");
+            // fix rental pass mon naming
+            string[] asm = {
+                LOAD_COMMON_08_PTR[0],
+                LOAD_COMMON_08_PTR[1],
+                $"bl 0x{GET_SPECIES_STR_ID:x08}"
+            };
+            InsertAssembly(asm, calcSpecStrID);
             ReassignEggIDs();
             PatchCommon08();
             PatchCommon0D();
@@ -471,8 +480,8 @@ namespace PBRHex
                 $"bl 0x{GET_MON_ATTRS_IDX:x08}", // add call to GET_MON_ATTRS_IDX
                 "cmpwi r31, 0x0",
                 "mr r4, r3",
-                COMMON_08_PTR[0],
-                COMMON_08_PTR[1],
+                LOAD_COMMON_08_PTR[0],
+                LOAD_COMMON_08_PTR[1],
                 $"bne 0x{NextFreeAddr + 0x3c:x08}",
                 $"bl 0x{GET_PRIMARY_TYPE:x08}",
                 $"b 0x{NextFreeAddr + 0x40:x08}",
@@ -487,8 +496,8 @@ namespace PBRHex
             string[] asm = {
                 "mr r8, r3",
                 "mr r6, r4",
-                COMMON_08_PTR[0],
-                COMMON_08_PTR[1],
+                LOAD_COMMON_08_PTR[0],
+                LOAD_COMMON_08_PTR[1],
                 "lwz r4, 0x0(r3)",
                 "li r3, 0x0",
                 "cmpwi r4, 0x0",
@@ -536,8 +545,8 @@ namespace PBRHex
             foreach (uint call in calls) {
                 // pass common:08 pointer instead of common:15/common:16
                 DOL.WriteInstruction(call, "nop");
-                DOL.WriteInstruction(call + 0x8, COMMON_08_PTR[0]);
-                DOL.WriteInstruction(call + 0xc, COMMON_08_PTR[1]);
+                DOL.WriteInstruction(call + 0x8, LOAD_COMMON_08_PTR[0]);
+                DOL.WriteInstruction(call + 0xc, LOAD_COMMON_08_PTR[1]);
                 // call GET_COLOR_GROUP, since the color group has been replaced by the form count
                 DOL.WriteInstruction(call + 0x10, $"bl 0x{GET_COLOR_GROUP:x08}");
             }
@@ -993,7 +1002,7 @@ namespace PBRHex
         }
 
         // GLOBALS
-        private static string[] COMMON_08_PTR {
+        private static string[] LOAD_COMMON_08_PTR {
             get {
                 switch (Program.ISORegion) {
                     case GameRegion.NTSCU:
@@ -1046,6 +1055,19 @@ namespace PBRHex
                         return 0x803e0f0c;
                     case GameRegion.PAL:
                         return 0x803dd8dc;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+        }
+
+        private static uint GET_SPECIES_STR_ID {
+            get {
+                switch (Program.ISORegion) {
+                    case GameRegion.NTSCU:
+                        return 0x80396b0c;
+                    case GameRegion.PAL:
+                        return 0x80391f94;
                     default:
                         throw new NotImplementedException();
                 }
