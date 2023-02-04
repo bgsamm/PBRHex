@@ -1,0 +1,63 @@
+[
+  {
+    "name": "commands",
+    "description": "Displays a list of available commands.",
+    "arguments": [],
+    "options": []
+  },
+  
+  {
+    "name": "exit",
+    "description": "Exits the program.",
+    "arguments": [],
+    "options": [],
+    "alias": "quit"
+  },
+  
+  {
+    "name": "help",
+    "description": "Displays command help information.",
+    "arguments": [
+      {
+        "name": "command",
+        "description": "The command to display help information for"
+      }
+    ],
+    "options": []
+  },
+  
+  {
+    "name": "init-project",
+    "description": "Creates a new project.",
+    "arguments": [
+      {
+        "name": "name",
+        "description": "The name of the project"
+      },
+      {
+        "name": "path",
+        "description": "The directory in which to create the project",
+        "default": "."
+      }
+    ],
+    "options": []
+  },
+
+  {
+    "name": "list-projects",
+    "description": "Lists known projects.",
+    "arguments": [],
+    "options": {
+      "sort": {
+        "description": "Sets the sort order for the output",
+        "values": {
+          "Name": "The project's name",
+          "Creation Date": "The date and time the project was created",
+          "Last Modified": "The date and time the project was last modified",
+          "Region": "The region associated with the project's ISO",
+          "Location": "The path to the project's directory"
+        }
+      }
+    }
+  }
+]

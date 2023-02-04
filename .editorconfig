@@ -1,0 +1,13 @@
+﻿[*.cs]
+
+# IDE0210: Convert to top-level statements
+csharp_style_prefer_top_level_statements = false
+
+# IDE0058: Expression value is never used
+dotnet_diagnostic.IDE0058.severity = none
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = silent
+
+# CS8618: Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+dotnet_diagnostic.CS8618.severity = error

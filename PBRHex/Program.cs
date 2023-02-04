@@ -30,7 +30,7 @@ namespace PBRHex
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main() {
+        public static void Main() {
             var currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException +=
                 new UnhandledExceptionEventHandler(OnUnhandledException);
@@ -43,7 +43,7 @@ namespace PBRHex
             Application.Run(new MainWindow());
         }
 
-        static void Application_ApplicationExit(object sender, EventArgs args) {
+        private static void Application_ApplicationExit(object sender, EventArgs args) {
             FileUtils.DeleteDirectory(TempDir);
         }
 
@@ -63,15 +63,18 @@ namespace PBRHex
         }
 
         public static void NotifyDone() {
-            if(WaitingCount > 0)
+            if (WaitingCount > 0) {
                 WaitingCount--;
-            if(WaitingCount == 0)
+            }
+
+            if (WaitingCount == 0) {
                 Cursor.Current = Cursors.Default;
+            }
         }
 
         public static void Log(string msg) {
-            lock(LoggerLock) {
-                using(var w = File.AppendText($@"{DataDir}\log.txt")) {
+            lock (LoggerLock) {
+                using (var w = File.AppendText($@"{DataDir}\log.txt")) {
                     w.WriteLine(msg);
                 }
             }

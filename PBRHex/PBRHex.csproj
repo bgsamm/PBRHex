@@ -53,10 +53,10 @@
     <ApplicationIcon>Dubious_Disc_Sprite.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>AEB6B2869886CDB034184AF96B5FC3CD45C9C199</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>8EDB9E12A3BF49680D00770A9DDAC9F00CC7D892</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>PBRHex_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>PBRHex_3_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -329,7 +329,11 @@
       <DependentUpon>StringEditor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="packages.config" />
+    <None Include="PBRHex_3_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -367,6 +371,5 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
