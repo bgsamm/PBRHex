@@ -61,6 +61,24 @@ namespace PBRHex.CLI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to For a list of available commands, run `commands`..
+        /// </summary>
+        internal static string CommandsCommandHint {
+            get {
+                return ResourceManager.GetString("CommandsCommandHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to For more information about a command, run `help &lt;command&gt;`..
+        /// </summary>
+        internal static string HelpCommandHint {
+            get {
+                return ResourceManager.GetString("HelpCommandHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No command exists named &apos;{0}&apos;..
         /// </summary>
         internal static string UnknownCommandException {

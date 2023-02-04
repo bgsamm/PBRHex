@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PBRHex.CLI.Properties;
 using PBRHex.Core;
 
 namespace PBRHex.CLI
@@ -21,8 +22,8 @@ namespace PBRHex.CLI
                 " │            by pjsamm            │\n" +
                 " └─────────────────────────────────┘");
 
-            Console.WriteLine("For a list of available commands, run `commands`.");
-            Console.WriteLine("For more information about a command, run `help <command>`.");
+            Console.WriteLine(Resources.CommandsCommandHint);
+            Console.WriteLine(Resources.HelpCommandHint);
 
             while (true) {
                 Console.WriteLine();
