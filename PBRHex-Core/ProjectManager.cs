@@ -8,33 +8,120 @@ using System.Threading.Tasks;
 
 namespace PBRHex.Core
 {
-    public class ProjectManager
+    public static class ProjectManager
     {
+        public static Project[] Projects => projectList.GetList();
+
+        private static readonly ProjectList projectList;
+
+        private static string ProjectListPath => Path.Combine(Application.DataPath, "projects");
+
+        static ProjectManager() {
+            projectList = new ProjectList(ProjectListPath);
+        }
+
         /// <summary>
-        /// Initializes a new project in the given directory. If the directory does not exist,
-        /// it will be created. If it does exist, it must be empty.
+        /// <para>
+        ///     Initializes a new project in the given directory. If the directory
+        ///     does not exist, it is created. If it exists, it must be empty.
+        /// </para>
+        /// <para>
+        ///     Pre-condition(s):
+        ///     <br>-path is fully qualified</br>
+        /// </para>
+        /// <para>
+        ///     Post-condition(s):
+        ///     <br>-path contains the newly created project</br>
+        ///     <br>-project is added to the project list</br>
+        /// </para>
         /// </summary>
-        /// <param name="name">The new project's name</param>
         /// <param name="path">The directory in which to place the project</param>
-        public static void CreateProject(string name, string path) {
-            if (!Directory.Exists(path)) {
+        /// <param name="name">The new project's name</param>
+        /// <exception cref="IOException"></exception>
+        public static void InitializeProject(string path, string name) {
+            Trace.Assert(Path.IsPathFullyQualified(path));
+
+            if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            }
 
-            Debug.Assert(Directory.GetFiles(path).Length == 0);
+            if (Directory.GetFiles(path).Length > 0)
+                throw new IOException("Directory was not empty when initializing project");
 
-            Project project = new(name);
-            string json = JsonSerializer.Serialize(project);
+            ProjectInfo projectInfo = new()
+            {
+                Name = name,
+                Path = path,
+            };
 
-            Console.WriteLine(json);
+            string projectFilePath = Path.Combine(path, Project.ProjectFilePath);
+
+            string json = JsonSerializer.Serialize(projectInfo);
+            File.WriteAllText(projectFilePath, json);
+
+            projectList.Add(path);
         }
 
-        public static void DeleteProject(string name) {
+        /// <summary>
+        /// <para>
+        ///     Creates a Project object for the project at the given path.
+        /// </para>
+        /// <para>
+        ///     Pre-condition(s):
+        ///     <br>-path is fully qualified</br>
+        /// </para>
+        /// </summary>
+        /// <param name="path">The path to the project's directory</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidProjectException"></exception>
+        public static Project GetProject(string path) {
+            Trace.Assert(Path.IsPathFullyQualified(path));
 
+            Project project = new(path);
+
+            return project;
         }
 
-        public static void RenameProject(string name, string newName) {
+        /// <summary>
+        /// <para>
+        ///     Removes a project from the application's project list.
+        /// </para>
+        /// <para>
+        ///     Pre-condition(s):
+        ///     <br>-path is fully qualified</br>
+        /// </para>
+        /// <para>
+        ///     Post-condition(s):
+        ///     <br>-project is removed from the project list</br>
+        /// </para>
+        /// </summary>
+        /// <param name="path">The path of the project to remove</param>
+        public static void RemoveProject(string path) {
+            Trace.Assert(Path.IsPathFullyQualified(path));
 
+            projectList.Remove(path);
+        }
+
+        /// <summary>
+        /// <para>
+        ///     Adds a project from disk to the project list.
+        /// </para>
+        /// <para>
+        ///     Pre-condition(s):
+        ///     <br>-path is fully qualified</br>
+        /// </para>
+        /// <para>
+        ///     Pos-condition(s):
+        ///     <br>-project is added to the project list</br>
+        /// </para>
+        /// </summary>
+        /// <param name="path">The path to the project to be added</param>
+        /// <exception cref="InvalidProjectException"></exception>
+        public static void AddProjectFromDisk(string path) {
+            Trace.Assert(Path.IsPathFullyQualified(path));
+
+            projectList.Add(path);
         }
     }
+
+    public class InvalidProjectException : Exception { }
 }

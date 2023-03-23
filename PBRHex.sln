@@ -9,12 +9,14 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PBRHex Setup", "PBRHex Setu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBRHex-Core", "PBRHex-Core\PBRHex-Core.csproj", "{51CDCBC4-EC4D-47A5-8A54-A37CB7499871}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PBRHex-CLI", "PBRHex-CLI\PBRHex-CLI.csproj", "{6398FD92-FCE1-4000-AA38-DAE02089F5E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBRHex-CLI", "PBRHex-CLI\PBRHex-CLI.csproj", "{6398FD92-FCE1-4000-AA38-DAE02089F5E0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2AB37FC2-0AA6-4168-AB30-F577C039DC0E}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBRHex-Tests", "PBRHex-Tests\PBRHex-Tests.csproj", "{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,18 @@ Global
 		{6398FD92-FCE1-4000-AA38-DAE02089F5E0}.Release|x64.Build.0 = Release|Any CPU
 		{6398FD92-FCE1-4000-AA38-DAE02089F5E0}.Release|x86.ActiveCfg = Release|Any CPU
 		{6398FD92-FCE1-4000-AA38-DAE02089F5E0}.Release|x86.Build.0 = Release|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Debug|x64.Build.0 = Debug|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Debug|x86.Build.0 = Debug|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Release|x64.ActiveCfg = Release|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Release|x64.Build.0 = Release|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Release|x86.ActiveCfg = Release|Any CPU
+		{30AD4D8A-6A5A-4B78-AA33-8F196B8E8E21}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
