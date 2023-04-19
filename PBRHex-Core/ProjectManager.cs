@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using PBRHex.Core.IO;
 
 namespace PBRHex.Core
 {
@@ -17,7 +18,8 @@ namespace PBRHex.Core
         private static string ProjectListPath => Path.Combine(Application.DataPath, "projects");
 
         static ProjectManager() {
-            projectList = new ProjectList(ProjectListPath);
+            FileInfo projectListFile = new(ProjectListPath);
+            projectList = new ProjectList(projectListFile);
         }
 
         /// <summary>
@@ -26,57 +28,66 @@ namespace PBRHex.Core
         ///     does not exist, it is created. If it exists, it must be empty.
         /// </para>
         /// <para>
-        ///     Pre-condition(s):
-        ///     <br>-path is fully qualified</br>
-        /// </para>
-        /// <para>
         ///     Post-condition(s):
-        ///     <br>-path contains the newly created project</br>
+        ///     <br>-directory contains the newly created project</br>
         ///     <br>-project is added to the project list</br>
         /// </para>
         /// </summary>
-        /// <param name="path">The directory in which to place the project</param>
         /// <param name="name">The new project's name</param>
+        /// <param name="path">The directory in which to place the project</param>
         /// <exception cref="IOException"></exception>
-        public static void InitializeProject(string path, string name) {
-            Trace.Assert(Path.IsPathFullyQualified(path));
+        public static void InitializeProject(string name, DirectoryInfo directory) {
+            string path = directory.GetPath();
 
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            if (directory.Exists && directory.GetFiles().Length > 0)
+                throw new IOException($"Cannot initialize project in '{path}' - directory is not empty");
 
-            if (Directory.GetFiles(path).Length > 0)
-                throw new IOException("Directory was not empty when initializing project");
+            if (!directory.Exists)
+                directory.Create();
 
             ProjectInfo projectInfo = new()
             {
+                ID = Guid.NewGuid(),
                 Name = name,
-                Path = path,
+                Path = path
             };
 
-            string projectFilePath = Path.Combine(path, Project.ProjectFilePath);
-
+            string projectFilePath = Project.GetProjectFilePath(directory);
             string json = JsonSerializer.Serialize(projectInfo);
             File.WriteAllText(projectFilePath, json);
 
-            projectList.Add(path);
+            Project project = new(directory);
+            projectList.Add(project);
         }
 
         /// <summary>
         /// <para>
         ///     Creates a Project object for the project at the given path.
         /// </para>
-        /// <para>
-        ///     Pre-condition(s):
-        ///     <br>-path is fully qualified</br>
-        /// </para>
         /// </summary>
         /// <param name="path">The path to the project's directory</param>
         /// <returns></returns>
         /// <exception cref="InvalidProjectException"></exception>
-        public static Project GetProject(string path) {
-            Trace.Assert(Path.IsPathFullyQualified(path));
+        public static Project GetProject(DirectoryInfo directory) {
+            Project project = new(directory);
 
-            Project project = new(path);
+            return project;
+        }
+
+        /// <summary>
+        /// <para>
+        ///     Adds a project from disk to the project list.
+        /// </para>
+        /// <para>
+        ///     Post-condition(s):
+        ///     <br>-project is added to the project list</br>
+        /// </para>
+        /// </summary>
+        /// <param name="path">The path to the project to be added</param>
+        /// <exception cref="InvalidProjectException"></exception>
+        public static Project AddProjectFromDisk(DirectoryInfo directory) {
+            Project project = new(directory);
+            projectList.Add(project);
 
             return project;
         }
@@ -86,40 +97,15 @@ namespace PBRHex.Core
         ///     Removes a project from the application's project list.
         /// </para>
         /// <para>
-        ///     Pre-condition(s):
-        ///     <br>-path is fully qualified</br>
-        /// </para>
-        /// <para>
         ///     Post-condition(s):
         ///     <br>-project is removed from the project list</br>
         /// </para>
         /// </summary>
         /// <param name="path">The path of the project to remove</param>
-        public static void RemoveProject(string path) {
-            Trace.Assert(Path.IsPathFullyQualified(path));
-
-            projectList.Remove(path);
-        }
-
-        /// <summary>
-        /// <para>
-        ///     Adds a project from disk to the project list.
-        /// </para>
-        /// <para>
-        ///     Pre-condition(s):
-        ///     <br>-path is fully qualified</br>
-        /// </para>
-        /// <para>
-        ///     Pos-condition(s):
-        ///     <br>-project is added to the project list</br>
-        /// </para>
-        /// </summary>
-        /// <param name="path">The path to the project to be added</param>
         /// <exception cref="InvalidProjectException"></exception>
-        public static void AddProjectFromDisk(string path) {
-            Trace.Assert(Path.IsPathFullyQualified(path));
-
-            projectList.Add(path);
+        public static void RemoveProject(DirectoryInfo directory) {
+            Project project = new(directory);
+            projectList.Remove(project);
         }
     }
 

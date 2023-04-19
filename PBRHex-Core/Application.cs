@@ -37,7 +37,7 @@ namespace PBRHex.Core
 
         private static string GetDataPath() {
             string localDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            return Path.Combine(localDataPath, Name);
+            return System.IO.Path.Combine(localDataPath, Name);
         }
 
         private static void InitializeDataFolder() {

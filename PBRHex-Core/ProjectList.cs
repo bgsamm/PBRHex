@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PBRHex.Core.IO;
 
 namespace PBRHex.Core
 {
@@ -13,17 +14,17 @@ namespace PBRHex.Core
     {
         private List<Project> Projects = new();
 
-        private readonly string filePath;
-
         private readonly object accessLock = new();
 
-        internal ProjectList(string filePath) {
-            Trace.Assert(Path.IsPathFullyQualified(filePath));
+        private readonly FileInfo fileInfo;
 
-            this.filePath = filePath;
+        private string Path => fileInfo.GetPath();
 
-            if (!File.Exists(filePath)) {
-                File.Create(filePath).Close();
+        internal ProjectList(FileInfo file) {
+            fileInfo = file;
+
+            if (!fileInfo.Exists) {
+                fileInfo.Create().Close();
             }
 
             LoadList();
@@ -31,12 +32,14 @@ namespace PBRHex.Core
 
         private void LoadList() {
             lock (accessLock) {
-                string[] paths = File.ReadAllLines(filePath);
+                string[] paths = File.ReadAllLines(Path);
 
                 Projects = new();
                 foreach (string path in paths) {
+                    DirectoryInfo directory = new(path);
+
                     try {
-                        Project project = new(path);
+                        Project project = new(directory);
                         Projects.Add(project);
                     }
                     catch (InvalidProjectException) {
@@ -48,7 +51,7 @@ namespace PBRHex.Core
 
         private void WriteList() {
             lock (accessLock) {
-                using StreamWriter file = new(filePath);
+                using StreamWriter file = new(Path);
 
                 foreach (Project project in Projects) {
                     file.WriteLine(project.Path);
@@ -56,30 +59,23 @@ namespace PBRHex.Core
             }
         }
 
-        public void Add(string path) {
-            Trace.Assert(Path.IsPathFullyQualified(path));
-
+        public void Add(Project project) {
             // Keep from adding the same project twice
-            if (Projects.Any(p => p.Path == path)) {
+            if (Projects.Any(p => p.ID == project.ID))
                 return;
-            }
-
-            Project project = new(path);
 
             Projects.Add(project);
 
             WriteList();
         }
 
-        public void Remove(string path) {
-            Trace.Assert(Path.IsPathFullyQualified(path));
+        public void Remove(Project project) {
+            Project? match = Projects.Find(p => p.ID == project.ID);
 
-            Project? project = Projects.Find(p => p.Path == path);
-
-            if (project is null)
+            if (match is null)
                 return;
 
-            Projects.Remove(project);
+            Projects.Remove(match);
 
             WriteList();
         }

@@ -51,6 +51,12 @@ class CommandCodeGenerator:
         assert isinstance(commands, list)
         assert all(isinstance(e, dict) for e in commands)
 
+        for command in commands:
+            if 'arguments' not in command:
+                command['arguments'] = []
+            if 'options' not in command:
+                command['options'] = []
+
         self.commands = commands
 
     def _format_lines(self, lines: list[str], indent: int) -> str:
@@ -75,6 +81,8 @@ namespace {self.namespace}
     {{
         private readonly Dictionary<string, Command> Commands = new();
 
+        {self._gen_option_value_enums(indent=2)}
+
         private void InitCommands() {{
             {self._gen_add_commands(indent=3)}
         }}
@@ -87,12 +95,41 @@ namespace {self.namespace}
 """
         return source
 
+    def _gen_option_value_enums(self, indent: int = 0) -> str:
+        lines: list[str] = []
+
+        for command in self.commands:
+            for option in command['options']:
+                if 'values' not in option:
+                    continue
+                enum = self._gen_option_value_enum(command, option, indent)
+                lines.append(enum)
+
+        return self._format_lines(lines, indent)
+
+    def _gen_option_value_enum(self,
+                               command: JsonObj,
+                               option: JsonObj,
+                               indent: int = 0) -> str:
+        tab = self.tab * indent
+
+        enum_name = self._get_option_enum_name(command['name'], option['name'])
+
+        values = [f"{self.tab}{value}," for value in option['values']]
+
+        lines = f"""
+{tab}private enum {enum_name} {{
+{tab}{self.tab}{self._format_lines(values, indent + 1)}
+{tab}}}
+"""
+        return lines
+
     def _gen_add_commands(self, indent: int = 0) -> str:
         lines: list[str] = []
 
         for command in self.commands:
             name_str = f"\"{command['name']}\""
-            method_name = self._get_create_command_method_name(command)
+            method_name = self._get_create_command_method_name(command['name'])
             lines.append(f"Commands.Add({name_str}, {method_name}());")
 
         return self._format_lines(lines, indent)
@@ -101,7 +138,7 @@ namespace {self.namespace}
         lines: list[str] = []
 
         for command in self.commands:
-            method_source = self._gen_add_command_method(command, indent=2)
+            method_source = self._gen_add_command_method(command, indent)
             lines.append(method_source)
             lines.append('')
 
@@ -110,9 +147,10 @@ namespace {self.namespace}
     def _gen_add_command_method(self,
                                 command: JsonObj,
                                 indent: int = 0) -> str:
-        method_name = self._get_create_command_method_name(command)
-        body = self._gen_add_command_method_body(command)
         tab = self.tab * indent
+
+        method_name = self._get_create_command_method_name(command['name'])
+        body = self._gen_add_command_method_body(command)
 
         lines = f"""
 {tab}private Command {method_name}() {{
@@ -136,11 +174,18 @@ namespace {self.namespace}
             body += arg_statements
             body.append('')
 
-        method_name = self._get_handle_method_name(command)
-        for arg in arg_names:
-            body.append(f"command.Add({arg});")
-        args = ''.join(', ' + arg for arg in arg_names)
-        body.append(f"command.SetHandler({method_name}{args});")
+        opt_names, opt_statements = self._gen_command_options(command)
+        if len(opt_statements) > 0:
+            body += opt_statements
+            body.append('')
+
+        param_names = arg_names + opt_names
+
+        method_name = self._get_handle_method_name(command['name'])
+        for param in param_names:
+            body.append(f"command.Add({param});")
+        params = ''.join(', ' + param for param in param_names)
+        body.append(f"command.SetHandler({method_name}{params});")
 
         body.append('')
         body.append('return command;')
@@ -148,17 +193,20 @@ namespace {self.namespace}
         return body
 
     def _gen_command_arguments(self, command: JsonObj) -> tuple[list[str], list[str]]:
+        assert 'arguments' in command
+
         arg_statements: list[str] = []
 
         arg_names: list[str] = []
         for argument in command['arguments']:
-            name = self._get_argument_name(argument)
+            name = self._get_argument_name(argument['name'])
             arg_names.append(name)
 
             name_str = f"\"{argument['name']}\""
             desc_str = f"\"{argument['description']}\""
+            type_ = self._get_parameter_type(command, argument)
             arg_statements.append(
-                f"Argument<string> {name} = new({name_str}, {desc_str});")
+                f"Argument<{type_}> {name} = new({name_str}, {desc_str});")
 
             if 'default' in argument:
                 arg_statements.append(
@@ -166,37 +214,73 @@ namespace {self.namespace}
 
         return arg_names, arg_statements
 
+    def _gen_command_options(self, command: JsonObj) -> tuple[list[str], list[str]]:
+        assert 'options' in command
+
+        opt_statements: list[str] = []
+
+        opt_names: list[str] = []
+        for option in command['options']:
+            name = self._get_option_name(option['name'])
+            opt_names.append(name)
+
+            name_str = f"\"--{option['name']}\""
+            desc_str = f"\"{option['description']}\""
+            type_ = self._get_parameter_type(command, option)
+            opt_statements.append(
+                f"Option<{type_}> {name} = new({name_str}, {desc_str});")
+
+        return opt_names, opt_statements
+
     def _gen_partial_methods(self, indent: int = 0) -> str:
         lines: list[str] = []
 
         for command in self.commands:
-            method_name = self._get_handle_method_name(command)
+            method_name = self._get_handle_method_name(command['name'])
             params = ', '.join(self._gen_method_param_list(command))
             lines.append(f"private partial void {method_name}({params});")
 
         return self._format_lines(lines, indent)
 
     def _gen_method_param_list(self, command: JsonObj) -> list[str]:
-        args: list[str] = []
+        param_list: list[str] = []
 
-        for arg in command['arguments']:
-            name = arg['name']
-            type_ = arg['type'] if 'type' in arg else 'string'
-            args.append(f"{type_} {name}")
+        params = command['arguments'] + command['options']
+        for param in params:
+            name = kebab_to_camel_case(param['name'])
+            type_ = self._get_parameter_type(command, param)
+            param_list.append(f"{type_} {name}")
 
-        return args
+        return param_list
 
-    def _get_create_command_method_name(self, command: JsonObj) -> str:
-        name = kebab_to_pascal_case(command['name'])
+    def _get_parameter_type(self, command: JsonObj, param: JsonObj) -> str:
+        if 'values' in param:
+            return self._get_option_enum_name(command['name'],
+                                              param['name'])
+        if 'type' in param:
+            return param['type']
+        return 'string'
+
+    def _get_create_command_method_name(self, command: str) -> str:
+        name = kebab_to_pascal_case(command)
         return 'Create' + name + 'Command'
 
-    def _get_handle_method_name(self, command: JsonObj) -> str:
-        name = kebab_to_pascal_case(command['name'])
+    def _get_handle_method_name(self, command: str) -> str:
+        name = kebab_to_pascal_case(command)
         return name + 'Handle'
 
-    def _get_argument_name(self, argument: JsonObj) -> str:
-        name = kebab_to_camel_case(argument['name'])
+    def _get_argument_name(self, argument: str) -> str:
+        name = kebab_to_camel_case(argument)
         return name + 'Argument'
+
+    def _get_option_name(self, option: str) -> str:
+        name = kebab_to_camel_case(option)
+        return name + 'Option'
+
+    def _get_option_enum_name(self, command: str, option: str) -> str:
+        command = kebab_to_pascal_case(command)
+        option = kebab_to_pascal_case(option)
+        return command + option + 'Value'
 
 
 def parse_args() -> Namespace:

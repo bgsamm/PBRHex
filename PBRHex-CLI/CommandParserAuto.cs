@@ -7,12 +7,36 @@ namespace PBRHex.CLI
     {
         private readonly Dictionary<string, Command> Commands = new();
 
+        private enum ListProjectsSortOrderValue {
+            Name,
+            CreationDate,
+            LastModified,
+            Region,
+            Path,
+        }
+
         private void InitCommands() {
+            Commands.Add("add-project", CreateAddProjectCommand());
             Commands.Add("commands", CreateCommandsCommand());
             Commands.Add("exit", CreateExitCommand());
+            Commands.Add("get-cwd", CreateGetCwdCommand());
             Commands.Add("help", CreateHelpCommand());
             Commands.Add("init-project", CreateInitProjectCommand());
+            Commands.Add("list-dir", CreateListDirCommand());
             Commands.Add("list-projects", CreateListProjectsCommand());
+            Commands.Add("remove-project", CreateRemoveProjectCommand());
+            Commands.Add("set-cwd", CreateSetCwdCommand());
+        }
+
+        private Command CreateAddProjectCommand() {
+            Command command = new("add-project", "Adds an existing project to the known projects list.");
+
+            Argument<string> pathArgument = new("path", "The directory of the project to add");
+
+            command.Add(pathArgument);
+            command.SetHandler(AddProjectHandle, pathArgument);
+
+            return command;
         }
 
         private Command CreateCommandsCommand() {
@@ -28,6 +52,14 @@ namespace PBRHex.CLI
             command.AddAlias("quit");
 
             command.SetHandler(ExitHandle);
+
+            return command;
+        }
+
+        private Command CreateGetCwdCommand() {
+            Command command = new("get-cwd", "Prints the path of the current working directory.");
+
+            command.SetHandler(GetCwdHandle);
 
             return command;
         }
@@ -57,18 +89,63 @@ namespace PBRHex.CLI
             return command;
         }
 
-        private Command CreateListProjectsCommand() {
-            Command command = new("list-projects", "Lists known projects.");
+        private Command CreateListDirCommand() {
+            Command command = new("list-dir", "Lists the files and subdirectories contained in the given directory.");
 
-            command.SetHandler(ListProjectsHandle);
+            Argument<string> pathArgument = new("path", "The directory whose contents to list");
+            pathArgument.SetDefaultValue(".");
+
+            command.Add(pathArgument);
+            command.SetHandler(ListDirHandle, pathArgument);
 
             return command;
         }
 
+        private Command CreateListProjectsCommand() {
+            Command command = new("list-projects", "Lists known projects.");
+
+            Option<ListProjectsSortOrderValue> sortOrderOption = new("--sort-order", "Sets the sort order for the output");
+
+            command.Add(sortOrderOption);
+            command.SetHandler(ListProjectsHandle, sortOrderOption);
+
+            return command;
+        }
+
+        private Command CreateRemoveProjectCommand() {
+            Command command = new("remove-project", "Removes the given project from the known projects list.");
+
+            Argument<string> pathArgument = new("path", "The project directory to remove");
+
+            Option<bool> deleteFilesOption = new("--delete-files", "Deletes the project's files from disk");
+
+            command.Add(pathArgument);
+            command.Add(deleteFilesOption);
+            command.SetHandler(RemoveProjectHandle, pathArgument, deleteFilesOption);
+
+            return command;
+        }
+
+        private Command CreateSetCwdCommand() {
+            Command command = new("set-cwd", "Sets the current working directory to the given path.");
+
+            Argument<string> pathArgument = new("path", "The directory to change to");
+
+            command.Add(pathArgument);
+            command.SetHandler(SetCwdHandle, pathArgument);
+
+            return command;
+        }
+
+        private partial void AddProjectHandle(string path);
         private partial void CommandsHandle();
         private partial void ExitHandle();
+        private partial void GetCwdHandle();
         private partial void HelpHandle(string command);
         private partial void InitProjectHandle(string name, string path);
-        private partial void ListProjectsHandle();
+        private partial void ListDirHandle(string path);
+        private partial void ListProjectsHandle(ListProjectsSortOrderValue sortOrder);
+        private partial void RemoveProjectHandle(string path, bool deleteFiles);
+        private partial void SetCwdHandle(string path);
     }
 }

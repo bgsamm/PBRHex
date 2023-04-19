@@ -1,19 +1,27 @@
 [
   {
-    "name": "commands",
-    "description": "Displays a list of available commands.",
-    "arguments": [],
-    "options": []
+    "name": "add-project",
+    "description": "Adds an existing project to the known projects list.",
+    "arguments": [
+      {
+        "name": "path",
+        "description": "The directory of the project to add"
+      }
+    ]
   },
-  
+  {
+    "name": "commands",
+    "description": "Displays a list of available commands."
+  },
   {
     "name": "exit",
     "description": "Exits the program.",
-    "arguments": [],
-    "options": [],
     "alias": "quit"
   },
-  
+  {
+    "name": "get-cwd",
+    "description": "Prints the path of the current working directory."
+  },
   {
     "name": "help",
     "description": "Displays command help information.",
@@ -22,10 +30,8 @@
         "name": "command",
         "description": "The command to display help information for"
       }
-    ],
-    "options": []
+    ]
   },
-  
   {
     "name": "init-project",
     "description": "Creates a new project.",
@@ -39,25 +45,61 @@
         "description": "The directory in which to create the project",
         "default": "."
       }
-    ],
-    "options": []
+    ]
   },
-
+  {
+    "name": "list-dir",
+    "description": "Lists the files and subdirectories contained in the given directory.",
+    "arguments": [
+      {
+        "name": "path",
+        "description": "The directory whose contents to list",
+        "default": "."
+      }
+    ]
+  },
   {
     "name": "list-projects",
     "description": "Lists known projects.",
-    "arguments": [],
-    "options": {
-      "sort": {
+    "options": [
+      {
+        "name": "sort-order",
         "description": "Sets the sort order for the output",
-        "values": {
-          "Name": "The project's name",
-          "Creation Date": "The date and time the project was created",
-          "Last Modified": "The date and time the project was last modified",
-          "Region": "The region associated with the project's ISO",
-          "Location": "The path to the project's directory"
-        }
+        "values": [
+          "Name",
+          "CreationDate",
+          "LastModified",
+          "Region",
+          "Path"
+        ]
       }
-    }
+    ]
+  },
+  {
+    "name": "remove-project",
+    "description": "Removes the given project from the known projects list.",
+    "arguments": [
+      {
+        "name": "path",
+        "description": "The project directory to remove"
+      }
+    ],
+    "options": [
+      {
+        "name": "delete-files",
+        "description": "Deletes the project's files from disk",
+        "type": "bool"
+      }
+    ]
+  },
+  {
+    "name": "set-cwd",
+    "description": "Sets the current working directory to the given path.",
+    "arguments": [
+      {
+        "name": "path",
+        "description": "The directory to change to"
+      }
+    ]
   }
 ]

@@ -6,44 +6,53 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using PBRHex.Core.IO;
 
 namespace PBRHex.Core
 {
     public class Project
     {
-        internal const string ProjectFilePath = "project";
+        private const string ProjectFileName = "project";
 
         private readonly ProjectInfo Metadata;
+
+        internal Guid ID => Metadata.ID;
 
         public string Name => Metadata.Name;
         public string Path => Metadata.Path;
 
-        internal Project(string path) {
-            Trace.Assert(System.IO.Path.IsPathFullyQualified(path));
-
+        internal Project(DirectoryInfo directory) {
             try {
-                Metadata = LoadProjectInfo(path);
+                Metadata = LoadProjectInfo(directory);
             }
             catch {
                 throw new InvalidProjectException();
             }
         }
 
-        private static ProjectInfo LoadProjectInfo(string projectPath) {
-            string projectFilePath = System.IO.Path.Combine(projectPath, ProjectFilePath);
+        internal static string GetProjectFilePath(DirectoryInfo projectDirectory) {
+            string path = projectDirectory.GetPath();
+
+            return System.IO.Path.Combine(path, ProjectFileName);
+        }
+
+        private static ProjectInfo LoadProjectInfo(DirectoryInfo directory) {
+            string projectFilePath = GetProjectFilePath(directory);
 
             string json = File.ReadAllText(projectFilePath);
             ProjectInfo metadata = JsonSerializer.Deserialize<ProjectInfo>(json);
-            metadata.Path = projectPath;
+            metadata.Path = directory.GetPath();
 
             return metadata;
         }
     }
 
-    public struct ProjectInfo
+    internal struct ProjectInfo
     {
         [JsonInclude]
-        public string Name { get; internal set; }
+        public Guid ID { get; internal init; }
+        [JsonInclude]
+        public string Name { get; internal init; }
         [JsonIgnore]
         public string Path { get; internal set; }
     }

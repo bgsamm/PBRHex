@@ -8,20 +8,8 @@ using System.Threading.Tasks;
 
 namespace PBRHex.CLI
 {
-    public static class HelpBuilderExtensions
+    internal static class HelpBuilderExtensions
     {
-        internal class CustomHelpBuilder : HelpBuilder
-        {
-            public CustomHelpBuilder(LocalizationResources localizationResources)
-                : base(localizationResources) { }
-
-            public override void Write(HelpContext context) {
-                base.Write(context);
-                // Remove extraneous newlines
-                Console.SetCursorPosition(0, Console.CursorTop - 2);
-            }
-        }
-
         internal static void WriteCommands(this HelpBuilder builder,
                                            IEnumerable<Command> commands,
                                            HelpContext context) {
@@ -40,6 +28,18 @@ namespace PBRHex.CLI
             }
 
             builder.WriteColumns(rows, context);
+        }
+    }
+
+    internal class CustomHelpBuilder : HelpBuilder
+    {
+        public CustomHelpBuilder(LocalizationResources localizationResources)
+            : base(localizationResources) { }
+
+        public override void Write(HelpContext context) {
+            base.Write(context);
+            // Remove extraneous newlines
+            Console.SetCursorPosition(0, Console.CursorTop - 2);
         }
     }
 }

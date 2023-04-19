@@ -15,7 +15,7 @@ namespace PBRHex.CLI
         private static void Main() {
             CommandParser parser = new();
 
-            string vers = Core.Application.VersionName;
+            string vers = Application.VersionName;
             Console.WriteLine("" +
                 " ┌─────────────────────────────────┐\n" +
                $" │          PBRHex {vers}          │\n" +
