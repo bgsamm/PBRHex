@@ -53,10 +53,10 @@
     <ApplicationIcon>Dubious_Disc_Sprite.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>AEB6B2869886CDB034184AF96B5FC3CD45C9C199</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>8FFED1841F927623C87A4CD3EEA8B05D17C59096</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>PBRHex_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>PBRHex_7_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -330,6 +330,7 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
+    <None Include="PBRHex_7_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
