@@ -9,4 +9,21 @@
 	<AssemblyVersion>1.1.4.0</AssemblyVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CliWrap" Version="3.6.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Content Include=".\wit\**">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="wit\**" />
+    <Content Remove="wit\**" />
+    <EmbeddedResource Remove="wit\**" />
+    <None Remove="wit\**" />
+  </ItemGroup>
+
 </Project>

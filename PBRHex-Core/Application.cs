@@ -19,6 +19,8 @@ namespace PBRHex.Core
 
         public static string VersionName => $"v{Version.Major}.{Version.Minor}.{Version.Build}";
 
+        public static string BaseDirectory => AppDomain.CurrentDomain.BaseDirectory;
+
         public static string DataPath => _dataPath ??= GetDataPath();
 
         private static Version? _version;
@@ -37,7 +39,7 @@ namespace PBRHex.Core
 
         private static string GetDataPath() {
             string localDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            return System.IO.Path.Combine(localDataPath, Name);
+            return Path.Combine(localDataPath, Name);
         }
 
         private static void InitializeDataFolder() {
