@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace PBRHex.Core.IO
 {
+    public class DirectoryNotEmptyException : Exception
+    {
+        public DirectoryNotEmptyException() { }
+        public DirectoryNotEmptyException(string message) : base(message) { }
+        public DirectoryNotEmptyException(string message, Exception inner) : base(message, inner) { }
+    }
+
     public static class DirectoryInfoExtensions
     {
         public static string GetName(this DirectoryInfo directoryInfo) {
@@ -27,6 +34,18 @@ namespace PBRHex.Core.IO
                 otherPath = other.GetPath();
 
             return otherPath.StartsWith(thisPath);
+        }
+
+        /// <summary>
+        /// <para>
+        ///     Notes:
+        ///     <br>- Comparison is case-sensitive</br>
+        /// </para>
+        /// </summary>
+        public static bool PathEquals(this DirectoryInfo directoryInfo, string path) {
+            string thisPath = directoryInfo.FullName.TrimEnd(Path.DirectorySeparatorChar);
+            string thatPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);
+            return thisPath.Equals(thatPath, StringComparison.Ordinal);
         }
     }
 }

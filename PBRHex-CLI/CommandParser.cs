@@ -8,8 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PBRHex.CLI.Properties;
-using PBRHex.Core;
 using PBRHex.Core.IO;
+using PBRHex.Core.Projects;
 
 namespace PBRHex.CLI
 {
@@ -27,29 +27,25 @@ namespace PBRHex.CLI
                 defaultValue: "none");
         }
 
-        public int Invoke(string commandLine) {
+        public void Invoke(string commandLine) {
             var splitter = CommandLineStringSplitter.Instance;
             string command = splitter.Split(commandLine).First();
 
             Command? cmd = Commands.Values.FirstOrDefault(cmd => cmd.Aliases.Contains(command));
 
-            int code = 1;
-
             if (cmd is null) {
                 Writer.WriteError(Resources.UnknownCommandException, command);
-                return code;
+                return;
             }
 
             Parser parser = CreateParser(cmd);
 
             try {
-                code = parser.Invoke(commandLine);
+                parser.Invoke(commandLine);
             }
             catch (Exception e) {
                 Writer.WriteError(e.Message);
             }
-
-            return code;
         }
 
         private Parser CreateParser(Command command) {
@@ -64,9 +60,10 @@ namespace PBRHex.CLI
         private partial void AddProjectHandle(string path) {
             DirectoryInfo directory = new(path);
 
-            Project project = ProjectManager.AddProjectFromDisk(directory);
+            Project project = ProjectManager.GetProjectFromDirectory(directory);
+            ProjectManager.AddProjectToList(project);
 
-            Writer.WriteLine($"Added project '{project.Name}' from '{project.Path}'.");
+            Writer.WriteLine($"Added project '{project.Name}' from '{project.Location}'.");
         }
 
         private partial void CommandsHandle() {
@@ -119,14 +116,14 @@ namespace PBRHex.CLI
             string[] headers = { "Name", "Path" };
 
             // Sort the projects list
-            IEnumerable<Project> projects = ProjectManager.Projects;
+            IEnumerable<Project> projects = ProjectManager.GetProjectList();
             switch (sortOrder) {
                 case ListProjectsSortOrderValue.Name:
                     projects = projects.OrderBy(project => project.Name);
                     break;
 
                 case ListProjectsSortOrderValue.Path:
-                    projects = projects.OrderBy(project => project.Path);
+                    projects = projects.OrderBy(project => project.Location);
                     break;
             }
 
@@ -140,7 +137,7 @@ namespace PBRHex.CLI
 
                 string[] row = new string[numCols];
                 row[0] = project.Name;
-                row[1] = project.Path;
+                row[1] = project.Location;
 
                 rows[i] = row;
             }
@@ -153,20 +150,21 @@ namespace PBRHex.CLI
 
             Project project;
             try {
-                project = ProjectManager.GetProject(projectDir);
+                project = ProjectManager.GetProjectFromDirectory(projectDir);
             }
             catch (InvalidProjectException) {
-                Writer.WriteLine($"'{projectDir}' does not contain a project.");
+                string fullPath = projectDir.GetPath();
+                Writer.WriteLine($"'{fullPath}' does not contain a valid project.");
                 return;
             }
 
-            ProjectManager.RemoveProject(projectDir);
+            ProjectManager.RemoveProjectFromList(project);
 
-            Writer.WriteLine($"Project '{project.Name}' removed from the project list.");
+            Writer.WriteLine($"Project '{project.Name}' in '{project.Location}' removed from the project list.");
 
             if (deleteFiles) {
                 if (projectDir.Parent is null) {
-                    Writer.WriteError("Cannot delete project - project directory is a root directory.");
+                    Writer.WriteError("Cannot delete project directory - project directory is a root directory.");
                     return;
                 }
 
@@ -178,8 +176,7 @@ namespace PBRHex.CLI
                     Directory.SetCurrentDirectory(projectDir.Parent.GetPath());
                 }
 
-                string projectPath = projectDir.GetPath();
-                Directory.Delete(projectPath, true);
+                projectDir.Delete(true);
             }
         }
 
