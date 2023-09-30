@@ -76,6 +76,38 @@ namespace PBRHex.CLI
             HelpBuilder.WriteCommands(Commands.Values, context);
         }
 
+        private partial void CreateDirHandle(string path) {
+            DirectoryInfo directory = new(path);
+            string fullPath = directory.GetPath();
+
+            if (directory.Exists) {
+                Writer.WriteLine($"The directory '{fullPath}' already exists.");
+                return;
+            }
+
+            Directory.CreateDirectory(path);
+            Writer.WriteLine($"Successfully created a new directory at '{fullPath}'.");
+        }
+
+        private partial void DeleteDirHandle(string path, bool force) {
+            DirectoryInfo directory = new(path);
+            string fullPath = directory.GetPath();
+
+            DirectoryInfo currentDir = new(Directory.GetCurrentDirectory());
+            if (currentDir.IsSubDirectoryOf(directory)) {
+                Writer.WriteError($"Cannot delete {fullPath} - currently inside directory");
+                return;
+            }
+
+            if (!force && directory.GetFiles(path).Length > 0) {
+                Writer.WriteError($"Cannot remove non-empty directory '{fullPath}'. Use --force to override.");
+                return;
+            }
+
+            Directory.Delete(path, force);
+            Writer.WriteLine($"Successfully deleted the directory at '{fullPath}'.");
+        }
+
         private partial void ExitHandle() {
             Environment.Exit(0);
         }
@@ -168,8 +200,7 @@ namespace PBRHex.CLI
                     return;
                 }
 
-                string currentPath = Directory.GetCurrentDirectory();
-                DirectoryInfo currentDir = new(currentPath);
+                DirectoryInfo currentDir = new(Directory.GetCurrentDirectory());
 
                 // Move to project's parent directory if currently inside of project
                 if (currentDir.IsSubDirectoryOf(projectDir)) {

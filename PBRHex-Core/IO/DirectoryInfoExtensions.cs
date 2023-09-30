@@ -33,7 +33,7 @@ namespace PBRHex.Core.IO
             string thisPath = self.GetPath(),
                 otherPath = other.GetPath();
 
-            return otherPath.StartsWith(thisPath);
+            return thisPath.StartsWith(otherPath);
         }
 
         /// <summary>

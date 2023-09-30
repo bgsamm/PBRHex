@@ -18,6 +18,8 @@ namespace PBRHex.CLI
         private void InitCommands() {
             Commands.Add("add-project", CreateAddProjectCommand());
             Commands.Add("commands", CreateCommandsCommand());
+            Commands.Add("create-dir", CreateCreateDirCommand());
+            Commands.Add("delete-dir", CreateDeleteDirCommand());
             Commands.Add("exit", CreateExitCommand());
             Commands.Add("get-cwd", CreateGetCwdCommand());
             Commands.Add("help", CreateHelpCommand());
@@ -43,6 +45,31 @@ namespace PBRHex.CLI
             Command command = new("commands", "Displays a list of available commands.");
 
             command.SetHandler(CommandsHandle);
+
+            return command;
+        }
+
+        private Command CreateCreateDirCommand() {
+            Command command = new("create-dir", "Creates a new directory at the provided path.");
+
+            Argument<string> pathArgument = new("path", "The path of the directory to create");
+
+            command.Add(pathArgument);
+            command.SetHandler(CreateDirHandle, pathArgument);
+
+            return command;
+        }
+
+        private Command CreateDeleteDirCommand() {
+            Command command = new("delete-dir", "Deletes the specified directory.");
+
+            Argument<string> pathArgument = new("path", "The path of the directory to delete");
+
+            Option<bool> forceOption = new("--force", "Causes the directory to be deleted, even if not empty");
+
+            command.Add(pathArgument);
+            command.Add(forceOption);
+            command.SetHandler(DeleteDirHandle, pathArgument, forceOption);
 
             return command;
         }
@@ -139,6 +166,8 @@ namespace PBRHex.CLI
 
         private partial void AddProjectHandle(string path);
         private partial void CommandsHandle();
+        private partial void CreateDirHandle(string path);
+        private partial void DeleteDirHandle(string path, bool force);
         private partial void ExitHandle();
         private partial void GetCwdHandle();
         private partial void HelpHandle(string command);
