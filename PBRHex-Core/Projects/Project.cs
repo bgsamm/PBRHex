@@ -55,13 +55,13 @@ namespace PBRHex.Core.Projects
             string path = directory.GetPath();
 
             if (!directory.Exists) {
-                throw new DirectoryNotFoundException($"Cannot load project from '{path}' - directory does not exist");
+                throw new DirectoryNotFoundException($"Cannot read project from '{path}' - directory does not exist");
             }
 
             bool success = TryLoadProjectInfo(directory, out ProjectInfo info);
 
             if (!success) {
-                throw new InvalidProjectException($"Cannot load project from '{path}' - directory does not contain a valid project");
+                throw new InvalidProjectException($"Cannot read project from '{path}' - directory does not contain a valid project");
             }
 
             return new Project(info, directory);

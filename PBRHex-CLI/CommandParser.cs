@@ -61,9 +61,14 @@ namespace PBRHex.CLI
             DirectoryInfo directory = new(path);
 
             Project project = ProjectManager.GetProjectFromDirectory(directory);
-            ProjectManager.AddProjectToList(project);
 
-            Writer.WriteLine($"Added project '{project.Name}' from '{project.Location}'.");
+            bool wasAdded = ProjectManager.AddProjectToList(project);
+            if (wasAdded) {
+                Writer.WriteLine($"Added project '{project.Name}' in '{project.Location}' to the project list.");
+            }
+            else {
+                Writer.WriteLine($"Project '{project.Name}' in '{project.Location}' is already on the project list.");
+            }
         }
 
         private partial void CommandsHandle() {
@@ -78,7 +83,7 @@ namespace PBRHex.CLI
         private partial void GetCwdHandle() {
             string path = Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar;
 
-            Writer.WriteLine($"The current working directory is '{path}'.");
+            Writer.WriteLine(path);
         }
 
         private partial void HelpHandle(string command) {
@@ -147,20 +152,15 @@ namespace PBRHex.CLI
 
         private partial void RemoveProjectHandle(string path, bool deleteFiles) {
             DirectoryInfo projectDir = new(path);
+            Project project = ProjectManager.GetProjectFromDirectory(projectDir);
 
-            Project project;
-            try {
-                project = ProjectManager.GetProjectFromDirectory(projectDir);
+            bool wasRemoved = ProjectManager.RemoveProjectFromList(project);
+            if (wasRemoved) {
+                Writer.WriteLine($"Removed project '{project.Name}' in '{project.Location}' from the project list.");
             }
-            catch (InvalidProjectException) {
-                string fullPath = projectDir.GetPath();
-                Writer.WriteLine($"'{fullPath}' does not contain a valid project.");
-                return;
+            else {
+                Writer.WriteLine($"Project '{project.Name}' in '{project.Location}' is not on the project list.");
             }
-
-            ProjectManager.RemoveProjectFromList(project);
-
-            Writer.WriteLine($"Project '{project.Name}' in '{project.Location}' removed from the project list.");
 
             if (deleteFiles) {
                 if (projectDir.Parent is null) {
@@ -186,7 +186,7 @@ namespace PBRHex.CLI
             Directory.SetCurrentDirectory(path);
 
             string fullPath = directory.GetPath();
-            Writer.WriteLine($"Set the current working directory to '{fullPath}'.");
+            Writer.WriteLine($"The current working directory is now '{fullPath}'.");
         }
     }
 }

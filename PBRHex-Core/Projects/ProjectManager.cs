@@ -37,17 +37,25 @@ namespace PBRHex.Core.Projects
                 projectListFile.Create().Close();
             }
 
-            CleanProjectList();
+            CleanProjectListFile();
         }
 
-        private static void CleanProjectList() {
-            List<Project> projectList = LoadProjectList();
+        /// <summary>
+        /// Removes duplicate and invalid project directories from the project list file
+        /// </summary>
+        private static void CleanProjectListFile() {
+            List<Project> projectList = LoadProjectList(out _);
             WriteProjectList(projectList);
         }
 
-        public static IReadOnlyList<Project> GetProjectList() {
-            List<Project> projectList = LoadProjectList();
-            return projectList;
+        public static IReadOnlyCollection<Project> GetProjectList() {
+            return GetProjectList(out _);
+        }
+
+        public static IReadOnlyCollection<Project> GetProjectList(out IReadOnlyCollection<DirectoryInfo> invalidDirs) {
+            List<Project> projectList = LoadProjectList(out List<DirectoryInfo> invalidDirsTemp);
+            invalidDirs = invalidDirsTemp.AsReadOnly();
+            return projectList.AsReadOnly();
         }
 
         /// <summary>
@@ -93,9 +101,10 @@ namespace PBRHex.Core.Projects
         ///     <br>- Succeeds even if the project is already on the project list</br>
         /// </para>
         /// </summary>
-        /// <param name="project"></param>
-        public static void AddProjectToList(Project project) {
-            AddToList(project);
+        /// <returns><see langword="true"/> if the project was not on the list, <see langword="false"/> otherwise</returns>
+        public static bool AddProjectToList(Project project) {
+            bool result = AddToList(project);
+            return result;
         }
 
         /// <summary>
@@ -105,34 +114,40 @@ namespace PBRHex.Core.Projects
         ///     <br>- Does NOT delete the project's files from disk</br>
         /// </para>
         /// </summary>
-        public static void RemoveProjectFromList(Project project) {
-            RemoveFromList(project);
+        /// <returns><see langword="true"/> if the project was on the list, <see langword="false"/> otherwise</returns>
+        public static bool RemoveProjectFromList(Project project) {
+            bool result = RemoveFromList(project);
+            return result;
         }
 
-        private static void AddToList(Project project) {
+        private static bool AddToList(Project project) {
             DirectoryInfo projectDir = new(project.Location);
 
-            List<Project> projectList = LoadProjectList();
+            List<Project> projectList = LoadProjectList(out _);
 
             // Keep from adding the same project twice
             if (projectList.Any(proj => projectDir.PathEquals(proj.Location)))
-                return;
+                return false;
 
             projectList.Add(project);
             WriteProjectList(projectList);
+
+            return true;
         }
 
-        private static void RemoveFromList(Project project) {
+        private static bool RemoveFromList(Project project) {
             DirectoryInfo projectDir = new(project.Location);
 
-            List<Project> projectList = LoadProjectList();
+            List<Project> projectList = LoadProjectList(out _);
             Project? match = projectList.Find(proj => projectDir.PathEquals(proj.Location));
 
             if (match is null)
-                return;
+                return false;
 
             projectList.Remove(match);
             WriteProjectList(projectList);
+
+            return true;
         }
 
         /// <summary>
@@ -141,10 +156,11 @@ namespace PBRHex.Core.Projects
         ///     <br>- Automatically filters out duplicate and invalid projects from the list</br>
         /// </para>
         /// </summary>
-        private static List<Project> LoadProjectList() {
+        private static List<Project> LoadProjectList(out List<DirectoryInfo> invalidDirs) {
             string[] projectPaths = File.ReadAllLines(ProjectListPath);
 
             List<Project> projects = new();
+            invalidDirs = new List<DirectoryInfo>();
             foreach (string path in projectPaths) {
                 DirectoryInfo directory = new(path);
 
@@ -157,8 +173,9 @@ namespace PBRHex.Core.Projects
                     Project project = Project.LoadProject(directory);
                     projects.Add(project);
                 }
-                catch (InvalidProjectException) {
-                    Debug.WriteLine($"Invalid project on project list: {path}");
+                catch {
+                    Debug.WriteLine($"Unable to read project from '{path}'");
+                    invalidDirs.Add(directory);
                 }
             }
 
