@@ -22,8 +22,8 @@ namespace PBRHex.CLI
                 " │            by pjsamm            │\n" +
                 " └─────────────────────────────────┘");
 
-            Console.WriteLine(Resources.CommandsCommandHint);
-            Console.WriteLine(Resources.HelpCommandHint);
+            Console.WriteLine("For a list of available commands, run `commands`.");
+            Console.WriteLine("For more information about a command, run `help <command>`.");
 
             while (true) {
                 Console.WriteLine();

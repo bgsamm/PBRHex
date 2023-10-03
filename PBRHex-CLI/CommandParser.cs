@@ -34,7 +34,7 @@ namespace PBRHex.CLI
             Command? cmd = Commands.Values.FirstOrDefault(cmd => cmd.Aliases.Contains(command));
 
             if (cmd is null) {
-                Writer.WriteError(Resources.UnknownCommandException, command);
+                Writer.WriteError($"No command exists named '{command}'.");
                 return;
             }
 
@@ -120,7 +120,7 @@ namespace PBRHex.CLI
 
         private partial void HelpHandle(string command) {
             if (!Commands.ContainsKey(command)) {
-                Writer.WriteError(Resources.UnknownCommandException, command);
+                Writer.WriteError($"No command exists named '{command}'.");
                 return;
             }
 
