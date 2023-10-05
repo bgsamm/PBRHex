@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using PBRHex.CLI.Properties;
 using PBRHex.Core;
 
 namespace PBRHex.CLI

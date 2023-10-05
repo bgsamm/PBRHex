@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PBRHex", "PBRHex\PBRHex.csproj", "{E1D96D78-E500-4BDD-BFB5-FDEC0573CEED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{51CDCBC4-EC4D-47A5-8A54-A37CB7499871} = {51CDCBC4-EC4D-47A5-8A54-A37CB7499871}
+	EndProjectSection
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PBRHex Setup", "PBRHex Setup\PBRHex Setup.vdproj", "{0803B1FC-C213-4ABA-8AA9-86C56989C01C}"
 EndProject

@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="python &quot;$(ProjectDir)commands.py&quot; &quot;$(ProjectDir)commands.json&quot; &quot;$(ProjectDir)CommandParserAuto.cs&quot; &quot;PBRHex.CLI&quot; &quot;CommandParser&quot;&#xD;&#xA;" />
+    <Exec Command="python &quot;$(SolutionDir)python\commands.py&quot; &quot;$(SolutionDir)python\commands\commands.json&quot; &quot;$(ProjectDir)CommandParserAuto.cs&quot; &quot;PBRHex.CLI&quot; &quot;CommandParser&quot;&#xD;&#xA;" />
   </Target>
 
 </Project>

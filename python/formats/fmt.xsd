@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified">
+
+  <xs:element name="format">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="root" type="fieldContainer">
+          <xs:key name="fieldID">
+            <xs:selector xpath="*" />
+            <xs:field xpath="@id" />
+          </xs:key>
+        </xs:element>
+        <xs:element name="type" type="type" maxOccurs="unbounded">
+          <xs:key name="typeFieldID">
+            <xs:selector xpath="*" />
+            <xs:field xpath="@id" />
+          </xs:key>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required" />
+      <xs:attribute name="extension" type="xs:string" use="required" />
+      <xs:attribute name="byteOrder">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="BigEndian" />
+            <xs:enumeration value="LittleEndian" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="defaultPointerSize" type="xs:positiveInteger" />
+    </xs:complexType>
+    <xs:key name="typeName">
+      <xs:selector xpath="type" />
+      <xs:field xpath="@name" />
+    </xs:key>
+  </xs:element>
+
+  <xs:complexType name="fieldContainer">
+    <xs:group ref="fieldGroup" maxOccurs="unbounded" />
+  </xs:complexType>
+
+  <xs:complexType name="type">
+    <xs:complexContent>
+      <xs:extension base="fieldContainer">
+        <xs:attribute name="name" type="identifier" use="required" />
+        <xs:attribute name="extends" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:simpleType name="hexLiteral">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="0x[0-9A-Fa-f]+" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="numericLiteral">
+    <xs:union memberTypes="xs:nonNegativeInteger hexLiteral" />
+  </xs:simpleType>
+
+  <xs:simpleType name="nonEmptyString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="identifier">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z_]\w+"></xs:pattern>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="fieldReference">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="@[a-zA-Z_]\w+" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="numberOrReference">
+    <xs:union memberTypes="numericLiteral fieldReference" />
+  </xs:simpleType>
+  <!--
+  <xs:complexType name="switch">
+    <xs:sequence>
+      <xs:element name="value">
+        <xs:complexType>
+          <xs:attribute name="offset" type="numericLiteral" />
+          <xs:attribute name="type">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="char"></xs:enumeration>
+                <xs:enumeration value="short"></xs:enumeration>
+                <xs:enumeration value="int"></xs:enumeration>
+                <xs:enumeration value="long"></xs:enumeration>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="case" maxOccurs="unbounded">
+        <xs:complexType>
+          <xs:group ref="value" />
+          <xs:attribute name="value" type="numericLiteral" />
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="var" type="identifier" />
+  </xs:complexType>
+  -->
+  <xs:complexType name="number">
+    <xs:attribute name="offset" use="prohibited"></xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="string">
+    <xs:attribute name="length" type="numberOrReference" />
+  </xs:complexType>
+
+  <xs:complexType name="pointer">
+    <xs:group ref="valueGroup" />
+    <xs:attribute name="size" type="xs:positiveInteger" />
+  </xs:complexType>
+
+  <xs:complexType name="array">
+    <xs:group ref="valueGroup" />
+    <xs:attribute name="length" type="numberOrReference" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="struct">
+    <xs:attribute name="type" type="xs:string" use="required" />
+    <xs:attribute name="size" type="numericLiteral" />
+  </xs:complexType>
+
+  <xs:group name="valueGroup">
+    <xs:choice>
+      <xs:element name="char" type="number" />
+      <xs:element name="short" type="number" />
+      <xs:element name="int" type="number" />
+      <xs:element name="long" type="number" />
+      <xs:element name="uchar" type="number" />
+      <xs:element name="ushort" type="number" />
+      <xs:element name="uint" type="number" />
+      <xs:element name="ulong" type="number" />
+      <xs:element name="float" type="number" />
+      <xs:element name="double" type="number" />
+      <xs:element name="string" type="string" />
+      <xs:element name="pointer" type="pointer" />
+      <xs:element name="array" type="array" />
+      <xs:element name="struct" type="struct" />
+      <!--
+      <xs:element name="switch" type="switch" />
+      -->
+    </xs:choice>
+  </xs:group>
+
+  <xs:attributeGroup name="fieldAttr">
+    <xs:attribute name="id" type="identifier" use="required" />
+    <xs:attribute name="offset" type="numericLiteral" use="required" />
+  </xs:attributeGroup>
+
+  <xs:complexType name="numberField">
+    <xs:complexContent>
+      <xs:extension base="number">
+        <xs:attributeGroup ref="fieldAttr" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="stringField">
+    <xs:complexContent>
+      <xs:extension base="string">
+        <xs:attributeGroup ref="fieldAttr" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="pointerField">
+    <xs:complexContent>
+      <xs:extension base="pointer">
+        <xs:attributeGroup ref="fieldAttr" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="arrayField">
+    <xs:complexContent>
+      <xs:extension base="array">
+        <xs:attributeGroup ref="fieldAttr" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="structField">
+    <xs:complexContent>
+      <xs:extension base="struct">
+        <xs:attributeGroup ref="fieldAttr" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:group name="fieldGroup">
+    <xs:choice>
+      <xs:element name="char" type="numberField" />
+      <xs:element name="short" type="numberField" />
+      <xs:element name="int" type="numberField" />
+      <xs:element name="long" type="numberField" />
+      <xs:element name="uchar" type="numberField" />
+      <xs:element name="ushort" type="numberField" />
+      <xs:element name="uint" type="numberField" />
+      <xs:element name="ulong" type="numberField" />
+      <xs:element name="float" type="numberField" />
+      <xs:element name="double" type="numberField" />
+      <xs:element name="string" type="stringField" />
+      <xs:element name="pointer" type="pointerField" />
+      <xs:element name="array" type="arrayField" />
+      <xs:element name="struct" type="structField" />
+    </xs:choice>
+  </xs:group>
+</xs:schema>

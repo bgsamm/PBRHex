@@ -7,7 +7,6 @@ using System.CommandLine.Parsing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using PBRHex.CLI.Properties;
 using PBRHex.Core.IO;
 using PBRHex.Core.Projects;
 
