@@ -5,13 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Current File",
+      "name": "Python: Command Parser Generator",
       "type": "python",
       "request": "launch",
-      "program": "${file}",
+      "program": "${workspaceFolder}\\commands.py",
       "args": [
-        "${workspaceFolder}\\PBRHex-CLI\\commands.json",
-        "${workspaceFolder}\\PBRHex-CLI\\CommandParserAuto.cs",
+        "${workspaceFolder}\\commands\\commands.json",
+        "${workspaceFolder}\\CommandParserAuto.cs",
         "PBRHex.CLI",
         "CommandParser"
       ],
