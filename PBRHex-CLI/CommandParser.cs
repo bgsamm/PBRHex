@@ -21,9 +21,7 @@ namespace PBRHex.CLI
         public CommandParser() {
             InitCommands();
 
-            HelpBuilder.CustomizeSymbol(
-                Commands["help"].Arguments[0],
-                defaultValue: "none");
+            HelpBuilder.CustomizeSymbol(Commands["help"].Arguments[0], defaultValue: "none");
         }
 
         public void Invoke(string commandLine) {
@@ -148,17 +146,17 @@ namespace PBRHex.CLI
             }
         }
 
-        private partial void ListProjectsHandle(ListProjectsSortOrderValue sortOrder) {
+        private partial void ListProjectsHandle(ListProjects.SortOrder sortOrder) {
             string[] headers = { "Name", "Path" };
 
             // Sort the projects list
             IEnumerable<Project> projects = ProjectManager.GetProjectList();
             switch (sortOrder) {
-                case ListProjectsSortOrderValue.Name:
+                case ListProjects.SortOrder.Name:
                     projects = projects.OrderBy(project => project.Name);
                     break;
 
-                case ListProjectsSortOrderValue.Path:
+                case ListProjects.SortOrder.Path:
                     projects = projects.OrderBy(project => project.Location);
                     break;
             }

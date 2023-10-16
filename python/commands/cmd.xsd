@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="commands">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="command" type="command" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="nonEmptyString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="symbol">
+    <xs:sequence>
+      <xs:element name="name" type="nonEmptyString" />
+      <xs:element name="description" type="nonEmptyString" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="command">
+    <xs:complexContent>
+      <xs:extension base="symbol">
+        <xs:sequence>
+          <xs:element name="arguments" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="argument" type="parameter" maxOccurs="unbounded" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+
+          <xs:element name="options" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="option" type="parameter" maxOccurs="unbounded" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+
+          <xs:element name="alias" type="nonEmptyString" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="parameter">
+    <xs:complexContent>
+      <xs:extension base="symbol">
+        <xs:sequence>
+          <xs:element name="values" minOccurs="0">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="nonEmptyString" maxOccurs="unbounded" />
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="default" type="nonEmptyString" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="type" type="nonEmptyString" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>

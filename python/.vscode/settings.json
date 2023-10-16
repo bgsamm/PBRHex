@@ -1,7 +1,0 @@
-{
-  "python.analysis.typeCheckingMode": "basic",
-  "flake8.args": [
-    "--max-line-length=120",
-    "--ignore=D101,D102,D103,D107"
-  ]
-}

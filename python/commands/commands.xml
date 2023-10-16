@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="cmd.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<commands>
+  <command>
+    <name>add-project</name>
+    <description>Adds an existing project to the known projects list.</description>
+    <arguments>
+      <argument type="string">
+        <name>path</name>
+        <description>The directory of the project to add</description>
+      </argument>
+    </arguments>
+  </command>
+
+  <command>
+    <name>commands</name>
+    <description>Displays a list of available commands.</description>
+  </command>
+
+  <command>
+    <name>create-dir</name>
+    <description>Creates a new directory at the provided path.</description>
+    <arguments>
+      <argument type="string">
+        <name>path</name>
+        <description>The path of the directory to create</description>
+      </argument>
+    </arguments>
+  </command>
+
+  <command>
+    <name>delete-dir</name>
+    <description>Deletes the specified directory.</description>
+    <arguments>
+      <argument type="string">
+        <name>path</name>
+        <description>The path of the directory to delete</description>
+      </argument>
+    </arguments>
+    <options>
+      <option type="bool">
+        <name>force</name>
+        <description>Causes the directory to be deleted, even if not empty</description>
+      </option>
+    </options>
+  </command>
+
+  <command>
+    <name>exit</name>
+    <description>Exits the program.</description>
+    <alias>quit</alias>
+  </command>
+
+  <command>
+    <name>get-cwd</name>
+    <description>Prints the path of the current working directory.</description>
+  </command>
+
+  <command>
+    <name>help</name>
+    <description>Displays command help information.</description>
+    <arguments>
+      <argument type="string">
+        <name>command</name>
+        <description>The command to display help information for</description>
+      </argument>
+    </arguments>
+  </command>
+
+  <command>
+    <name>init-project</name>
+    <description>Creates a new project.</description>
+    <arguments>
+      <argument type="string">
+        <name>name</name>
+        <description>The name of the project</description>
+      </argument>
+      <argument type="string">
+        <name>path</name>
+        <description>The directory in which to create the project</description>
+        <default>.</default>
+      </argument>
+    </arguments>
+  </command>
+
+  <command>
+    <name>list-dir</name>
+    <description>Lists the files and subdirectories contained in the given directory.</description>
+    <arguments>
+      <argument type="string">
+        <name>path</name>
+        <description>The directory whose contents to list</description>
+        <default>.</default>
+      </argument>
+    </arguments>
+  </command>
+
+  <command>
+    <name>list-projects</name>
+    <description>Lists known projects.</description>
+    <options>
+      <option type="enum">
+        <name>sort-order</name>
+        <description>Sets the sort order for the output</description>
+        <values>
+          <value>Name</value>
+          <value>CreationDate</value>
+          <value>LastModified</value>
+          <value>Region</value>
+          <value>Path</value>
+        </values>
+      </option>
+    </options>
+  </command>
+
+  <command>
+    <name>remove-project</name>
+    <description>Removes the given project from the known projects list.</description>
+    <arguments>
+      <argument type="string">
+        <name>path</name>
+        <description>The project directory to remove</description>
+      </argument>
+    </arguments>
+    <options>
+      <option type="bool">
+        <name>delete-files</name>
+        <description>Deletes the project's files from disk</description>
+      </option>
+    </options>
+  </command>
+
+  <command>
+    <name>set-cwd</name>
+    <description>Sets the current working directory to the given path.</description>
+    <arguments>
+      <argument type="string">
+        <name>path</name>
+        <description>The directory to change to</description>
+      </argument>
+    </arguments>
+  </command>
+</commands>

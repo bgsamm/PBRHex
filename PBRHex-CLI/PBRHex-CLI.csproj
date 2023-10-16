@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="python &quot;$(SolutionDir)python\commands.py&quot; &quot;$(SolutionDir)python\commands\commands.json&quot; &quot;$(ProjectDir)CommandParserAuto.cs&quot; &quot;PBRHex.CLI&quot; &quot;CommandParser&quot;&#xD;&#xA;" />
+    <Exec Command="cd &quot;$(SolutionDir)python\&quot;&#xD;&#xA;call &quot;generate_commands.bat&quot; &quot;$(ProjectDir)CommandParserAuto.cs" />
   </Target>
 
 </Project>
