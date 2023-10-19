@@ -1,0 +1,51 @@
+﻿<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#
+(Type, int)[] types = { (typeof(Int16), 2), (typeof(Int32), 4), (typeof(Int64), 8),
+                        (typeof(UInt16), 2), (typeof(UInt32), 4), (typeof(UInt64), 8),
+                        (typeof(Single), 4), (typeof(Double), 8)};
+#>
+using System;
+using System.Buffers.Binary;
+using System.IO;
+
+namespace PBRHex.Core.IO
+{
+    internal enum Endianness
+    {
+        LittleEndian,
+        BigEndian
+    }
+
+    internal interface IByteStream
+    {
+        byte[] ReadBytes(long offset, int count);
+    }
+
+    internal class BytesReader
+    {
+        private readonly IByteStream stream;
+        private readonly Endianness endianness;
+
+        internal BytesReader(IByteStream stream, Endianness endianness) {
+            this.stream = stream;
+            this.endianness = endianness;
+        }
+
+        internal byte ReadByte(long offset) {
+            byte[] bytes = stream.ReadBytes(offset, 1);
+            return bytes[0];
+        }
+
+<# foreach ((Type type, int size) in types) { #>
+        internal <#= type.Name #> Read<#= type.Name #>(long offset) {
+            byte[] bytes = stream.ReadBytes(offset, <#= size #>);
+            
+            return endianness == Endianness.BigEndian
+                ? BinaryPrimitives.Read<#= type.Name #>BigEndian(bytes)
+                : BinaryPrimitives.Read<#= type.Name #>LittleEndian(bytes);
+        }
+
+<# } #>
+    }
+}
