@@ -8,6 +8,7 @@
 using System;
 using System.Buffers.Binary;
 using System.IO;
+using System.Text;
 
 namespace PBRHex.Core.IO
 {
@@ -47,5 +48,26 @@ namespace PBRHex.Core.IO
         }
 
 <# } #>
+        internal string ReadString(long offset, int? length = null) {
+            StringBuilder sb = new();
+            char c;
+
+            if (length is null) {
+                // Null-terminated strings
+                while ((c = (char)ReadByte(offset)) != '\0') {
+                    sb.Append(c);
+                    offset++;
+                }
+            }
+            else {
+                // Fixed-length strings
+                for (int i = 0; i < length; i++) {
+                    c = (char)ReadByte(offset);
+                    sb.Append(c);
+                }
+            }
+
+            return sb.ToString();
+        }
     }
 }
