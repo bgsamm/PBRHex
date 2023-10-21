@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="fmt.xsd" type="application/xml" schematypens="http://www.w3.org/2001/XMLSchema"?>
+
+<format name="WiiISO" extension=".iso">
+  <fields>
+    <string id="gameID" offset="0x0" length="6" />
+    <array id="wiiMagicBytes" offset="0x18" length="4">
+      <byte />
+    </array>
+    <array id="gcnMagicBytes" offset="0x1c" length="4">
+      <byte />
+    </array>
+  </fields>
+</format>

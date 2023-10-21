@@ -5,13 +5,12 @@ a C# partial class for parsing the commands defined within using the
 System.CommandLine namespace.
 """
 from __future__ import annotations
-
+from argparse import ArgumentParser, Namespace
 import os
-import xmlschema
+from pathlib import Path
 import xml.etree.ElementTree as xml
+import xmlschema
 from csharplib import (
-    kebab_to_camel_case,
-    kebab_to_pascal_case,
     CSharpSourceFile,
     CSharpNamespace,
     CSharpClass,
@@ -19,8 +18,7 @@ from csharplib import (
     CSharpEnum,
     CSharpField,
 )
-from argparse import ArgumentParser, Namespace
-from pathlib import Path
+import formatting
 
 SCHEMA = xmlschema.XMLSchema(os.path.join("commands", "cmd.xsd"))
 NAMESPACE = "PBRHex.CLI"
@@ -30,7 +28,7 @@ class Symbol:
     name: str
     description: str
 
-    def __init__(self, xml: xml.Element) -> None:
+    def __init__(self, xml: xml.Element):
         self.name = xml.find("name").text  # type: ignore
         self.description = xml.find("description").text  # type: ignore
 
@@ -107,11 +105,9 @@ class Option(Parameter):
 
 
 class CommandsCodeGenerator:
-    commands: list[Command]
-
-    def __init__(self, infile: str, tab_size: int | None = 4):
+    def __init__(self, cmd_xml: str, tab_size: int | None = 4):
         self.tab_size = tab_size
-        self._load_commands(infile)
+        self._load_commands(cmd_xml)
 
     def _load_commands(self, xml_path: str):
         xmlschema.validate(xml_path, SCHEMA)
@@ -166,7 +162,7 @@ class CommandsCodeGenerator:
 
         for command in self.commands:
             method_name = self._get_create_command_method_name(command)
-            method_obj.add_line(f"Commands.Add({command.name_str}, {method_name}());")
+            method_obj.add_code(f"Commands.Add({command.name_str}, {method_name}());")
 
         return method_obj
 
@@ -174,34 +170,36 @@ class CommandsCodeGenerator:
         name = self._get_create_command_method_name(command)
         method_obj = CSharpMethod(name, "Command")
 
-        method_obj.add_line(
+        method_obj.add_code(
             f"Command command = new({command.name_str}, {command.desc_str});"
         )
 
         for alias in command.aliases:
-            method_obj.add_line(f'command.AddAlias("{alias}");')
-        method_obj.add_line("")
+            method_obj.add_code(f'command.AddAlias("{alias}");')
+        method_obj.add_code("")
 
         arg_names, arg_statements = self._get_command_arguments(command)
         if len(arg_statements) > 0:
-            method_obj.add_lines(arg_statements)
-            method_obj.add_line("")
+            for statement in arg_statements:
+                method_obj.add_code(statement)
+            method_obj.add_code("")
 
         opt_names, opt_statements = self._get_command_options(command)
         if len(opt_statements) > 0:
-            method_obj.add_lines(opt_statements)
-            method_obj.add_line("")
+            for statement in opt_statements:
+                method_obj.add_code(statement)
+            method_obj.add_code("")
 
         param_names = arg_names + opt_names
         for param in param_names:
-            method_obj.add_line(f"command.Add({param});")
+            method_obj.add_code(f"command.Add({param});")
         params = "".join([f", {param}" for param in param_names])
 
         handle_name = self._get_handle_method_name(command)
-        method_obj.add_line(f"command.SetHandler({handle_name}{params});")
+        method_obj.add_code(f"command.SetHandler({handle_name}{params});")
 
-        method_obj.add_line("")
-        method_obj.add_line("return command;")
+        method_obj.add_code("")
+        method_obj.add_code("return command;", False)
 
         return method_obj
 
@@ -232,12 +230,12 @@ class CommandsCodeGenerator:
         return arg_names, arg_statements
 
     def _gen_enum_class(self, command: Command) -> CSharpClass:
-        class_name = kebab_to_pascal_case(command.name)
+        class_name = formatting.kebab_to_pascal_case(command.name)
         class_obj = CSharpClass(class_name, access="private", static=True)
 
         params = command.arguments + command.options
         for param in filter(lambda x: x.type == "enum", params):
-            enum_name = kebab_to_pascal_case(param.name)
+            enum_name = formatting.kebab_to_pascal_case(param.name)
             enum_obj = CSharpEnum(enum_name)
 
             assert param.values is not None
@@ -268,7 +266,7 @@ class CommandsCodeGenerator:
 
         params = command.arguments + command.options
         for param in params:
-            name = kebab_to_camel_case(param.name)
+            name = formatting.kebab_to_camel_case(param.name)
             type = self._get_parameter_type(command, param)
             param_list.append((type, name))
 
@@ -280,24 +278,24 @@ class CommandsCodeGenerator:
         return param.type
 
     def _get_create_command_method_name(self, command: Command) -> str:
-        name = kebab_to_pascal_case(command.name)
+        name = formatting.kebab_to_pascal_case(command.name)
         return "Create" + name + "Command"
 
     def _get_handle_method_name(self, command: Command) -> str:
-        name = kebab_to_pascal_case(command.name)
+        name = formatting.kebab_to_pascal_case(command.name)
         return name + "Handle"
 
     def _get_argument_name(self, argument: Argument) -> str:
-        name = kebab_to_camel_case(argument.name)
+        name = formatting.kebab_to_camel_case(argument.name)
         return name + "Argument"
 
     def _get_option_name(self, option: Option) -> str:
-        name = kebab_to_camel_case(option.name)
+        name = formatting.kebab_to_camel_case(option.name)
         return name + "Option"
 
     def _get_enum_name(self, command: Command, param: Parameter) -> str:
-        cmd_name = kebab_to_pascal_case(command.name)
-        param_name = kebab_to_pascal_case(param.name)
+        cmd_name = formatting.kebab_to_pascal_case(command.name)
+        param_name = formatting.kebab_to_pascal_case(param.name)
         return f"{cmd_name}.{param_name}"
 
 
@@ -314,6 +312,6 @@ def parse_args() -> Namespace:
 if __name__ == "__main__":
     args = parse_args()
 
-    generator = CommandsCodeGenerator(args.infile)
+    generator = CommandsCodeGenerator(args.infile, tab_size=args.tab_size)
     source = generator.generate_source_file()
     source.write(args.outfile)

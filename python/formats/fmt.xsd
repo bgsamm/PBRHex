@@ -3,46 +3,37 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:element name="format">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element name="root" type="fieldContainer">
-          <xs:key name="fieldID">
-            <xs:selector xpath="*" />
-            <xs:field xpath="@id" />
-          </xs:key>
-        </xs:element>
-        <xs:element name="type" type="type" minOccurs="0" maxOccurs="unbounded">
-          <xs:key name="typeFieldID">
-            <xs:selector xpath="*" />
-            <xs:field xpath="@id" />
-          </xs:key>
-        </xs:element>
-      </xs:sequence>
-      <xs:attribute name="name" type="xs:string" use="required" />
-      <xs:attribute name="extension" type="xs:string" use="required" />
-      <xs:attribute name="byteOrder">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="BigEndian" />
-            <xs:enumeration value="LittleEndian" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="defaultPointerSize" type="xs:positiveInteger" />
+      <xs:complexContent>
+        <xs:extension base="typedef">
+          <xs:attribute name="extension" type="xs:string" use="required" />
+          <xs:attribute name="byteOrder">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="BigEndian" />
+                <xs:enumeration value="LittleEndian" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
-    <xs:key name="typeName">
-      <xs:selector xpath="type" />
-      <xs:field xpath="@name" />
-    </xs:key>
   </xs:element>
 
-  <xs:complexType name="fieldContainer">
-    <xs:group ref="fieldGroup" maxOccurs="unbounded" />
+  <xs:complexType name="typedef">
+    <xs:sequence>
+      <xs:element name="fields">
+        <xs:complexType>
+          <xs:group ref="fieldGroup" maxOccurs="unbounded" />
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="type" type="nestedTypedef" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="name" type="identifier" use="required" />
   </xs:complexType>
 
-  <xs:complexType name="type">
+  <xs:complexType name="nestedTypedef">
     <xs:complexContent>
-      <xs:extension base="fieldContainer">
-        <xs:attribute name="name" type="identifier" use="required" />
+      <xs:extension base="typedef">
         <xs:attribute name="extends" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
@@ -66,13 +57,13 @@
 
   <xs:simpleType name="identifier">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[a-zA-Z_]\w+"></xs:pattern>
+      <xs:pattern value="[a-zA-Z][a-zA-Z0-9_]+" />
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="fieldReference">
     <xs:restriction base="xs:string">
-      <xs:pattern value="@[a-zA-Z_]\w+" />
+      <xs:pattern value="@[a-zA-Z][a-zA-Z0-9_]+" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -117,7 +108,20 @@
 
   <xs:complexType name="pointer">
     <xs:group ref="valueGroup" />
-    <xs:attribute name="size" type="xs:positiveInteger" />
+    <xs:attribute name="type" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="byte" />
+          <xs:enumeration value="short" />
+          <xs:enumeration value="int" />
+          <xs:enumeration value="long" />
+          <xs:enumeration value="sbyte" />
+          <xs:enumeration value="ushort" />
+          <xs:enumeration value="uint" />
+          <xs:enumeration value="ulong" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="array">
@@ -132,11 +136,11 @@
 
   <xs:group name="valueGroup">
     <xs:choice>
-      <xs:element name="char" type="number" />
+      <xs:element name="byte" type="number" />
       <xs:element name="short" type="number" />
       <xs:element name="int" type="number" />
       <xs:element name="long" type="number" />
-      <xs:element name="uchar" type="number" />
+      <xs:element name="sbyte" type="number" />
       <xs:element name="ushort" type="number" />
       <xs:element name="uint" type="number" />
       <xs:element name="ulong" type="number" />
@@ -199,11 +203,11 @@
 
   <xs:group name="fieldGroup">
     <xs:choice>
-      <xs:element name="char" type="numberField" />
+      <xs:element name="byte" type="numberField" />
       <xs:element name="short" type="numberField" />
       <xs:element name="int" type="numberField" />
       <xs:element name="long" type="numberField" />
-      <xs:element name="uchar" type="numberField" />
+      <xs:element name="sbyte" type="numberField" />
       <xs:element name="ushort" type="numberField" />
       <xs:element name="uint" type="numberField" />
       <xs:element name="ulong" type="numberField" />

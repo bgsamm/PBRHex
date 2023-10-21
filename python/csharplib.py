@@ -1,20 +1,7 @@
 """Provides classes that represent various C# language features."""
 from __future__ import annotations
 from abc import ABC, abstractmethod
-
-
-def tabs_to_spaces(source: str, tab_size: int) -> str:
-    tab = " " * tab_size
-    return source.replace("\t", tab)
-
-
-def kebab_to_camel_case(name: str) -> str:
-    tokens = name.split("-")
-    return tokens[0] + "".join(token.capitalize() for token in tokens[1:])
-
-
-def kebab_to_pascal_case(name: str) -> str:
-    return "".join(token.capitalize() for token in name.split("-"))
+import formatting
 
 
 class CSharpSourceFile:
@@ -33,13 +20,14 @@ class CSharpSourceFile:
         self.content = namespace.to_string()
 
     def get_source_code(self) -> str:
-        usings = "\n".join([f"using {using};" for using in self.usings])
-        source = f"""{usings}
+        source = self.content
 
-{self.content}
-"""
+        if len(self.usings) > 0:
+            usings = "\n".join([f"using {using};" for using in self.usings])
+            source = usings + "\n\n" + source
+
         if self.tab_size is not None:
-            source = tabs_to_spaces(source, self.tab_size)
+            source = formatting.tabs_to_spaces(source, self.tab_size)
         return source
 
     def write(self, path: str):
@@ -49,6 +37,12 @@ class CSharpSourceFile:
 
 
 class CSharpCodeBlock(ABC):
+    @abstractmethod
+    def to_string(self) -> str:
+        pass
+
+
+class BlockContainer:
     blocks: list[CSharpCodeBlock]
 
     def __init__(self):
@@ -64,23 +58,8 @@ class CSharpCodeBlock(ABC):
 
         return "\n\n".join(block_strs)
 
-    @staticmethod
-    def _indent(code_block: str) -> str:
-        lines: list[str] = []
-        for line in code_block.split("\n"):
-            if len(line) > 0:
-                lines.append(f"\t{line}")
-            else:
-                lines.append("")
 
-        return "\n".join(lines)
-
-    @abstractmethod
-    def to_string(self) -> str:
-        pass
-
-
-class CSharpNamespace(CSharpCodeBlock):
+class CSharpNamespace(CSharpCodeBlock, BlockContainer):
     def __init__(self, name: str):
         super().__init__()
         self.name = name
@@ -90,12 +69,12 @@ class CSharpNamespace(CSharpCodeBlock):
 
         source = f"""namespace {self.name}
 {{
-{self._indent(body)}
+{formatting.indent(body)}
 }}"""
         return source
 
 
-class CSharpClass(CSharpCodeBlock):
+class CSharpClass(CSharpCodeBlock, BlockContainer):
     fields: list[CSharpField]
 
     def __init__(
@@ -118,6 +97,18 @@ class CSharpClass(CSharpCodeBlock):
     def add_field(self, field: CSharpField):
         self.fields.append(field)
 
+    def add_constructor(
+        self,
+        access: str = "internal",
+        params: list[tuple[str, str]] = [],
+        static: bool = False,
+    ) -> CSharpMethod:
+        constructor = CSharpMethod(
+            self.name, None, access=access, params=params, static=static
+        )
+        self.add_block(constructor)
+        return constructor
+
     def to_string(self) -> str:
         body = self._blocks_to_string()
 
@@ -131,18 +122,16 @@ class CSharpClass(CSharpCodeBlock):
         partial = "partial " if self.is_partial else ""
         source = f"""{access}{static}{abstract}{partial}class {self.name}
 {{
-{self._indent(body)}
+{formatting.indent(body)}
 }}"""
         return source
 
 
 class CSharpMethod(CSharpCodeBlock):
-    lines: list[str]
-
     def __init__(
         self,
         name: str,
-        returnType: str,
+        returnType: str | None,  # 'None' to be used for constructors
         access: str = "private",
         params: list[tuple[str, str]] = [],
         static: bool = False,
@@ -158,28 +147,29 @@ class CSharpMethod(CSharpCodeBlock):
         self.is_abstract = abstract
         self.is_partial = partial
 
-        self.lines = []
+        self.body = ""
 
-    def add_line(self, line: str):
-        self.lines.append(line)
-
-    def add_lines(self, lines: list[str]):
-        self.lines += lines
+    def add_code(self, code: str, appendNewLine: bool = True):
+        if appendNewLine:
+            code += "\n"
+        self.body += code
 
     def to_string(self) -> str:
         static = "static " if self.is_static else ""
         abstract = "abstract " if self.is_abstract else ""
         partial = "partial " if self.is_partial else ""
+        returnType = f"{self.returnType} " if self.returnType is not None else ""
         paramList = ", ".join([f"{type} {var}" for type, var in self.params])
-        body = "\n".join(self.lines)
 
-        source = f"{self.access} {static}{abstract}{partial}{self.returnType} {self.name}({paramList})"
+        source = f"{self.access} {static}{abstract}{partial}{returnType}{self.name}({paramList})"
 
         if self.is_partial or self.is_abstract:
             source += ";"
+        elif len(self.body) == 0:
+            source += " { }"
         else:
             source += f""" {{
-{self._indent(body)}
+{formatting.indent(self.body.strip())}
 }}"""
         return source
 

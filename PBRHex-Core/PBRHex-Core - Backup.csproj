@@ -58,7 +58,7 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="cd &quot;$(SolutionDir)python\&quot;&#xD;&#xA;call &quot;generate_formats.bat&quot; &quot;$(ProjectDir)Formats&quot;" />
+    <Exec Command="cd &quot;$(SolutionDir)python\&quot;&#xD;&#xA;call &quot;generate_formats.bat&quot; &quot;$(ProjectDir)Formats\&quot;" />
   </Target>
 
 </Project>

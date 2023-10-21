@@ -12,25 +12,24 @@ using System.Text;
 
 namespace PBRHex.Core.IO
 {
-    internal enum Endianness
+    public enum Endianness
     {
         LittleEndian,
         BigEndian
     }
 
-    internal interface IByteStream
+    public interface IByteStream
     {
+        Endianness Endianness { get; }
         byte[] ReadBytes(long offset, int count);
     }
 
     internal class BytesReader
     {
         private readonly IByteStream stream;
-        private readonly Endianness endianness;
 
-        internal BytesReader(IByteStream stream, Endianness endianness) {
+        internal BytesReader(IByteStream stream) {
             this.stream = stream;
-            this.endianness = endianness;
         }
 
         internal byte ReadByte(long offset) {
@@ -42,7 +41,7 @@ namespace PBRHex.Core.IO
         internal <#= type.Name #> Read<#= type.Name #>(long offset) {
             byte[] bytes = stream.ReadBytes(offset, <#= size #>);
             
-            return endianness == Endianness.BigEndian
+            return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.Read<#= type.Name #>BigEndian(bytes)
                 : BinaryPrimitives.Read<#= type.Name #>LittleEndian(bytes);
         }
