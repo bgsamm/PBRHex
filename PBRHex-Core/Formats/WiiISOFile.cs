@@ -4,15 +4,11 @@ namespace PBRHex.Core.Formats
 {
     public class WiiISOFile
     {
-        public string gameID;
-        public byte[] wiiMagicBytes;
-        public byte[] gcnMagicBytes;
+        public required string gameID;
+        public required byte[] wiiMagicBytes;
+        public required byte[] gcnMagicBytes;
 
-        private WiiISOFile(string gameID, byte[] wiiMagicBytes, byte[] gcnMagicBytes) {
-            this.gameID = gameID;
-            this.wiiMagicBytes = wiiMagicBytes;
-            this.gcnMagicBytes = gcnMagicBytes;
-        }
+        private WiiISOFile() { }
 
         public static WiiISOFile Parse(IByteStream stream) {
             BytesReader reader = new(stream);
@@ -33,11 +29,12 @@ namespace PBRHex.Core.Formats
                 _offset2 += 1;
             }
 
-            WiiISOFile _file = new(
-                gameID,
-                wiiMagicBytes,
-                gcnMagicBytes
-            );
+            WiiISOFile _file = new()
+            {
+                gameID = gameID,
+                wiiMagicBytes = wiiMagicBytes,
+                gcnMagicBytes = gcnMagicBytes
+            };
 
             return _file;
         }

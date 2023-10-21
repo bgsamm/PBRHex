@@ -203,6 +203,7 @@ class CSharpField:
         access: str = "private",
         static: bool = False,
         readonly: bool = False,
+        required: bool = False,
         initialValue: str | None = None,
     ):
         self.name = name
@@ -210,14 +211,14 @@ class CSharpField:
         self.access = access
         self.is_static = static
         self.is_readonly = readonly
+        self.is_required = required
         self.initialValue = initialValue
 
     def to_string(self) -> str:
         static = "static " if self.is_static else ""
         readonly = "readonly " if self.is_readonly else ""
+        required = "required " if self.is_required else ""
         initialization = (
             f" = {self.initialValue}" if self.initialValue is not None else ""
         )
-        return (
-            f"{self.access} {static}{readonly}{self.type} {self.name}{initialization};"
-        )
+        return f"{self.access} {static}{readonly}{required}{self.type} {self.name}{initialization};"

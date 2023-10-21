@@ -228,16 +228,12 @@ class FormatCodeGenerator:
     def _generate_main_class(self) -> CSharpClass:
         class_name = self.get_class_name()
         class_obj = CSharpClass(class_name, access="public")
-
-        constructor = class_obj.add_constructor(
-            access="private",
-            params=[(field.type, field.name) for field in self.format.fields],
-        )
-        for field in self.format.fields:
-            constructor.add_code(f"this.{field.name} = {field.name};")
+        class_obj.add_constructor(access="private")
 
         for field in self.format.fields:
-            field_obj = CSharpField(field.name, field.type, access="public")
+            field_obj = CSharpField(
+                field.name, field.type, access="public", required=True
+            )
             class_obj.add_field(field_obj)
 
         parse_method = self._generate_parse_method()
@@ -262,10 +258,11 @@ class FormatCodeGenerator:
             method_obj.add_code(field.get_parse_code())
             method_obj.add_code("")
 
-        members = ",\n".join([field.name for field in fields])
-        object_initializer = f"""{class_name} _file = new(
+        members = ",\n".join([f"{field.name} = {field.name}" for field in fields])
+        object_initializer = f"""{class_name} _file = new()
+{{
 {formatting.indent(members)}
-);
+}};
 """
         method_obj.add_code(object_initializer)
         method_obj.add_code("return _file;", False)
