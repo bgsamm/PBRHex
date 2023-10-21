@@ -28,9 +28,29 @@ NAMESPACE = "PBRHex.Core.Formats"
 class Field(ABC):
     def __init__(self, xml: xml.Element):
         self.xml = xml
-        self.name: str = xml.get("id")  # type: ignore
-        self.offset: str = xml.get("offset")  # type: ignore
+        self._name = xml.get("id")
+        self._offset = xml.get("offset")
         self.type = self._get_type()
+
+    @property
+    def name(self) -> str:
+        if self._name is None:
+            raise Exception("Attempted access of undefined 'name' in field")
+        return self._name
+
+    @name.setter
+    def name(self, value: str):
+        self._name = value
+
+    @property
+    def offset(self) -> str:
+        if self._offset is None:
+            raise Exception("Attempted access of undefined 'offset' in field")
+        return self._offset
+
+    @offset.setter
+    def offset(self, value: str):
+        self._offset = value
 
     def _get_type(self) -> str:
         return self.xml.tag
