@@ -1,6 +1,4 @@
-﻿using System.CommandLine;
-
-namespace PBRHex.CLI.IO
+﻿namespace PBRHex.CLI.IO
 {
     public interface IInputReader
     {

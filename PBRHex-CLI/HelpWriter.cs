@@ -1,7 +1,7 @@
-﻿using System.CommandLine;
+﻿using PBRHex.CLI.IO;
+using System.CommandLine;
 using System.CommandLine.Help;
 using System.Text;
-using PBRHex.CLI.IO;
 
 namespace PBRHex.CLI
 {

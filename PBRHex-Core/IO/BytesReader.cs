@@ -1,6 +1,4 @@
-﻿using System;
-using System.Buffers.Binary;
-using System.IO;
+﻿using System.Buffers.Binary;
 using System.Text;
 
 namespace PBRHex.Core.IO
@@ -32,7 +30,7 @@ namespace PBRHex.Core.IO
 
         internal Int16 ReadInt16(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 2);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadInt16BigEndian(bytes)
                 : BinaryPrimitives.ReadInt16LittleEndian(bytes);
@@ -40,7 +38,7 @@ namespace PBRHex.Core.IO
 
         internal Int32 ReadInt32(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 4);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadInt32BigEndian(bytes)
                 : BinaryPrimitives.ReadInt32LittleEndian(bytes);
@@ -48,7 +46,7 @@ namespace PBRHex.Core.IO
 
         internal Int64 ReadInt64(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 8);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadInt64BigEndian(bytes)
                 : BinaryPrimitives.ReadInt64LittleEndian(bytes);
@@ -56,7 +54,7 @@ namespace PBRHex.Core.IO
 
         internal UInt16 ReadUInt16(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 2);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadUInt16BigEndian(bytes)
                 : BinaryPrimitives.ReadUInt16LittleEndian(bytes);
@@ -64,7 +62,7 @@ namespace PBRHex.Core.IO
 
         internal UInt32 ReadUInt32(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 4);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadUInt32BigEndian(bytes)
                 : BinaryPrimitives.ReadUInt32LittleEndian(bytes);
@@ -72,7 +70,7 @@ namespace PBRHex.Core.IO
 
         internal UInt64 ReadUInt64(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 8);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadUInt64BigEndian(bytes)
                 : BinaryPrimitives.ReadUInt64LittleEndian(bytes);
@@ -80,7 +78,7 @@ namespace PBRHex.Core.IO
 
         internal Single ReadSingle(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 4);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadSingleBigEndian(bytes)
                 : BinaryPrimitives.ReadSingleLittleEndian(bytes);
@@ -88,7 +86,7 @@ namespace PBRHex.Core.IO
 
         internal Double ReadDouble(long offset) {
             byte[] bytes = stream.ReadBytes(offset, 8);
-            
+
             return stream.Endianness == Endianness.BigEndian
                 ? BinaryPrimitives.ReadDoubleBigEndian(bytes)
                 : BinaryPrimitives.ReadDoubleLittleEndian(bytes);

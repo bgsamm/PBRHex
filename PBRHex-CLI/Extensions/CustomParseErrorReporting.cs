@@ -1,7 +1,7 @@
-﻿using System.CommandLine.Builder;
+﻿using PBRHex.CLI.IO;
+using System.CommandLine.Builder;
 using System.CommandLine.Invocation;
 using System.Text.RegularExpressions;
-using PBRHex.CLI.IO;
 
 namespace PBRHex.CLI.Extensions
 {
@@ -9,16 +9,12 @@ namespace PBRHex.CLI.Extensions
     {
         public static CommandLineBuilder UseCustomParseErrorReporting(
                 this CommandLineBuilder builder,
-                IOutputWriter writer)
-        {
-            builder.AddMiddleware(async (context, next) =>
-            {
-                if (context.ParseResult.Errors.Count > 0)
-                {
+                IOutputWriter writer) {
+            builder.AddMiddleware(async (context, next) => {
+                if (context.ParseResult.Errors.Count > 0) {
                     context.InvocationResult = new CustomParseErrorResult(writer);
                 }
-                else
-                {
+                else {
                     await next(context);
                 }
             }, MiddlewareOrder.ErrorReporting);
@@ -31,15 +27,12 @@ namespace PBRHex.CLI.Extensions
     {
         private IOutputWriter Writer { get; }
 
-        internal CustomParseErrorResult(IOutputWriter writer)
-        {
+        internal CustomParseErrorResult(IOutputWriter writer) {
             Writer = writer;
         }
 
-        public void Apply(System.CommandLine.Invocation.InvocationContext context)
-        {
-            foreach (var error in context.ParseResult.Errors)
-            {
+        public void Apply(System.CommandLine.Invocation.InvocationContext context) {
+            foreach (var error in context.ParseResult.Errors) {
                 string message = FormatErrorMessage(error.Message);
                 Writer.WriteError(message);
             }
@@ -47,13 +40,11 @@ namespace PBRHex.CLI.Extensions
             context.ExitCode = 1;
         }
 
-        private string FormatErrorMessage(string message)
-        {
+        private string FormatErrorMessage(string message) {
             string pattern;
 
             pattern = @"Cannot parse argument '.+' for option '.+' as expected type '.+'\. Did you mean one of the following\?";
-            if (Regex.IsMatch(message, pattern))
-            {
+            if (Regex.IsMatch(message, pattern)) {
                 message = Regex.Replace(message, " as expected type '.+'", "");
                 message = Regex.Replace(message, "\n", "\n    ");
             }

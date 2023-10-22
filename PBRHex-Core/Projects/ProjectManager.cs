@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using PBRHex.Core.IO;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using PBRHex.Core.IO;
 
 namespace PBRHex.Core.Projects
 {
