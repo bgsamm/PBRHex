@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PBRHex.CLI.IO;
 using PBRHex.Core;
 
 namespace PBRHex.CLI
@@ -12,23 +6,28 @@ namespace PBRHex.CLI
     internal static class Program
     {
         private static void Main() {
-            CommandParser parser = new();
+            ConsoleWrapper console = new();
+            CommandParser parser = new(console);
 
             string vers = Application.VersionName;
-            Console.WriteLine("" +
+            console.WriteLine("" +
                 " ┌─────────────────────────────────┐\n" +
                $" │          PBRHex {vers}          │\n" +
                 " │            by pjsamm            │\n" +
                 " └─────────────────────────────────┘");
 
-            Console.WriteLine("For a list of available commands, run `commands`.");
-            Console.WriteLine("For more information about a command, run `help <command>`.");
+            console.WriteLine("For a list of available commands, run `commands`.");
+            console.WriteLine("For more information about a command, run `help <command>`.");
 
             while (true) {
-                Console.WriteLine();
-                Console.Write(">>> ");
-                string cmd = Console.ReadLine()!.Trim();
-                if (cmd == "") {
+                console.WriteLine();
+                console.Write(">>> ");
+
+                string? cmd = console.ReadLine();
+                if (cmd is null) {
+                    break;
+                }
+                if (string.IsNullOrWhiteSpace(cmd)) {
                     continue;
                 }
                 parser.Invoke(cmd);

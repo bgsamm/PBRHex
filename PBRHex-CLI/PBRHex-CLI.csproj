@@ -16,6 +16,6 @@
     <ProjectReference Include="..\PBRHex-Core\PBRHex-Core.csproj" />
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="cd &quot;$(SolutionDir)python\&quot;&#xD;&#xA;call &quot;generate_commands.bat&quot; &quot;$(ProjectDir)CommandParserAuto.cs" />
+    <Exec Command="cd &quot;$(SolutionDir)python\&quot;&#xD;&#xA;call &quot;generate_commands.bat&quot; &quot;$(ProjectDir)Commands\CoreCommandsAuto.cs" />
   </Target>
 </Project>

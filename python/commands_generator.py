@@ -16,12 +16,11 @@ from csharplib import (
     CSharpClass,
     CSharpMethod,
     CSharpEnum,
-    CSharpField,
 )
 import formatting
 
 SCHEMA = xmlschema.XMLSchema(os.path.join("commands", "cmd.xsd"))
-NAMESPACE = "PBRHex.CLI"
+NAMESPACE = "PBRHex.CLI.Commands"
 
 
 class Symbol:
@@ -128,15 +127,7 @@ class CommandsCodeGenerator:
         return source_file
 
     def _generate_main_class(self) -> CSharpClass:
-        commands_field = CSharpField(
-            "Commands",
-            "Dictionary<string, Command>",
-            readonly=True,
-            initialValue="new()",
-        )
-
-        class_obj = CSharpClass("CommandParser", partial=True)
-        class_obj.add_field(commands_field)
+        class_obj = CSharpClass("CoreCommands", partial=True)
 
         for command in self.commands:
             params = command.arguments + command.options
@@ -144,7 +135,7 @@ class CommandsCodeGenerator:
                 enums_class = self._gen_enum_class(command)
                 class_obj.add_block(enums_class)
 
-        init_commands_method = self._generate_init_commands_method()
+        init_commands_method = self._generate_load_commands_method()
         class_obj.add_block(init_commands_method)
 
         for command in self.commands:
@@ -157,12 +148,14 @@ class CommandsCodeGenerator:
 
         return class_obj
 
-    def _generate_init_commands_method(self) -> CSharpMethod:
-        method_obj = CSharpMethod("InitCommands", "void")
+    def _generate_load_commands_method(self) -> CSharpMethod:
+        method_obj = CSharpMethod(
+            "LoadCommands", "IEnumerable<Command>", access="public"
+        )
 
         for command in self.commands:
             method_name = self._get_create_command_method_name(command)
-            method_obj.add_code(f"Commands.Add({command.name_str}, {method_name}());")
+            method_obj.add_code(f"yield return {method_name}();")
 
         return method_obj
 

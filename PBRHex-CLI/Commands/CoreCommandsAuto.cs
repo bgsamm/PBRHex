@@ -1,11 +1,9 @@
 using System.CommandLine;
 
-namespace PBRHex.CLI
+namespace PBRHex.CLI.Commands
 {
-    internal partial class CommandParser
+    internal partial class CoreCommands
     {
-        private readonly Dictionary<string, Command> Commands = new();
-
         private static class ListProjects
         {
             internal enum SortOrder
@@ -18,19 +16,19 @@ namespace PBRHex.CLI
             }
         }
 
-        private void InitCommands() {
-            Commands.Add("add-project", CreateAddProjectCommand());
-            Commands.Add("commands", CreateCommandsCommand());
-            Commands.Add("create-dir", CreateCreateDirCommand());
-            Commands.Add("delete-dir", CreateDeleteDirCommand());
-            Commands.Add("exit", CreateExitCommand());
-            Commands.Add("get-cwd", CreateGetCwdCommand());
-            Commands.Add("help", CreateHelpCommand());
-            Commands.Add("init-project", CreateInitProjectCommand());
-            Commands.Add("list-dir", CreateListDirCommand());
-            Commands.Add("list-projects", CreateListProjectsCommand());
-            Commands.Add("remove-project", CreateRemoveProjectCommand());
-            Commands.Add("set-cwd", CreateSetCwdCommand());
+        public IEnumerable<Command> LoadCommands() {
+            yield return CreateAddProjectCommand();
+            yield return CreateCommandsCommand();
+            yield return CreateCreateDirCommand();
+            yield return CreateDeleteDirCommand();
+            yield return CreateExitCommand();
+            yield return CreateGetCwdCommand();
+            yield return CreateHelpCommand();
+            yield return CreateInitProjectCommand();
+            yield return CreateListDirCommand();
+            yield return CreateListProjectsCommand();
+            yield return CreateRemoveProjectCommand();
+            yield return CreateSetCwdCommand();
         }
 
         private Command CreateAddProjectCommand() {

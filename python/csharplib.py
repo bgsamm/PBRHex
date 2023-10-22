@@ -222,3 +222,45 @@ class CSharpField:
             f" = {self.initialValue}" if self.initialValue is not None else ""
         )
         return f"{self.access} {static}{readonly}{required}{self.type} {self.name}{initialization};"
+
+
+class CSharpProperty(CSharpField):
+    def __init__(
+        self,
+        name: str,
+        type: str,
+        access: str = "private",
+        static: bool = False,
+        required: bool = False,
+        set_access: str | None = None,
+        init_access: str | None = None,
+        initialValue: str | None = None,
+    ):
+        super().__init__(
+            name,
+            type,
+            access=access,
+            static=static,
+            readonly=False,
+            required=required,
+            initialValue=initialValue,
+        )
+        self.set_access = set_access
+        self.init_access = init_access
+
+    def to_string(self) -> str:
+        def get_access_modifier(access: str | None) -> str | None:
+            if access is None:
+                return None
+            return access + " " if access != self.access else ""
+
+        static = "static " if self.is_static else ""
+        required = "required " if self.is_required else ""
+        initialization = (
+            f" = {self.initialValue};" if self.initialValue is not None else ""
+        )
+        set_access = get_access_modifier(self.set_access)
+        set = f" {set_access}set;" if set_access is not None else ""
+        init_access = get_access_modifier(self.init_access)
+        init = f" {init_access}init;" if init_access is not None else ""
+        return f"{self.access} {static}{required}{self.type} {self.name} {{ get;{set}{init} }}{initialization}"
