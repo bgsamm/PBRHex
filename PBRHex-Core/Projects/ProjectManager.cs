@@ -27,7 +27,7 @@ namespace PBRHex.Core.Projects
             FileInfo projectListFile = new(ProjectListPath);
 
             if (!projectListFile.Exists) {
-                projectListFile.Create().Close();
+                projectListFile.CreateEmpty();
             }
 
             CleanProjectListFile();

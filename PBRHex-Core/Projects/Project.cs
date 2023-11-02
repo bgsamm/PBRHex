@@ -13,7 +13,7 @@ namespace PBRHex.Core.Projects
 
     public class Project
     {
-        private const string PROJECT_FILE_NAME = "project";
+        private readonly ProjectDirLayout layout;
 
         private readonly ProjectInfo projectInfo;
         private readonly DirectoryInfo directoryInfo;
@@ -24,6 +24,15 @@ namespace PBRHex.Core.Projects
         private Project(ProjectInfo info, DirectoryInfo directory) {
             projectInfo = info;
             directoryInfo = directory;
+
+            layout = new ProjectDirLayout(directoryInfo);
+        }
+
+        internal async Task<bool> LoadROMAsync(FileInfo rom) {
+            IROMFactory factory = ServiceLocator.GetDefaultROMFactory();
+            bool success = await factory.ExtractROMAsync(rom, layout.GameFilesDir);
+
+            return success;
         }
 
         /// <exception cref="DirectoryNotFoundException"></exception>
@@ -34,8 +43,10 @@ namespace PBRHex.Core.Projects
                 throw new DirectoryNotFoundException($"Cannot create project in '{path}' - directory does not exist");
             }
 
-            string projectFilePath = Path.Combine(path, PROJECT_FILE_NAME);
+            ProjectDirLayout directoryLayout = new(directory);
+            directoryLayout.CreateOnDisk();
 
+            string projectFilePath = directoryLayout.ProjectFile.GetPath();
             string json = JsonSerializer.Serialize(info);
             File.WriteAllText(projectFilePath, json);
 
@@ -61,9 +72,8 @@ namespace PBRHex.Core.Projects
         }
 
         private static bool TryLoadProjectInfo(DirectoryInfo directory, out ProjectInfo projectInfo) {
-            string path = directory.GetPath();
-
-            string projectFilePath = Path.Combine(path, PROJECT_FILE_NAME);
+            ProjectDirLayout directoryLayout = new(directory);
+            string projectFilePath = directoryLayout.ProjectFile.GetPath();
 
             projectInfo = new();
 
@@ -76,6 +86,26 @@ namespace PBRHex.Core.Projects
             }
 
             return true;
+        }
+
+        private class ProjectDirLayout
+        {
+            private readonly DirectoryLayout layout;
+
+            private readonly DirectoryNode gameFilesDirNode;
+            private readonly FileNode projectFileNode;
+
+            internal DirectoryInfo GameFilesDir => gameFilesDirNode.Info;
+            internal FileInfo ProjectFile => projectFileNode.Info;
+
+            internal ProjectDirLayout(DirectoryInfo directory) {
+                layout = new(directory);
+
+                gameFilesDirNode = layout.Root.AddDirectory("dump");
+                projectFileNode = layout.Root.AddFile("project.json");
+            }
+
+            internal void CreateOnDisk() => layout.CreateOnDisk();
         }
     }
 

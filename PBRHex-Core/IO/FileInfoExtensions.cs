@@ -10,6 +10,10 @@
             return fileInfo.FullName;
         }
 
+        public static void CreateEmpty(this FileInfo fileInfo) {
+            fileInfo.Create().Close();
+        }
+
         /// <summary>
         /// <para>
         ///     Notes:
